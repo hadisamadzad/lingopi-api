@@ -1,12 +1,12 @@
-# 🧹 Bloggy - Headless Blog API (Clean Architecture)
+# 🧹 Lingopi - Headless Blog API (Clean Architecture)
 
-Bloggy is a modern headless blog API designed using Clean Architecture principles. It provides a structured backend for managing articles, tags, and subscriptions, making it easy to integrate with any frontend.
+Lingopi is a modern headless blog API designed using Clean Architecture principles. It provides a structured backend for managing articles, tags, and subscriptions, making it easy to integrate with any frontend.
 
 ## 🚀 Overview
 
-**Bloggy** is a **headless blog backend** built with **Clean Architecture** 🏗️. It provides a structured API for managing **articles**, **tags**, and **subscriptions**, making it easy to integrate with any frontend or mobile app.
+**Lingopi** is a **headless blog backend** built with **Clean Architecture** 🏗️. It provides a structured API for managing **articles**, **tags**, and **subscriptions**, making it easy to integrate with any frontend or mobile app.
 
-💡 Whether you're building a **personal blog**, an **editorial platform**, or a **content-driven application**, Bloggy serves as a **powerful and extensible backend**. 🚀
+💡 Whether you're building a **personal blog**, an **editorial platform**, or a **content-driven application**, Lingopi serves as a **powerful and extensible backend**. 🚀
 
 ## ✨ Features
 
@@ -72,8 +72,8 @@ This project follows the Clean Architecture pattern and the application is divid
 1. Clone the repository
 
    ```bash
-   git clone https://github.com/hadisamadzad/bloggy-clean-architecture.git
-   cd bloggy-clean-architecture
+   git clone https://github.com/hadisamadzad/lingopi-clean-architecture.git
+   cd lingopi-clean-architecture
    ```
 
 2. Install dependencies
@@ -135,12 +135,12 @@ This project follows the Clean Architecture pattern and the application is divid
 ## 🧪 Testing
 
 ```bash
-dotnet test Bloggy.sln
+dotnet test Lingopi.sln
 ```
 
 ## 🤝 Contributing
 
-We welcome contributions from the community! If you’d like to help improve **Bloggy**, here’s how you can contribute:
+We welcome contributions from the community! If you’d like to help improve **Lingopi**, here’s how you can contribute:
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
