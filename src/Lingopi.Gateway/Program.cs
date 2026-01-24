@@ -1,13 +1,10 @@
-using System.Text.Json.Serialization;
 using Lingopi.Core.Helpers;
 using Lingopi.Gateway.Core;
 using Lingopi.Gateway.Core.DependencyInjection;
 using Lingopi.Gateway.Core.Middleware;
-using Ocelot.DependencyInjection;
-using Serilog;
 
 var env = BootstrapHelper.GetEnvironmentName("Local");
-var configs = BootstrapHelper.GetConfigFromAppsettingsJson(env);
+var configs = BootstrapHelper.GetConfigFromAppSettingsJson(env);
 
 // Logger
 Log.Logger = new LoggerConfiguration()
