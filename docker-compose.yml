@@ -1,0 +1,69 @@
+services:
+  gateway:
+    container_name: bloggy-gateway
+    image: "bloggy-gateway"
+    restart: always
+    networks:
+      - bloggy-backend
+    ports:
+      - 44000:5000
+    build:
+      context: ./src
+      dockerfile: Bloggy.Gateway/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=$ENV
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - redis
+
+  identity:
+    container_name: bloggy-identity
+    image: "bloggy-identity"
+    restart: always
+    networks:
+      - bloggy-backend
+    build:
+      context: ./src
+      dockerfile: Bloggy.Identity/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=$ENV
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - redis
+
+  blog:
+    container_name: bloggy-blog
+    image: "bloggy-blog"
+    restart: always
+    networks:
+      - bloggy-backend
+    build:
+      context: ./src
+      dockerfile: Bloggy.Blog/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=$ENV
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - redis
+
+  redis:
+    container_name: bloggy-redis
+    image: redis:7-alpine
+    restart: always
+    networks:
+      - bloggy-backend
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  bloggy-backend:
+    name: bloggy-backend
+    driver: bridge

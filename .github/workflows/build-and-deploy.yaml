@@ -1,0 +1,128 @@
+name: 🚀 Build & Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  #security-checks:
+  #  name: 🛡️ Security Checks
+  #  uses: ./.github/workflows/security-check.yaml
+
+  #quality-checks:
+  #  name: 🚦 Quality Checks
+  #  uses: ./.github/workflows/sonar-quality-check.yaml
+
+  unit-tests:
+    name: 🧩 Run Unit Tests
+    uses: ./.github/workflows/unit-test.yaml
+
+  build-and-deploy:
+    name: 🚀 Deploy to Server - Run ${{ github.run_number }}
+    runs-on: ubuntu-latest
+    environment: Production
+    needs: unit-tests
+    steps:
+      - name: 🔑 SSH into Server for Preparation
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/${{ secrets.SERVER_USER }}/bloggy
+            rm -rf ./api
+            echo "Cleared the deployment directory!"
+
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 📂 Upload files to the server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "./*"  # Send all files
+          target: "/home/${{ secrets.SERVER_USER }}/bloggy/api"
+
+      - name: 🔑 SSH into Server & Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/${{ secrets.SERVER_USER }}/bloggy/api
+
+            # Replace the environment variables
+            sed -i 's/{Env}/${{ vars.ENV_NAME }}/g' deploy.sh
+
+            ENV_NAME_LOWER=$(echo "${{ vars.ENV_NAME }}" | tr '[:upper:]' '[:lower:]')
+
+            for dir in ./src/*/; do
+              if [ -d "$dir" ]; then # Check if it's a directory
+                echo "Processing directory: $dir"
+
+                dir_name=$(basename "$dir") # Extract directory name
+
+                if [ -f "$dir/appsettings.json" ]; then # Check if appsettings.json exists in the directory
+                  echo "Updating appsettings.json in $dir"
+
+                  # Shared
+                  sed -i "s/{env}/$ENV_NAME_LOWER/g" "$dir/appsettings.json"
+                  sed -i "s|{datadog_api_key}|${{ secrets.DATADOG_API_KEY }}|g" "$dir/appsettings.json"
+
+                  if [ "$dir_name" == "Bloggy.Gateway" ]; then
+                    sed -i "s|{auth_jwt_issuer}|${{ vars.AUTH_JWT_ISSUER }}|g" "$dir/appsettings.json"
+                    sed -i "s|{auth_jwt_audience}|${{ vars.AUTH_JWT_AUDIENCE }}|g" "$dir/appsettings.json"
+                    sed -i "s|{auth_jwt_access_token_secret_key}|${{ secrets.AUTH_JWT_ACCESS_SECRET }}|g" "$dir/appsettings.json"
+                    sed -i "s|{allowed_origins}|${{ vars.ALLOWED_ORIGINS }}|g" "$dir/appsettings.json"
+                  fi
+
+                  if [ "$dir_name" == "Bloggy.Identity" ]; then
+                    sed -i "s|{mongodb_connection_string}|${{ secrets.MONGODB_CONNECTION_STRING }}|g" "$dir/appsettings.json"
+                    sed -i "s|{mongodb_database_name}|${{ vars.MONGODB_DATABASE_NAME }}|g" "$dir/appsettings.json"
+                    sed -i "s|{auth_jwt_issuer}|${{ vars.AUTH_JWT_ISSUER }}|g" "$dir/appsettings.json"
+                    sed -i "s|{auth_jwt_audience}|${{ vars.AUTH_JWT_AUDIENCE }}|g" "$dir/appsettings.json"
+                    sed -i "s|{auth_jwt_access_token_secret_key}|${{ secrets.AUTH_JWT_ACCESS_SECRET }}|g" "$dir/appsettings.json"
+                    sed -i "s|{auth_jwt_refresh_token_secret_key}|${{ secrets.AUTH_JWT_REFRESH_SECRET }}|g" "$dir/appsettings.json"
+                    sed -i "s|{auth_access_token_lifetime}|${{ vars.AUTH_JWT_ACCESS_LIFETIME }}|g" "$dir/appsettings.json"
+                    sed -i "s|{auth_refresh_token_lifetime}|${{ vars.AUTH_JWT_REFRESH_LIFETIME }}|g" "$dir/appsettings.json"
+                    sed -i "s|"{failed_login_limit}"|${{ vars.AUTH_LOCKOUT_LIMIT }}|g" "$dir/appsettings.json"
+                    sed -i "s|{auth_lockout_duration}|${{ vars.AUTH_LOCKOUT_DURATION }}|g" "$dir/appsettings.json"
+                    sed -i "s|{password_reset_encryption_key}|${{ secrets.PASSWORD_RESET_ENCRYPTION_KEY }}|g" "$dir/appsettings.json"
+                  fi
+
+                  if [ "$dir_name" == "Bloggy.Blog" ]; then
+                    sed -i "s|{mongodb_connection_string}|${{ secrets.MONGODB_CONNECTION_STRING }}|g" "$dir/appsettings.json"
+                    sed -i "s|{mongodb_database_name}|${{ vars.MONGODB_DATABASE_NAME }}|g" "$dir/appsettings.json"
+                  fi
+
+                else
+                  echo "appsettings.json not found in $dir"
+                fi
+              fi
+            done
+
+            chmod +x deploy.sh
+            sudo ./deploy.sh
+
+      - name: 🏥 Verify Deployment
+        run: |
+          # Wait for container to be healthy
+          for i in {1..30}; do
+            if curl -sSf ${{ vars.HEALTH_CHECK_URL }}; then
+              echo "✅ Application is healthy"
+              exit 0
+            fi
+            echo "Waiting for application to become healthy..."
+            sleep 10
+          done
+          echo "❌ Application health check failed"
+          exit 1

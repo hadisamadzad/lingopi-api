@@ -1,0 +1,46 @@
+name: 🧩 Run Unit Tests
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches:
+      - '*'
+
+jobs:
+  run-tests:
+    name: 🧩 Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: 🚀 Run unit tests
+        run: |
+          dotnet restore
+          dotnet build
+          dotnet test Bloggy.sln --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test_results.trx"
+
+      - name: 📊 Generate Coverage Report
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.1.12
+        with:
+          reports: '**/coverage.cobertura.xml'
+          targetdir: 'coverage-report'
+          reporttypes: 'HtmlInline;Cobertura;TextSummary'
+
+      - name: 📤 Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage-report
+
+      - name: 📊 Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test_results.trx
