@@ -1,0 +1,31 @@
+using Lingopi.Blog.Application.Interfaces;
+using Lingopi.Blog.Application.Types.Models.Articles;
+using Lingopi.Core.Utilities.OperationResult;
+
+namespace Lingopi.Blog.Application.Operations.Articles;
+
+public class GetPublishedArticleBySlugOperation(IRepositoryManager repository) :
+    IOperation<GetPublishedArticleBySlugCommand, ArticleModel>
+{
+    public async Task<OperationResult<ArticleModel>> ExecuteAsync(
+        GetPublishedArticleBySlugCommand command, CancellationToken? cancellation = null)
+    {
+        // Validate
+        if (string.IsNullOrWhiteSpace(command.Slug))
+            return OperationResult<ArticleModel>.ValidationFailure(["Slug is required."]);
+
+        command = command with { Slug = command.Slug.ToLower() };
+
+        // Retrieve the article
+        var entity = await repository.Articles.GetPublishedBySlugAsync(command.Slug);
+        if (entity is null)
+            return OperationResult<ArticleModel>.NotFoundFailure("Article not found.");
+
+        var tags = await repository.Tags.GetByIdsAsync(entity.TagIds);
+        var model = entity.MapToModelWithTags(tags);
+
+        return OperationResult<ArticleModel>.Success(model);
+    }
+}
+
+public record GetPublishedArticleBySlugCommand(string Slug) : IOperationCommand;
