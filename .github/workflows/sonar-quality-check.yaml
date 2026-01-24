@@ -28,14 +28,14 @@ jobs:
         with:
           projectBaseDir: .
           args:
-            -Dsonar.projectKey=hadisamadzad_bloggy-clean-architecture
+            -Dsonar.projectKey=hadisamadzad_lingopi-clean-architecture
             -Dsonar.organization=hadisamadzad
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: 🔗 SonarCloud Dashboard Link
         run: |
-          echo "👉 View report: https://sonarcloud.io/project/overview?id=hadisamadzad_bloggy-clean-architecture"
+          echo "👉 View report: https://sonarcloud.io/project/overview?id=hadisamadzad_lingopi-clean-architecture"
 
       - name: 🚦 SonarCloud Quality Gate Check
         id: sonarqube-quality-gate-check

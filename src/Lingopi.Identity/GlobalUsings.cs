@@ -1,0 +1,1 @@
+global using OperationResult = Lingopi.Core.Utilities.OperationResult.OperationResult<Lingopi.Core.Utilities.OperationResult.NoResult>;
