@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src\Lingopi.Core\Lingopi.Core.csproj" />
+    <Project Path="src\Lingopi.Gateway\Lingopi.Gateway.csproj" />
+    <Project Path="src\Lingopi.Identity\Lingopi.Identity.csproj" />
+    <Project Path="src\Lingopi.Blog\Lingopi.Blog.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Folder Name="/unit/">
+      <Project Path="tests\unit\Lingopi.Identity.Tests\Lingopi.Identity.Tests.csproj" />
+      <Project Path="tests\unit\Lingopi.Core.Tests\Lingopi.Core.Tests.csproj" />
+      <Project Path="tests\unit\Lingopi.Blog.Tests\Lingopi.Blog.Tests.csproj" />
+    </Folder>
+  </Folder>
+  <Properties Name="Configuration">
+    <Property Name="Debug|Any CPU" />
+    <Property Name="Debug|x64" />
+    <Property Name="Debug|x86" />
+    <Property Name="Release|Any CPU" />
+    <Property Name="Release|x64" />
+    <Property Name="Release|x86" />
+  </Properties>
+</Solution>
