@@ -8,8 +8,8 @@ services:
     ports:
       - 45000:5000
     build:
-      context: ./src
-      dockerfile: Lingopi.Gateway/Dockerfile
+      context: .
+      dockerfile: src/Lingopi.Gateway/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=$ENV
     extra_hosts:
@@ -24,8 +24,8 @@ services:
     networks:
       - lingopi-backend
     build:
-      context: ./src
-      dockerfile: Lingopi.Identity/Dockerfile
+      context: .
+      dockerfile: src/Lingopi.Identity/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=$ENV
     extra_hosts:
@@ -40,8 +40,8 @@ services:
     networks:
       - lingopi-backend
     build:
-      context: ./src
-      dockerfile: Lingopi.Lingo/Dockerfile
+      context: .
+      dockerfile: src/Lingopi.Lingo/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=$ENV
     extra_hosts:
