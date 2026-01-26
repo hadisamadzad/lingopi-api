@@ -1,6 +1,8 @@
 using Lingopi.Identity.Application.Types.Entities;
 using Lingopi.Identity.Application.Types.Models.Users;
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+
 namespace Lingopi.Identity.Infrastructure.Database.Extensions;
 
 public static class UserQueryableExtension
@@ -9,19 +11,27 @@ public static class UserQueryableExtension
     {
         // Filter by keyword
         if (!string.IsNullOrEmpty(filter.Keyword))
+        {
             query = query.Where(x =>
                 x.FirstName.ToLower().Contains(filter.Keyword.ToLower().Trim()) ||
                 x.LastName.ToLower().Contains(filter.Keyword.ToLower().Trim()) ||
                 x.Email.ToLower().Contains(filter.Keyword.ToLower().Trim()) ||
                 x.Mobile.ToLower().Contains(filter.Keyword.ToLower().Trim()));
+        }
 
         // Filter by email
         if (!string.IsNullOrEmpty(filter.Email))
-            query = query.Where(x => x.Email.ToLower().Contains(filter.Email.ToLower().Trim()));
+        {
+            query = query.Where(x => x.Email.ToLower() == filter.Email.ToLower());
+        }
 
         // Filter by statuses
+
         if (filter.States?.Any() == true)
+        {
             query = query.Where(x => filter.States.Contains(x.Status));
+        }
+
 
         return query;
     }

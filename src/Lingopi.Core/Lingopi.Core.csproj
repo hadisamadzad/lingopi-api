@@ -16,6 +16,5 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <PackageReference Include="MongoDB.Driver" />
     <PackageReference Include="StackExchange.Redis" />
-    <PackageReference Include="Ulid" />
   </ItemGroup>
 </Project>

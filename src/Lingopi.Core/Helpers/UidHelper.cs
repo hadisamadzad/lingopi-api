@@ -2,9 +2,9 @@ namespace Lingopi.Core.Helpers;
 
 public static class UidHelper
 {
-    public static string GenerateNewId(string prefix = default)
+    public static string GenerateNewId(string? prefix)
     {
-        var ulid = Ulid.NewUlid().ToString().ToLower();
-        return string.IsNullOrWhiteSpace(prefix) ? ulid : $"{prefix}-{ulid}";
+        var guid = Guid.CreateVersion7().ToString("N").ToLower();
+        return string.IsNullOrWhiteSpace(prefix) ? guid : $"{prefix}-{guid}";
     }
 }
