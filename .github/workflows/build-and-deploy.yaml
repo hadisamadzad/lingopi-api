@@ -99,7 +99,7 @@ jobs:
                     sed -i "s|{password_reset_encryption_key}|${{ secrets.PASSWORD_RESET_ENCRYPTION_KEY }}|g" "$dir/appsettings.json"
                   fi
 
-                  if [ "$dir_name" == "Lingopi.Lingopi" ]; then
+                  if [ "$dir_name" == "Lingopi.Lingo" ]; then
                     sed -i "s|{mongodb_connection_string}|${{ secrets.MONGODB_CONNECTION_STRING }}|g" "$dir/appsettings.json"
                     sed -i "s|{mongodb_database_name}|${{ vars.MONGODB_DATABASE_NAME }}|g" "$dir/appsettings.json"
                   fi
