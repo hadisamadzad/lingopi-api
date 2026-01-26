@@ -56,11 +56,11 @@ services:
     networks:
       - lingopi-backend
     volumes:
-      - redis-data:/data
+      - lingopi-redis-data:/data
     command: redis-server --appendonly yes
 
 volumes:
-  redis-data:
+  lingopi-redis-data:
     driver: local
 
 networks:
