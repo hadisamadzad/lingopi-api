@@ -8,6 +8,13 @@ namespace Lingopi.Lingo.Infrastructure.Database.Repositories;
 public class LingoRepository(IMongoDatabase database) :
     MongoDbRepositoryBase<LingoEntity>(database, "lingos"), ILingoRepository
 {
+    public async Task<LingoEntity?> GetByIdAsync(string lingoId)
+    {
+        return await _collection
+            .Find(l => l.Id == lingoId)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task<List<LingoEntity>> GetByUserIdAsync(string userId)
     {
         return await _collection

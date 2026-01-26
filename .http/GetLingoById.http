@@ -1,0 +1,11 @@
+### Get Lingo by ID - Valid Request
+GET http://localhost:5003/api/lingos/12345abcdef
+Content-Type: application/json
+
+### Get Lingo by ID - Non-existent ID (Should return 404)
+GET http://localhost:5003/api/lingos/nonexistentid123
+Content-Type: application/json
+
+### Get Lingo by ID - Empty ID (Should return 400)
+GET http://localhost:5003/api/lingos/
+Content-Type: application/json

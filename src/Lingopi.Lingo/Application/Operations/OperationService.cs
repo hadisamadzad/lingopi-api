@@ -7,11 +7,15 @@ namespace Lingopi.Lingo.Application.Operations;
 
 public class OperationService(
     IOperation<CreateLingoCommand, string> createLingo,
+    IOperation<GetLingoByIdCommand, LingoModel> getLingoById,
     IOperation<GetLingosByUserIdCommand, List<LingoModel>> getLingosByUserId
 ) : IOperationService
 {
     public CreateLingoOperation CreateLingo { get; } =
         createLingo as CreateLingoOperation ?? throw new ArgumentNullException(nameof(createLingo));
+
+    public GetLingoByIdOperation GetLingoById { get; } =
+        getLingoById as GetLingoByIdOperation ?? throw new ArgumentNullException(nameof(getLingoById));
 
     public GetLingosByUserIdOperation GetLingosByUserId { get; } =
         getLingosByUserId as GetLingosByUserIdOperation ?? throw new ArgumentNullException(nameof(getLingosByUserId));
