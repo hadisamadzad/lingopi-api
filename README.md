@@ -1,4 +1,4 @@
-# 🧹 Lingopi - Headless Blog API (Clean Architecture)
+# 🧹 Lingopi API
 
 Lingopi is a modern headless blog API designed using Clean Architecture principles. It provides a structured backend for managing articles, tags, and subscriptions, making it easy to integrate with any frontend.
 

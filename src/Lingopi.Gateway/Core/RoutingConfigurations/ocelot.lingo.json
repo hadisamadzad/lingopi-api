@@ -1,0 +1,29 @@
+{
+  "GlobalConfiguration": {},
+  "Routes": [
+    {
+      "UpstreamPathTemplate": "/api/lingo/health",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/api/health",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "lingopi-lingo", "Port": 5000 }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/lingo/{all}",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/api/{all}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "lingopi-lingo", "Port": 5000 }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/lingo/{all}",
+      "UpstreamHttpMethod": ["Post", "Put", "Patch", "Delete"],
+      "DownstreamPathTemplate": "/api/{all}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "lingopi-lingo", "Port": 5000 }],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "general-auth-key"
+      }
+    }
+  ]
+}

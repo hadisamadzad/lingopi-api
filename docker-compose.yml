@@ -6,7 +6,7 @@ services:
     networks:
       - lingopi-backend
     ports:
-      - 44000:5000
+      - 45000:5000
     build:
       context: ./src
       dockerfile: Lingopi.Gateway/Dockerfile
@@ -33,15 +33,15 @@ services:
     depends_on:
       - redis
 
-  blog:
-    container_name: lingopi-blog
-    image: "lingopi-blog"
+  lingo:
+    container_name: lingopi-lingo
+    image: "lingopi-lingo"
     restart: always
     networks:
       - lingopi-backend
     build:
       context: ./src
-      dockerfile: Lingopi.Blog/Dockerfile
+      dockerfile: Lingopi.Lingo/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=$ENV
     extra_hosts:
