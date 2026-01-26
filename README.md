@@ -135,7 +135,7 @@ This project follows the Clean Architecture pattern and the application is divid
 ## 🧪 Testing
 
 ```bash
-dotnet test Lingopi.sln
+dotnet test Lingopi.slnx
 ```
 
 ## 🤝 Contributing
