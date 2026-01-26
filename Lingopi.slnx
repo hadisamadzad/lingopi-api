@@ -1,0 +1,18 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/Lingopi.Core/Lingopi.Core.csproj" />
+    <Project Path="src/Lingopi.Gateway/Lingopi.Gateway.csproj" />
+    <Project Path="src/Lingopi.Identity/Lingopi.Identity.csproj" />
+    <Project Path="src/Lingopi.Lingo/Lingopi.Lingo.csproj" />
+  </Folder>
+  <Folder Name="/tests/unit/">
+    <Project Path="tests/unit/Lingopi.Core.Tests/Lingopi.Core.Tests.csproj" />
+    <Project Path="tests/unit/Lingopi.Identity.Tests/Lingopi.Identity.Tests.csproj" />
+    <Project Path="tests/unit/Lingopi.Lingo.Tests/Lingopi.Lingo.Tests.csproj" />
+  </Folder>
+</Solution>

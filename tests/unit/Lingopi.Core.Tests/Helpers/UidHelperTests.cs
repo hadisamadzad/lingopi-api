@@ -1,3 +1,4 @@
+using System;
 using Lingopi.Core.Helpers;
 using Xunit;
 
@@ -9,11 +10,11 @@ public class UidHelperTests
     public void TestGenerateNewId_WhenNoPrefix_ShouldReturnUlid()
     {
         // Act
-        var result = UidHelper.GenerateNewId();
+        var result = UidHelper.GenerateNewId(null);
 
         // Assert
         Assert.False(string.IsNullOrWhiteSpace(result));
-        Assert.Matches(@"^[0-9a-z]{26}$", result); // ulid is 26 characters lowercased
+        Assert.Matches(@"^[0-9a-f]{32}$", result); // GUID v7 without hyphens is 32 hex characters lowercased
     }
 
     [Fact]
@@ -27,7 +28,7 @@ public class UidHelperTests
 
         // Assert
         Assert.StartsWith($"{prefix}-", result);
-        Assert.Equal($"{prefix}-".Length + 26, result.Length);
+        Assert.Equal($"{prefix}-".Length + 32, result.Length); // 32 hex characters
     }
 
     [Fact]
@@ -37,7 +38,7 @@ public class UidHelperTests
         var result = UidHelper.GenerateNewId("  ");
 
         // Assert
-        Assert.False(result.StartsWith("  "));
-        Assert.Matches(@"^[0-9a-z]{26}$", result);
+        Assert.False(result.StartsWith("  ", StringComparison.Ordinal));
+        Assert.Matches(@"^[0-9a-f]{32}$", result); // GUID v7 without hyphens
     }
 }

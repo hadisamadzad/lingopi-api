@@ -7,7 +7,7 @@ using Ocelot.DependencyInjection;
 using Serilog;
 
 var env = BootstrapHelper.GetEnvironmentName("Local");
-var configs = BootstrapHelper.GetConfigFromAppsettingsJson(env);
+var configs = BootstrapHelper.GetConfigFromAppSettingsJson(env);
 
 // Logger
 Log.Logger = new LoggerConfiguration()
