@@ -1,11 +1,11 @@
-﻿using Lingopi.Core.Helpers;
+﻿using FluentValidation;
+using Identity.Application.Helpers;
+using Lingopi.Core.Helpers;
 using Lingopi.Core.Utilities.OperationResult;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Entities;
 using Lingopi.Identity.Application.Types.Models.Auth;
-using FluentValidation;
-using Identity.Application.Helpers;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 
@@ -18,22 +18,29 @@ public class RegisterOperation(IRepositoryManager repository)
         // Validation
         var validation = new RegisterValidator().Validate(command);
         if (!validation.IsValid)
+        {
             return OperationResult<RegisterResult>.ValidationFailure([.. validation.GetErrorMessages()]);
+        }
 
         // Check initial ownership
-        // NOTE Registration is supposed to be done only once and for the first user. So if
-        // there is any existing user, it means there is nothing to do with registration.
-        var isAlreadyOwned = await repository.Users.AnyAsync();
-        if (isAlreadyOwned)
-            return OperationResult<RegisterResult>.Failure("Registration is already done");
+        // NOTE The first registered user becomes the Owner, from the second one onwards, they become regular Users
+        var isFirstUser = !await repository.Users.AnyAsync();
+        var userRole = isFirstUser ? Role.Owner : Role.User;
+
+        // Check for existing user
+        var isExistingUser = await repository.Users.GetByEmailAsync(command.Email);
+        if (isExistingUser is not null)
+        {
+            return OperationResult<RegisterResult>.Failure("A user with this email already exists");
+        }
 
         var user = new UserEntity
         {
             Id = UidHelper.GenerateNewId("user"),
             Email = command.Email.ToLower(),
             PasswordHash = PasswordHelper.Hash(command.Password),
-            Status = UserState.Active,
-            Role = Role.Owner, // The first user will be the owner
+            Status = UserState.Active, // TODO isFirstUser ? UserState.Active : UserState.Inactive,
+            Role = userRole,
             SecurityStamp = UserHelper.CreateUserStamp(),
             ConcurrencyStamp = UserHelper.CreateUserStamp(),
             CreatedAt = DateTime.UtcNow,

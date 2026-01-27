@@ -6,7 +6,7 @@ using MongoDB.Driver;
 namespace Lingopi.Lingo.Infrastructure.Database.Repositories;
 
 public class LingoRepository(IMongoDatabase database) :
-    MongoDbRepositoryBase<LingoEntity>(database, "lingos"), ILingoRepository
+    MongoDbRepositoryBase<LingoEntity>(database, "lingo.lingos"), ILingoRepository
 {
     public async Task<LingoEntity?> GetByIdAsync(string lingoId)
     {
