@@ -1,7 +1,7 @@
-using Damas.Operations;
 using Lingopi.Core.Interfaces;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
+using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.AuthEndpoints;
 

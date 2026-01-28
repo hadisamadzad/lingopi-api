@@ -1,10 +1,10 @@
-using Damas.Operations;
 using Lingopi.Core.Interfaces;
 using Lingopi.Identity.Api.Extensions;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
 using Lingopi.Identity.Core.Configuration;
 using Microsoft.AspNetCore.Mvc;
+using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.AuthEndpoints;
 

@@ -1,7 +1,7 @@
 namespace Lingopi.Identity.Infrastructure.Brevo.Models;
 
-public class RecipientModel
+public record RecipientModel
 {
-    public string Email { get; set; }
-    public string Name { get; set; }
+    public required string Email { get; init; }
+    public string? Name { get; init; }
 }

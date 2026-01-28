@@ -1,1 +1,1 @@
-global using OperationResult = Damas.Operations.OperationResult<Damas.Operations.NoResult>;
+global using OperationResult = Minimals.Operations.OperationResult<Minimals.Operations.NoResult>;

@@ -1,7 +1,7 @@
-using Damas.Operations;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.ReadModels;
+using Minimals.Operations;
 
 namespace Lingopi.Lingo.Application.Operations.Lingos;
 

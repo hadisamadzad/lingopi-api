@@ -1,11 +1,11 @@
 using System.Text.Json.Serialization;
-using Damas.Operations;
 using Lingopi.Core.Extensions;
 using Lingopi.Core.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations;
 using Lingopi.Identity.Core.Bootstrap;
 using Lingopi.Identity.Infrastructure.Database;
+using Minimals.Operations;
 using Serilog;
 
 var env = BootstrapHelper.GetEnvironmentName("Local");

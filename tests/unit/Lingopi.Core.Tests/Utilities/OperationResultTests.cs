@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Damas.Operations;
+using Minimals.Operations;
 using Xunit;
 
 namespace Lingopi.Core.Tests.Utilities;

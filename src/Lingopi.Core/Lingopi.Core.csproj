@@ -9,11 +9,9 @@
     <Description>This class library consists classes that are common among the microservices</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Damas.Operations" />
+    <PackageReference Include="Minimals.Operations" />
     <PackageReference Include="FluentValidation.AspNetCore" />
-    <PackageReference Include="Hashids.net" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <PackageReference Include="MongoDB.Driver" />
     <PackageReference Include="StackExchange.Redis" />

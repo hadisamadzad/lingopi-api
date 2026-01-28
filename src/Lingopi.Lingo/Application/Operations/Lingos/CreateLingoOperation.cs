@@ -1,9 +1,9 @@
-using Damas.Operations;
 using Lingopi.Core.Helpers;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.Enums;
 using Lingopi.Lingo.Application.Models.ValueObjects;
+using Minimals.Operations;
 
 namespace Lingopi.Lingo.Application.Operations.Lingos;
 

@@ -1,8 +1,8 @@
-using Damas.Operations;
 using Lingopi.Core.Interfaces;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.PasswordReset;
 using Microsoft.AspNetCore.Mvc;
+using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.PasswordResetEndpoints;
 

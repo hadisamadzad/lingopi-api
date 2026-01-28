@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Damas.Operations;
 using Lingopi.Core.Extensions;
 using Lingopi.Core.Helpers;
 using Lingopi.Core.Persistence.MongoDB;
@@ -7,6 +6,7 @@ using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Operations;
 using Lingopi.Lingo.Core.Bootstrap;
 using Lingopi.Lingo.Infrastructure.Database;
+using Minimals.Operations;
 using Serilog;
 
 var env = BootstrapHelper.GetEnvironmentName("Local");

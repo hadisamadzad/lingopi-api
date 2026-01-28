@@ -1,9 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Damas.Operations;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
 using Lingopi.Identity.Application.Types.Entities;
+using Minimals.Operations;
 using NSubstitute;
 using Xunit;
 

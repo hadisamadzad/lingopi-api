@@ -5,9 +5,9 @@ namespace Lingopi.Identity.Application.Types.Models.Users;
 
 public record UserFilter : PaginationFilter
 {
-    public string Keyword { get; init; }
-    public string Email { get; init; }
-    public List<UserState> States { get; init; }
+    public required string Keyword { get; init; }
+    public required string Email { get; init; }
+    public required List<UserState> States { get; init; }
 
     public UserSortBy? SortBy { get; init; }
 }
