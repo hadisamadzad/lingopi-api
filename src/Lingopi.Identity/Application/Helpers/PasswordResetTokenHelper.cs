@@ -35,10 +35,14 @@ public static class PasswordResetTokenHelper
         var values = payload.Split(_);
 
         if (values[PrefixIndex] != Prefix)
+        {
             return (Succeeded: false, Email: string.Empty);
+        }
 
         if (DateTime.Parse(values[ExpirationIndex]) < DateTime.UtcNow)
+        {
             return (Succeeded: false, Email: string.Empty);
+        }
 
         return (Succeeded: true, Email: values[EmailIndex]);
     }

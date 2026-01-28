@@ -1,10 +1,10 @@
-using Lingopi.Core.Utilities.OperationResult;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
 using Lingopi.Identity.Application.Operations.PasswordReset;
 using Lingopi.Identity.Application.Operations.Users;
 using Lingopi.Identity.Application.Types.Models.Auth;
 using Lingopi.Identity.Application.Types.Models.Users;
+using Minimals.Operations;
 
 #pragma warning disable S107 // Avoid excessive complexity
 

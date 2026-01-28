@@ -1,8 +1,8 @@
 using Lingopi.Core.Interfaces;
-using Lingopi.Core.Utilities.OperationResult;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Users;
 using Microsoft.AspNetCore.Mvc;
+using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.UserEndpoints;
 
@@ -25,7 +25,6 @@ public class CreateUserEndpoint : IEndpoint
                         FirstName = request.FirstName,
                         LastName = request.LastName,
                     });
-
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.Ok(

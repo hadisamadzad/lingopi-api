@@ -4,10 +4,10 @@ public record AuthTokenConfig
 {
     public const string Key = "AuthToken";
 
-    public string Issuer { get; set; }
-    public string Audience { get; set; }
-    public string AccessTokenSecretKey { get; set; }
-    public TimeSpan AccessTokenLifetime { get; set; }
-    public string RefreshTokenSecretKey { get; set; }
-    public TimeSpan RefreshTokenLifetime { get; set; }
+    public required string Issuer { get; set; }
+    public required string Audience { get; set; }
+    public required string AccessTokenSecretKey { get; set; }
+    public required TimeSpan AccessTokenLifetime { get; set; }
+    public required string RefreshTokenSecretKey { get; set; }
+    public required TimeSpan RefreshTokenLifetime { get; set; }
 }

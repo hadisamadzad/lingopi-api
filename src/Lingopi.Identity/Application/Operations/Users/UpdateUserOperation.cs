@@ -1,30 +1,36 @@
-﻿using Lingopi.Core.Helpers;
-using Lingopi.Core.Utilities.OperationResult;
+﻿using FluentValidation;
+using Lingopi.Core.Helpers;
 using Lingopi.Identity.Application.Interfaces;
-using FluentValidation;
+using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Users;
 
 public class UpdateUserOperation(IRepositoryManager repository) :
     IOperation<UpdateUserCommand, NoResult>
 {
-    public async Task<OperationResult> ExecuteAsync(
+    public async Task<OperationResult<NoResult>> ExecuteAsync(
         UpdateUserCommand command, CancellationToken? cancellation = null)
     {
         // Validation
         var validation = new UpdateUserValidator().Validate(command);
         if (!validation.IsValid)
+        {
             return OperationResult.ValidationFailure([.. validation.GetErrorMessages()]);
+        }
 
         // Check if user is admin
         var requesterUser = await repository.Users.GetByIdAsync(command.AdminUserId);
         if (requesterUser is null)
-            return OperationResult.AuthorizationFailure("Access denied");
+        {
+            return OperationResult.NotFoundFailure("Access denied");
+        }
 
         // Get
         var user = await repository.Users.GetByIdAsync(command.UserId);
         if (user is null)
+        {
             return OperationResult.NotFoundFailure("User not found");
+        }
 
         // Update
         user.FirstName = command.FirstName;

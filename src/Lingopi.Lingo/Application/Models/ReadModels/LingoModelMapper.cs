@@ -5,8 +5,11 @@ namespace Lingopi.Lingo.Application.Models.ReadModels;
 
 public static class LingoModelMapper
 {
-    public static LingoModel MapToLingoModel(this LingoEntity entity)
+     public static LingoModel MapToLingoModel(this LingoEntity entity, Dictionary<string, LanguageEntity> languageEntities)
     {
+        var sourceLanguage = languageEntities.GetValueOrDefault(entity.Languages.SourceLanguageId);
+        var targetLanguage = languageEntities.GetValueOrDefault(entity.Languages.TargetLanguageId);
+
         return new LingoModel(
             Id: entity.Id,
             UserId: entity.UserId,
@@ -15,13 +18,13 @@ public static class LingoModelMapper
             Definition: entity.Definition,
             Translation: entity.Translation,
             SourceLanguage: new LanguageValue(
-                entity.Languages.Source.Code,
-                entity.Languages.Source.Name,
-                entity.Languages.Source.NativeName),
+                entity.Languages.SourceLanguageId,
+                sourceLanguage?.Name ?? string.Empty,
+                sourceLanguage?.NativeName ?? string.Empty),
             TargetLanguage: new LanguageValue(
-                entity.Languages.Target.Code,
-                entity.Languages.Target.Name,
-                entity.Languages.Target.NativeName),
+                entity.Languages.TargetLanguageId,
+                targetLanguage?.Name ?? string.Empty,
+                targetLanguage?.NativeName ?? string.Empty),
             Style: entity.Style,
             Examples: entity.Examples,
             Context: entity.Context,
@@ -38,13 +41,5 @@ public static class LingoModelMapper
             CreatedAt: entity.Audit.CreatedAt,
             UpdatedAt: entity.Audit.UpdatedAt
         );
-    }
-
-    public static IEnumerable<LingoModel> MapToLingoModels(this List<LingoEntity> entities)
-    {
-        foreach (var entity in entities)
-        {
-            yield return entity.MapToLingoModel();
-        }
     }
 }

@@ -1,6 +1,6 @@
-﻿using Lingopi.Core.Utilities.OperationResult;
-using Lingopi.Identity.Application.Interfaces;
+﻿using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Models.Users;
+using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 

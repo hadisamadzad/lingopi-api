@@ -1,7 +1,7 @@
-using Lingopi.Core.Utilities.OperationResult;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.ReadModels;
 using Lingopi.Lingo.Application.Operations.Lingos;
+using Minimals.Operations;
 
 namespace Lingopi.Lingo.Application.Operations;
 

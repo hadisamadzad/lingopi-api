@@ -8,4 +8,5 @@ namespace Lingopi.Lingo.Infrastructure.Database;
 public class RepositoryManager(IMongoDatabase database) : IRepositoryManager
 {
     public ILingoRepository Lingos { get; } = new LingoRepository(database);
+    public ILanguageRepository Languages { get; } = new LanguageRepository(database);
 }

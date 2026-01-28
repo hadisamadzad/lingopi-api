@@ -1,11 +1,11 @@
 using System.Text.Json.Serialization;
 using Lingopi.Core.Extensions;
 using Lingopi.Core.Helpers;
-using Lingopi.Core.Utilities.OperationResult;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations;
 using Lingopi.Identity.Core.Bootstrap;
 using Lingopi.Identity.Infrastructure.Database;
+using Minimals.Operations;
 using Serilog;
 
 var env = BootstrapHelper.GetEnvironmentName("Local");
@@ -70,5 +70,6 @@ app.MapEndpoints();
 if (!app.Environment.IsProduction())
     app.UseConfiguredSwagger();
 
-try { await app.RunAsync(); }
+try
+{ await app.RunAsync(); }
 catch (Exception ex) { Log.Fatal(ex, "Application failed to start."); }

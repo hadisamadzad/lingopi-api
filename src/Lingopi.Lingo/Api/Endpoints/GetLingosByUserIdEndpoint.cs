@@ -1,9 +1,9 @@
 using Lingopi.Core.Interfaces;
-using Lingopi.Core.Utilities.OperationResult;
 using Lingopi.Lingo.Api.Models;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Operations.Lingos;
 using Microsoft.AspNetCore.Mvc;
+using Minimals.Operations;
 
 namespace Lingopi.Lingo.Api.Endpoints;
 

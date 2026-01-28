@@ -1,10 +1,10 @@
-﻿using Lingopi.Core.Helpers;
-using Lingopi.Core.Utilities.OperationResult;
+﻿using FluentValidation;
+using Identity.Application.Helpers;
+using Lingopi.Core.Helpers;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Models.Auth;
-using FluentValidation;
-using Identity.Application.Helpers;
+using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 
