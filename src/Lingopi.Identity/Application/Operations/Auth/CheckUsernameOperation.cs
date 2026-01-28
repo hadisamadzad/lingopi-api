@@ -1,7 +1,7 @@
-﻿using Lingopi.Core.Helpers;
-using Lingopi.Core.Utilities.OperationResult;
-using Lingopi.Identity.Application.Interfaces;
+﻿using Damas.Operations;
 using FluentValidation;
+using Lingopi.Core.Helpers;
+using Lingopi.Identity.Application.Interfaces;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 
@@ -14,7 +14,9 @@ public class CheckUsernameOperation(IRepositoryManager repository) :
         // Validation
         var validation = new CheckUsernameValidator().Validate(command);
         if (!validation.IsValid)
+        {
             return OperationResult<bool>.ValidationFailure([.. validation.GetErrorMessages()]);
+        }
 
         // Get
         var user = await repository.Users.GetByEmailAsync(command.Email);

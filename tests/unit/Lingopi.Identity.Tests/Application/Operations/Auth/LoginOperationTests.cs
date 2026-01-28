@@ -1,7 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Damas.Operations;
 using Identity.Application.Helpers;
-using Lingopi.Core.Utilities.OperationResult;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
 using Lingopi.Identity.Application.Types.Entities;
@@ -48,7 +49,7 @@ public class LoginOperationTests
         // Assert
         Assert.False(result.Succeeded);
         Assert.Equal(OperationStatus.NotFound, result.Status);
-        Assert.Contains("User not found", result.Error?.Messages[0] ?? string.Empty);
+        Assert.Contains("User not found", result.Error?.Messages[0] ?? string.Empty, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -71,7 +72,7 @@ public class LoginOperationTests
         // Assert
         Assert.False(result.Succeeded);
         Assert.Equal(OperationStatus.Unauthorized, result.Status);
-        Assert.Contains("locked out or not active", result.Error?.Messages[0] ?? string.Empty);
+        Assert.Contains("locked out or not active", result.Error?.Messages[0] ?? string.Empty, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -96,7 +97,7 @@ public class LoginOperationTests
         // Assert
         Assert.False(result.Succeeded);
         Assert.Equal(OperationStatus.Unauthorized, result.Status);
-        Assert.Contains("Invalid credentials", result.Error?.Messages[0] ?? string.Empty);
+        Assert.Contains("Invalid credentials", result.Error?.Messages[0] ?? string.Empty, StringComparison.Ordinal);
         await _repository.Users.Received(1).UpdateAsync(user);
     }
 

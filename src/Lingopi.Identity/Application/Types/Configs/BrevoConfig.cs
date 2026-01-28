@@ -4,7 +4,7 @@ public class BrevoConfig
 {
     public const string Key = "Brevo";
 
-    public string BaseAddress { get; set; }
-    public string SendEmailUri { get; set; }
-    public string ApiKey { get; set; }
+    public required string BaseAddress { get; set; }
+    public required string SendEmailUri { get; set; }
+    public required string ApiKey { get; set; }
 }

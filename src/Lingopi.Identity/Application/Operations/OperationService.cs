@@ -1,4 +1,4 @@
-using Lingopi.Core.Utilities.OperationResult;
+using Damas.Operations;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
 using Lingopi.Identity.Application.Operations.PasswordReset;

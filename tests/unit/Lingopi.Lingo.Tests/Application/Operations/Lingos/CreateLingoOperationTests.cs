@@ -1,9 +1,9 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Lingopi.Core.Utilities.OperationResult;
+using Damas.Operations;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.Enums;
-using Lingopi.Lingo.Application.Models.ValueObjects;
 using Lingopi.Lingo.Application.Operations.Lingos;
 using NSubstitute;
 using Xunit;
@@ -31,8 +31,8 @@ public class CreateLingoOperationTests
             LingoType: LingoType.Word,
             Definition: "The occurrence of events by chance in a happy way",
             Translation: "یافتن چیزی خوب به طور تصادفی",
-            SourceLanguage: new LanguageValue("en", "English", "English"),
-            TargetLanguage: new LanguageValue("fa", "Persian", "فارسی")
+            SourceLanguageId: "en",
+            TargetLanguageId: "fa"
         );
 
         // Act
@@ -42,7 +42,7 @@ public class CreateLingoOperationTests
         Assert.True(result.Succeeded);
         Assert.Equal(OperationStatus.Completed, result.Status);
         Assert.NotNull(result.Value);
-        Assert.StartsWith("lingo-", result.Value);
+        Assert.StartsWith("lingo-", result.Value, StringComparison.Ordinal);
 
         await _repository.Lingos.Received(1).InsertAsync(Arg.Any<Lingopi.Lingo.Application.Models.Entities.LingoEntity>());
     }
@@ -57,8 +57,8 @@ public class CreateLingoOperationTests
             LingoType: LingoType.Expression,
             Definition: "To initiate conversation in a relaxed manner",
             Translation: "یخ را شکستن",
-            SourceLanguage: new LanguageValue("en", "English", "English"),
-            TargetLanguage: new LanguageValue("fa", "Persian", "فارسی")
+            SourceLanguageId: "en",
+            TargetLanguageId: "fa"
         )
         {
             Style = WordStyle.Informal,

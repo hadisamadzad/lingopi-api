@@ -1,5 +1,5 @@
+using Damas.Operations;
 using Lingopi.Core.Helpers;
-using Lingopi.Core.Utilities.OperationResult;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.Enums;
@@ -30,18 +30,9 @@ public class CreateLingoOperation(IRepositoryManager repository) :
             UserNote = command.UserNote,
             Languages = new LanguagesValue
             {
-                Source = new LanguageValue
-                (
-                    Code: command.SourceLanguage.Code,
-                    Name: command.SourceLanguage.Name,
-                    NativeName: command.SourceLanguage.NativeName
-                ),
-                Target = new LanguageValue
-                (
-                    Code: command.TargetLanguage.Code,
-                    Name: command.TargetLanguage.Name,
-                    NativeName: command.TargetLanguage.NativeName
-                )
+                SourceLanguageId = command.SourceLanguageId,
+                TargetLanguageId = command.TargetLanguageId,
+
             },
             Review = new ReviewValue
             {
@@ -77,8 +68,8 @@ public record CreateLingoCommand(
     LingoType LingoType,
     string Definition,
     string Translation,
-    LanguageValue SourceLanguage,
-    LanguageValue TargetLanguage
+    string SourceLanguageId,
+    string TargetLanguageId
 ) : IOperationCommand
 {
     public WordStyle? Style { get; init; }

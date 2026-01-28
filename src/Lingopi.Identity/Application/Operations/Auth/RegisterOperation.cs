@@ -1,7 +1,7 @@
-﻿using FluentValidation;
+﻿using Damas.Operations;
+using FluentValidation;
 using Identity.Application.Helpers;
 using Lingopi.Core.Helpers;
-using Lingopi.Core.Utilities.OperationResult;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Entities;
@@ -52,7 +52,8 @@ public class RegisterOperation(IRepositoryManager repository)
         var result = new RegisterResult
         {
             UserId = user.Id,
-            Email = user.Email
+            Email = user.Email,
+            ActivationToken = "fake-token"
         };
 
         return OperationResult<RegisterResult>.Success(result);

@@ -1,4 +1,4 @@
-using Lingopi.Core.Utilities.OperationResult;
+using Damas.Operations;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.ReadModels;
 using Lingopi.Lingo.Application.Operations.Lingos;

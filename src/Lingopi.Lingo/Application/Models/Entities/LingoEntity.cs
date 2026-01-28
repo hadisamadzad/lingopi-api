@@ -1,6 +1,5 @@
 using Lingopi.Core.Interfaces;
 using Lingopi.Lingo.Application.Models.Enums;
-using Lingopi.Lingo.Application.Models.ValueObjects;
 
 namespace Lingopi.Lingo.Application.Models.Entities;
 
@@ -26,8 +25,8 @@ public class LingoEntity : IEntity
 
 public record LanguagesValue
 {
-    public required LanguageValue Source { get; init; }
-    public required LanguageValue Target { get; init; }
+    public required string SourceLanguageId { get; init; }
+    public required string TargetLanguageId { get; init; }
 }
 
 public record ReviewValue

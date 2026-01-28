@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Lingopi.Core.Utilities.OperationResult;
+using Damas.Operations;
 using Xunit;
 
 namespace Lingopi.Core.Tests.Utilities;
@@ -27,7 +27,6 @@ public class OperationResultTests
 
         // Assert
         Assert.Equal(OperationStatus.Completed, result.Status);
-        Assert.NotNull(result.Value);
         Assert.True(result.Succeeded);
         Assert.Null(result.Error);
     }
@@ -53,7 +52,6 @@ public class OperationResultTests
 
         // Assert
         Assert.Equal(OperationStatus.NoOperation, result.Status);
-        Assert.NotNull(result.Value);
         Assert.True(result.Succeeded);
         Assert.Null(result.Error);
     }

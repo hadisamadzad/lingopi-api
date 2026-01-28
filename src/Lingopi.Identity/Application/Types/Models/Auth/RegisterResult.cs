@@ -2,7 +2,7 @@ namespace Lingopi.Identity.Application.Types.Models.Auth;
 
 public record RegisterResult
 {
-    public string UserId { get; set; }
-    public string Email { get; set; }
-    public string ActivationToken { get; set; }
+    public required string UserId { get; init; }
+    public required string Email { get; init; }
+    public required string ActivationToken { get; init; }
 }

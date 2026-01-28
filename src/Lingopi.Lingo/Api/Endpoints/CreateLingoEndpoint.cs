@@ -1,5 +1,5 @@
+using Damas.Operations;
 using Lingopi.Core.Interfaces;
-using Lingopi.Core.Utilities.OperationResult;
 using Lingopi.Lingo.Api.Models;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Operations.Lingos;
@@ -24,8 +24,8 @@ public class CreateLingoEndpoint : IEndpoint
                         LingoType: request.LingoType,
                         Definition: request.Definition,
                         Translation: request.Translation,
-                        SourceLanguage: request.SourceLanguage,
-                        TargetLanguage: request.TargetLanguage)
+                        SourceLanguageId: request.SourceLanguageId,
+                        TargetLanguageId: request.TargetLanguageId)
                     {
                         Style = request.Style,
                         Examples = request.Examples,

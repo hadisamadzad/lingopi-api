@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Lingopi.Core.Utilities.OperationResult;
+using Damas.Operations;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.Enums;
-using Lingopi.Lingo.Application.Models.ValueObjects;
 using Lingopi.Lingo.Application.Operations.Lingos;
 using NSubstitute;
 using Xunit;
@@ -43,8 +42,8 @@ public class GetLingosByUserIdOperationTests
                 Translation = "تصادف خوشایند",
                 Languages = new LanguagesValue
                 {
-                    Source = new LanguageValue("en", "English", "English"),
-                    Target = new LanguageValue("fa", "Persian", "فارسی")
+                    SourceLanguageId = "en-UK",
+                    TargetLanguageId = "fa-IR"
                 },
                 Style = WordStyle.Formal,
                 Examples = [],

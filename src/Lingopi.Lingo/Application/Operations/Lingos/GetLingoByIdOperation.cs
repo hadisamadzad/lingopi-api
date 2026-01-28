@@ -1,5 +1,6 @@
-using Lingopi.Core.Utilities.OperationResult;
+using Damas.Operations;
 using Lingopi.Lingo.Application.Interfaces;
+using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.ReadModels;
 
 namespace Lingopi.Lingo.Application.Operations.Lingos;
@@ -21,14 +22,24 @@ public class GetLingoByIdOperation(IRepositoryManager repository) :
 
         // Get lingo by ID
         var entity = await repository.Lingos.GetByIdAsync(command.LingoId);
-
         if (entity is null)
         {
             return OperationResult<LingoModel>.NotFoundFailure("Lingo not found");
         }
 
+        var sourceLanguageEntity = await repository.Languages
+            .GetByIdAsync(entity.Languages.SourceLanguageId);
+        var targetLanguageEntity = await repository.Languages
+            .GetByIdAsync(entity.Languages.TargetLanguageId);
+
         // Map to model
-        var model = entity.MapToLingoModel();
+        var languageEntities = new Dictionary<string, LanguageEntity>();
+        if (sourceLanguageEntity != null)
+            languageEntities[entity.Languages.SourceLanguageId] = sourceLanguageEntity;
+        if (targetLanguageEntity != null)
+            languageEntities[entity.Languages.TargetLanguageId] = targetLanguageEntity;
+
+        var model = entity.MapToLingoModel(languageEntities);
 
         return OperationResult<LingoModel>.Success(model);
     }

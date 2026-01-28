@@ -1,4 +1,4 @@
-﻿using Lingopi.Core.Utilities.OperationResult;
+﻿using Damas.Operations;
 using Lingopi.Identity.Application.Interfaces;
 
 namespace Lingopi.Identity.Application.Operations.Auth;

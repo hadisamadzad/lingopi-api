@@ -1,5 +1,4 @@
 using Lingopi.Lingo.Application.Models.Enums;
-using Lingopi.Lingo.Application.Models.ValueObjects;
 
 namespace Lingopi.Lingo.Api.Models;
 
@@ -9,8 +8,8 @@ public record CreateLingoRequest(
     LingoType LingoType,
     string Definition,
     string Translation,
-    LanguageValue SourceLanguage,
-    LanguageValue TargetLanguage
+    string SourceLanguageId,
+    string TargetLanguageId
 )
 {
     public WordStyle? Style { get; init; }

@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
+using Damas.Operations;
 using Lingopi.Core.Extensions;
 using Lingopi.Core.Helpers;
 using Lingopi.Core.Persistence.MongoDB;
-using Lingopi.Core.Utilities.OperationResult;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Operations;
 using Lingopi.Lingo.Core.Bootstrap;
@@ -56,7 +56,11 @@ catch (Exception ex)
 {
     Log.Fatal(ex, $"Application failed to build.");
 }
-if (app is null) return;
+
+if (app is null)
+{
+    return;
+}
 
 // Add middleware
 app.MapHealthChecks("/api/health");
@@ -65,7 +69,10 @@ app.MapHealthChecks("/api/health");
 app.MapEndpoints();
 
 if (!app.Environment.IsProduction())
+{
     app.UseConfiguredSwagger();
+}
 
-try { await app.RunAsync(); }
+try
+{ await app.RunAsync(); }
 catch (Exception ex) { Log.Fatal(ex, "Application failed to start."); }

@@ -1,8 +1,8 @@
-﻿using Lingopi.Core.Helpers;
-using Lingopi.Core.Utilities.OperationResult;
+﻿using Damas.Operations;
+using FluentValidation;
+using Lingopi.Core.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Entities;
-using FluentValidation;
 
 namespace Lingopi.Identity.Application.Operations.Users;
 
@@ -15,12 +15,16 @@ public class UpdateUserStatusOperation(IRepositoryManager repository) :
         // Validation
         var validation = new UpdateUserStatusValidator().Validate(command);
         if (!validation.IsValid)
+        {
             return OperationResult.ValidationFailure([.. validation.GetErrorMessages()]);
+        }
 
         // Get
         var user = await repository.Users.GetByIdAsync(command.UserId);
         if (user is null)
+        {
             return OperationResult.NotFoundFailure("User not found");
+        }
 
         // Update
         user.Status = command.State;

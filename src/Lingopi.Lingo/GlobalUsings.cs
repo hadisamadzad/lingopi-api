@@ -1,1 +1,1 @@
-global using OperationResult = Lingopi.Core.Utilities.OperationResult.OperationResult<Lingopi.Core.Utilities.OperationResult.NoResult>;
+global using OperationResult = Damas.Operations.OperationResult<Damas.Operations.NoResult>;

@@ -1,8 +1,8 @@
-﻿using Lingopi.Core.Helpers;
-using Lingopi.Core.Utilities.OperationResult;
-using Lingopi.Identity.Application.Interfaces;
+﻿using Damas.Operations;
 using FluentValidation;
 using Identity.Application.Helpers;
+using Lingopi.Core.Helpers;
+using Lingopi.Identity.Application.Interfaces;
 
 namespace Lingopi.Identity.Application.Operations.Users;
 
@@ -15,18 +15,26 @@ public class UpdateUserPasswordOperation(IRepositoryManager repository) :
         // Validation
         var validation = new UpdateUserPasswordValidator().Validate(command);
         if (!validation.IsValid)
+        {
             return OperationResult.ValidationFailure([.. validation.GetErrorMessages()]);
+        }
 
         // Get
         var user = await repository.Users.GetByIdAsync(command.UserId);
         if (user is null)
+        {
             return OperationResult.NotFoundFailure("User not found");
+        }
 
         // Check if user password is correct and update
         if (PasswordHelper.CheckPasswordHash(user.PasswordHash, command.CurrentPassword))
+        {
             user.PasswordHash = PasswordHelper.Hash(command.NewPassword);
+        }
         else
+        {
             return OperationResult.Failure("Incorrect current password");
+        }
 
         user.UpdatedAt = DateTime.UtcNow;
         _ = await repository.Users.UpdateAsync(user);
