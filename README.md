@@ -70,6 +70,7 @@ This project follows the Clean Architecture pattern and the application is divid
 ### Local Docker debug setup
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 `deploy.sh Local` selects both `docker-compose.yml` and `docker-compose.local.yml`, then builds and starts Gateway, Identity, Lingo, and Redis.
 
 Run from the repository root:
@@ -78,10 +79,14 @@ Run from the repository root:
 DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0 ./deploy.sh Local
 =======
 The local Compose file extends `docker-compose.yml` with container-safe Local settings for Redis and service ports. Run these commands from the repository root.
+=======
+`deploy.sh Local` selects both `docker-compose.yml` and `docker-compose.local.yml`, then builds and starts Gateway, Identity, Lingo, and Redis.
+>>>>>>> f717919 (Enhance local setup)
 
-Build and start all services:
+Run from the repository root:
 
 ```bash
+<<<<<<< HEAD
 ENV=Local docker compose -f docker-compose.yml -f docker-compose.local.yml up --build -d
 ```
 
@@ -90,6 +95,9 @@ Start the existing images without rebuilding:
 ```bash
 ENV=Local docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
 >>>>>>> bb8b1ff (Improve local setup)
+=======
+DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0 ./deploy.sh Local
+>>>>>>> f717919 (Enhance local setup)
 ```
 
 Check service status:
