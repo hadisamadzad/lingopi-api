@@ -17,7 +17,7 @@ public static class OpenApiExtensions
         app.UseSwaggerUI(configs =>
         {
             configs.DocumentTitle = "Swagger UI - Lingopi Identity API";
-            configs.SwaggerEndpoint($"/openapi/{DocumentTitle}.json", "Lingopi API - Identity");
+            configs.SwaggerEndpoint($"/api/identity/openapi/{DocumentTitle}.json", "Lingopi API - Identity");
         });
     }
 }

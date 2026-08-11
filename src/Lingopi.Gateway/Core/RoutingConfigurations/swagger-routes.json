@@ -1,0 +1,32 @@
+{
+  "Routes": [
+    {
+      "UpstreamPathTemplate": "/api/identity/swagger/{all}",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/swagger/{all}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "lingopi-identity", "Port": 5000 }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/identity/openapi/{all}",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/openapi/{all}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "lingopi-identity", "Port": 5000 }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/lingo/swagger/{all}",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/swagger/{all}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "lingopi-lingo", "Port": 5000 }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/lingo/openapi/{all}",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/openapi/{all}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "lingopi-lingo", "Port": 5000 }]
+    }
+  ]
+}

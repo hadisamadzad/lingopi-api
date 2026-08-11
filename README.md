@@ -67,6 +67,53 @@ This project follows the Clean Architecture pattern and the application is divid
 
 ## 🚀 Getting Started
 
+### Local Docker debug setup
+
+The local Compose file extends `docker-compose.yml` with container-safe Local settings for Redis and service ports. Run these commands from the repository root.
+
+Build and start all services:
+
+```bash
+ENV=Local docker compose -f docker-compose.yml -f docker-compose.local.yml up --build -d
+```
+
+Start the existing images without rebuilding:
+
+```bash
+ENV=Local docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+```
+
+Check service status:
+
+```bash
+ENV=Local docker compose -f docker-compose.yml -f docker-compose.local.yml ps
+```
+
+Follow Gateway logs:
+
+```bash
+ENV=Local docker compose -f docker-compose.yml -f docker-compose.local.yml logs -f gateway
+```
+
+Check service health:
+
+```bash
+curl http://localhost:45000/api/health
+curl http://localhost:45000/api/identity/health
+curl http://localhost:45000/api/lingo/health
+```
+
+Open Swagger:
+
+- Identity: `http://localhost:45000/api/identity/swagger/index.html`
+- Lingo: `http://localhost:45000/api/lingo/swagger/index.html`
+
+Stop the local stack:
+
+```bash
+ENV=Local docker compose -f docker-compose.yml -f docker-compose.local.yml down
+```
+
 ### Installation
 
 1. Clone the repository

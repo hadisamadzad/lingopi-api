@@ -1,0 +1,17 @@
+services:
+  gateway:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Local
+      Urls: "http://0.0.0.0:5000"
+
+  identity:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Local
+      Urls: "http://0.0.0.0:5000"
+      Redis__SingleNode: "lingopi-redis:6379"
+
+  lingo:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Local
+      Urls: "http://0.0.0.0:5000"
+      Redis__SingleNode: "lingopi-redis:6379"
