@@ -5,17 +5,22 @@ ENV=${1:-Production}
 
 echo "Starting deployment with environment: $ENV"
 
+COMPOSE_FILES=(-f docker-compose.yml)
+if [ "$ENV" = "Local" ]; then
+    COMPOSE_FILES+=(-f docker-compose.local.yml)
+fi
+
 # Stop and remove existing containers first
 echo "Stopping existing containers..."
-ENV="$ENV" docker-compose -p lingopi-api down --remove-orphans
+ENV="$ENV" docker compose -p lingopi-api "${COMPOSE_FILES[@]}" down --remove-orphans
 
 # Remove dangling images from docker images AFTER stopping containers
 echo "Cleaning up dangling images..."
 docker images -f dangling=true -q | xargs -r docker rmi
 
-# Build docker images using docker-compose (force rebuild)
+# Build docker images using Docker Compose (force rebuild)
 echo "Building images..."
-ENV="$ENV" docker-compose -p lingopi-api build
+ENV="$ENV" docker compose -p lingopi-api "${COMPOSE_FILES[@]}" build
 
 # Check if build was successful
 if [ $? -ne 0 ]; then
@@ -23,9 +28,9 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Start containers using docker-compose
+# Start containers using Docker Compose
 echo "Starting containers..."
-ENV="$ENV" docker-compose -p lingopi-api up -d
+ENV="$ENV" docker compose -p lingopi-api "${COMPOSE_FILES[@]}" up -d
 
 # Wait a moment for containers to start
 sleep 5
@@ -39,14 +44,14 @@ RUNNING_CONTAINERS=$(docker ps -q | wc -l)
 if [ $RUNNING_CONTAINERS -eq 0 ]; then
     echo "Warning: No containers are running!"
     echo "Checking container logs..."
-    docker-compose -p lingopi-api logs
+    docker compose -p lingopi-api "${COMPOSE_FILES[@]}" logs
 else
     echo "Successfully deployed $RUNNING_CONTAINERS container(s)"
 fi
 
 # Final cleanup of unused Docker resources
 echo "Cleaning up unused Docker resources..."
-docker system prune -f --volumes
+docker system prune -f
 docker image prune -f -a
 docker container prune -f
 

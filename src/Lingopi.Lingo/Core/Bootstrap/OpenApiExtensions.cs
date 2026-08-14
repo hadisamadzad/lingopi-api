@@ -17,7 +17,7 @@ public static class OpenApiExtensions
         app.UseSwaggerUI(configs =>
         {
             configs.DocumentTitle = "Swagger UI - Lingopi Lingo API";
-            configs.SwaggerEndpoint($"/openapi/{DocumentTitle}.json", "Lingopi API - Lingo");
+            configs.SwaggerEndpoint($"/api/lingo/openapi/{DocumentTitle}.json", "Lingopi API - Lingo");
         });
     }
 }

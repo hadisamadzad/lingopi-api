@@ -67,6 +67,47 @@ This project follows the Clean Architecture pattern and the application is divid
 
 ## 🚀 Getting Started
 
+### Local Docker debug setup
+
+`deploy.sh Local` selects both `docker-compose.yml` and `docker-compose.local.yml`, then builds and starts Gateway, Identity, Lingo, and Redis.
+
+Run from the repository root:
+
+```bash
+DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0 ./deploy.sh Local
+```
+
+Check service status:
+
+```bash
+ENV=Local docker compose -f docker-compose.yml -f docker-compose.local.yml ps
+```
+
+Follow Gateway logs:
+
+```bash
+ENV=Local docker compose -f docker-compose.yml -f docker-compose.local.yml logs -f gateway
+```
+
+Check service health:
+
+```bash
+curl http://localhost:45000/api/health
+curl http://localhost:45000/api/identity/health
+curl http://localhost:45000/api/lingo/health
+```
+
+Open Swagger:
+
+- Identity: `http://localhost:45000/api/identity/swagger/index.html`
+- Lingo: `http://localhost:45000/api/lingo/swagger/index.html`
+
+Stop the local stack:
+
+```bash
+ENV=Local docker compose -f docker-compose.yml -f docker-compose.local.yml down
+```
+
 ### Installation
 
 1. Clone the repository
