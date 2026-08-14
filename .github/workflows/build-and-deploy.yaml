@@ -60,9 +60,6 @@ jobs:
           script: |
             cd /home/${{ secrets.SERVER_USER }}/lingopi/api
 
-            # Replace the environment variables
-            sed -i 's/{Env}/${{ vars.ENV_NAME }}/g' deploy.sh
-
             ENV_NAME_LOWER=$(echo "${{ vars.ENV_NAME }}" | tr '[:upper:]' '[:lower:]')
 
             for dir in ./src/*/; do
@@ -111,7 +108,7 @@ jobs:
             done
 
             chmod +x deploy.sh
-            sudo ./deploy.sh
+            sudo ./deploy.sh "${{ vars.ENV_NAME }}"
 
       - name: 🏥 Verify Deployment
         run: |
