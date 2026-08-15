@@ -16,7 +16,9 @@ public class OperationService(
     IOperation<GetOwnershipStatusCommand, bool> getOwnershipStatus,
     IOperation<LoginCommand, LoginResult> login,
     IOperation<RegisterCommand, RegisterResult> register,
-    IOperation<RefreshAccessTokenCommand, string> getNewAccessToken,
+    IOperation<RefreshAccessTokenCommand, RefreshAccessTokenResult> getNewAccessToken,
+    IOperation<RevokeRefreshTokenCommand, NoResult> revokeRefreshToken,
+    IOperation<AuthenticateGoogleUserCommand, AuthenticateGoogleUserResult> authenticateGoogleUser,
     IOperation<CreateUserCommand, string> createUser,
     IOperation<GetUserByIdCommand, UserModel> getUserById,
     IOperation<UpdateUserCommand, NoResult> updateUser,
@@ -40,6 +42,10 @@ public class OperationService(
         (register as RegisterOperation)!;
     public RefreshAccessTokenOperation GetNewAccessToken { get; } =
         (getNewAccessToken as RefreshAccessTokenOperation)!;
+    public RevokeRefreshTokenOperation RevokeRefreshToken { get; } =
+        (revokeRefreshToken as RevokeRefreshTokenOperation)!;
+    public AuthenticateGoogleUserOperation AuthenticateGoogleUser { get; } =
+        (authenticateGoogleUser as AuthenticateGoogleUserOperation)!;
 
     // Users
     public CreateUserOperation CreateUser { get; } =

@@ -8,9 +8,22 @@ public static class CookieConfiguration
         {
             HttpOnly = true,
             Secure = isProduction,
-            SameSite = SameSiteMode.None, // Can use None since same domain
-            Domain = null, // // Let browser handle it
+            SameSite = isProduction ? SameSiteMode.None : SameSiteMode.Lax,
+            Domain = null,
             Expires = DateTimeOffset.UtcNow.Add(expiry),
+            Path = "/",
+            IsEssential = true
+        };
+    }
+
+    public static CookieOptions GetRefreshTokenDeletionOptions(bool isProduction = true)
+    {
+        return new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = isProduction,
+            SameSite = isProduction ? SameSiteMode.None : SameSiteMode.Lax,
+            Domain = null,
             Path = "/",
             IsEssential = true
         };

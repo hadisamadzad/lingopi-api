@@ -13,6 +13,8 @@ public interface IOperationService
     LoginOperation Login { get; }
     RegisterOperation Register { get; }
     RefreshAccessTokenOperation GetNewAccessToken { get; }
+    RevokeRefreshTokenOperation RevokeRefreshToken { get; }
+    AuthenticateGoogleUserOperation AuthenticateGoogleUser { get; }
 
     // Users
     CreateUserOperation CreateUser { get; }

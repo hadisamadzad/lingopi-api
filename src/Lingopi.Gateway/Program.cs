@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Lingopi.Core.Helpers;
+using Lingopi.Core.Extensions;
 using Lingopi.Gateway.Core;
 using Lingopi.Gateway.Core.DependencyInjection;
 using Lingopi.Gateway.Core.Middleware;
@@ -55,6 +56,10 @@ builder.Services
 
 builder.Services.AddConfiguredCors(configs);
 builder.Services.AddConfiguredAuthentication(configs);
+builder.Services.AddHttpClient("identity", client =>
+    client.BaseAddress = new Uri(
+        configs["IdentityService:BaseUrl"]
+        ?? throw new InvalidOperationException("IdentityService:BaseUrl is not configured.")));
 builder.Services.AddConfiguredOcelot();
 
 builder.Services.AddConfiguredHealthChecks();
@@ -78,6 +83,8 @@ if (builder.Environment.IsProduction())
 
 app.UseCors(Constants.CorsPolicyName);
 app.UseHealthChecks("/api/health");
+app.UseAuthentication();
+app.MapEndpoints();
 
 app.UseConfiguredOcelot();
 

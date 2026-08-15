@@ -4,7 +4,7 @@ using Lingopi.Identity.Application.Operations.PasswordReset;
 using Microsoft.AspNetCore.Mvc;
 using Minimals.Operations;
 
-namespace Lingopi.Identity.Api.PasswordResetEndpoints;
+namespace Lingopi.Identity.Api.Endpoints.PasswordReset;
 
 public class ResetPasswordEndpoint : IEndpoint
 {

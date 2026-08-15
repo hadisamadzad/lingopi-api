@@ -22,7 +22,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [{ "Host": "lingopi-lingo", "Port": 5000 }],
       "AuthenticationOptions": {
-        "AuthenticationProviderKey": "general-auth-key"
+        "AuthenticationProviderKey": "LingopiJwtBearer"
       }
     }
   ]

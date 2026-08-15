@@ -2,7 +2,7 @@ using Lingopi.Core.Interfaces;
 using Lingopi.Identity.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Lingopi.Identity.Api;
+namespace Lingopi.Identity.Api.Endpoints;
 
 public class DevEndpoints : IEndpoint
 {

@@ -34,7 +34,11 @@ public static class OcelotMiddleware
             }
         };
         */
-        app.UseOcelot().Wait();
+        app.UseWhen(
+            context => !context.Request.Path.StartsWithSegments(
+                "/api/auth/google",
+                StringComparison.OrdinalIgnoreCase),
+            branch => branch.UseOcelot().Wait());
 
         return app;
     }

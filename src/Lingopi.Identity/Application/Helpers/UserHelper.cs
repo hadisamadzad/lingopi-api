@@ -36,10 +36,7 @@ public static class UserHelper
     }
 
     public static string CreateJwtAccessToken(this UserEntity user) =>
-        JwtHelper.CreateJwtAccessToken(user.Id, user.Email);
-
-    public static string CreateJwtRefreshToken(this UserEntity user) =>
-        JwtHelper.CreateJwtRefreshToken(user.Id, user.Email);
+        TokenHelper.CreateJwtAccessToken(user.Id, user.Email);
 
     public static bool HasAdminRole(this UserEntity user)
     {

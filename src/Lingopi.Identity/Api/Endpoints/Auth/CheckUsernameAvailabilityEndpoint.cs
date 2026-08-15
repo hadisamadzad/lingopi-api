@@ -4,7 +4,7 @@ using Lingopi.Identity.Application.Operations.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Minimals.Operations;
 
-namespace Lingopi.Identity.Api.AuthEndpoints;
+namespace Lingopi.Identity.Api.Endpoints.Auth;
 
 public class CheckUsernameAvailabilityEndpoint : IEndpoint
 {

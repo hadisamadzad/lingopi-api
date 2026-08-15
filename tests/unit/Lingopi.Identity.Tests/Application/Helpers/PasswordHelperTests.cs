@@ -1,4 +1,4 @@
-using Identity.Application.Helpers;
+using Lingopi.Identity.Application.Helpers;
 using Xunit;
 
 namespace Lingopi.Identity.Tests.Application.Helpers;

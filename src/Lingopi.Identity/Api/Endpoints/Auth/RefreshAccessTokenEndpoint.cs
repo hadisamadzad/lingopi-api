@@ -1,9 +1,11 @@
 using Lingopi.Core.Interfaces;
+using Lingopi.Identity.Api.Extensions;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
+using Lingopi.Identity.Core.Configuration;
 using Minimals.Operations;
 
-namespace Lingopi.Identity.Api.AuthEndpoints;
+namespace Lingopi.Identity.Api.Endpoints.Auth;
 
 public class RefreshAccessTokenEndpoint : IEndpoint
 {
@@ -19,9 +21,13 @@ public class RefreshAccessTokenEndpoint : IEndpoint
                 var refreshToken = context.Request.Cookies["refreshToken"];
 
                 if (string.IsNullOrEmpty(refreshToken))
+                {
+
                     return Results.BadRequest(new { message = "Refresh token not found" });
+                }
 
                 // Operation
+
                 var operationResult = await operations.GetNewAccessToken
                     .ExecuteAsync(new RefreshAccessTokenCommand(RefreshToken: refreshToken));
 
@@ -30,8 +36,10 @@ public class RefreshAccessTokenEndpoint : IEndpoint
                 {
                     OperationStatus.Completed => Results.Ok(
                         new RefreshAccessTokenResponse(
-                            AccessToken: operationResult.Value!
-                        )),
+                            AccessToken: operationResult.Value!.AccessToken
+                        )).WithCookie("refreshToken", operationResult.Value.RefreshToken,
+                            CookieConfiguration.GetRefreshTokenOptions(operationResult.Value.RefreshTokenLifetime,
+                                isProduction: app.Environment.IsProduction())),
 
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error),
                     OperationStatus.NotFound => Results.UnprocessableEntity(operationResult.Error),

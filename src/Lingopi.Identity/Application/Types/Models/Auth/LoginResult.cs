@@ -6,5 +6,5 @@ public record LoginResult
     string FullName,
     string AccessToken,
     string RefreshToken,
-    TimeSpan RefreshTokenMaxAge
+    TimeSpan RefreshTokenLifetime
 );

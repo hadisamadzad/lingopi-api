@@ -5,4 +5,5 @@ namespace Lingopi.Identity.Application.Interfaces;
 public interface IRepositoryManager
 {
     IUserRepository Users { get; }
+    IRefreshTokenRepository RefreshTokens { get; }
 }

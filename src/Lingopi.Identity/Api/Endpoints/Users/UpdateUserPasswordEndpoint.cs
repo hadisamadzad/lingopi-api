@@ -4,45 +4,44 @@ using Lingopi.Identity.Application.Operations.Users;
 using Microsoft.AspNetCore.Mvc;
 using Minimals.Operations;
 
-namespace Lingopi.Identity.Api.UserEndpoints;
+namespace Lingopi.Identity.Api.Endpoints.Users;
 
-public class UpdateUserEndpoint : IEndpoint
+public class UpdateUserPasswordEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
         app.MapGroup(Routes.UserBaseRoute)
-            .WithSummary("Update user details by admins")
-            .MapPatch("{userId}", async (IOperationService operations,
+            .WithSummary("Update User Password")
+            .MapPatch("{userId}/password", async (IOperationService operations,
                 [FromRoute] string userId,
                 [FromHeader] string requestedBy,
-                [FromBody] UpdateUserRequest request) =>
+                [FromBody] UpdateUserPasswordRequest request) =>
             {
                 // Operation
-                var operationResult = await operations.UpdateUser.ExecuteAsync(
-                    new UpdateUserCommand(
+                var operationResult = await operations.UpdateUserPassword.ExecuteAsync(
+                    new UpdateUserPasswordCommand(
                         requestedBy,
                         userId,
-                        request.FirstName,
-                        request.LastName));
+                        request.CurrentPassword,
+                        request.NewPassword));
 
                 // Result
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.NoContent(),
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error),
-                    OperationStatus.Unauthorized => Results.Forbid(),
                     OperationStatus.NotFound => Results.UnprocessableEntity(operationResult.Error),
+                    OperationStatus.Failed => Results.UnprocessableEntity(operationResult.Error),
                     _ => Results.InternalServerError(operationResult.Error),
                 };
             })
             .WithTags(Routes.UserEndpointGroupTag)
-            .WithDescription("Updates a user's details such as first name and last name. This endpoint is intended for use by administrators.")
+            .WithDescription("Update a user's password. Requires the current password and the new password.")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status422UnprocessableEntity)
             .Produces(StatusCodes.Status500InternalServerError);
     }
 }
 
-public record UpdateUserRequest(string FirstName, string LastName);
+public record UpdateUserPasswordRequest(string CurrentPassword, string NewPassword);

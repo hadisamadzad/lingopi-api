@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Identity.Application.Helpers;
+using Lingopi.Identity.Application.Helpers;
 using Lingopi.Core.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Minimals.Operations;
