@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Identity.Application.Helpers;
+using FluentValidation;
 using Lingopi.Core.Helpers;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
@@ -21,19 +20,27 @@ public class ResetPasswordOperation(IRepositoryManager repository,
         // Validation
         var validation = new ResetPasswordValidator().Validate(command);
         if (!validation.IsValid)
+        {
             return OperationResult.ValidationFailure([.. validation.GetErrorMessages()]);
+        }
 
         // Get
         var (succeeded, email) = PasswordResetTokenHelper.ReadPasswordResetToken(command.Token);
         if (!succeeded)
+        {
             return OperationResult.AuthorizationFailure("Invalid token");
+        }
 
         var user = await repository.Users.GetByEmailAsync(email);
         if (user is null)
+        {
             return OperationResult.NotFoundFailure("User not found");
+        }
 
         if (user.IsLockedOutOrNotActive())
+        {
             return OperationResult.AuthorizationFailure("User is locked out or not active");
+        }
 
         user.PasswordHash = PasswordHelper.Hash(command.NewPassword);
 

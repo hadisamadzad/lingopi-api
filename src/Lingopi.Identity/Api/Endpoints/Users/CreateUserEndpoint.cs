@@ -4,7 +4,7 @@ using Lingopi.Identity.Application.Operations.Users;
 using Microsoft.AspNetCore.Mvc;
 using Minimals.Operations;
 
-namespace Lingopi.Identity.Api.UserEndpoints;
+namespace Lingopi.Identity.Api.Endpoints.Users;
 
 public class CreateUserEndpoint : IEndpoint
 {

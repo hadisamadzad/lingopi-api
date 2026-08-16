@@ -5,7 +5,7 @@ using Lingopi.Identity.Application.Types.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Minimals.Operations;
 
-namespace Lingopi.Identity.Api.UserEndpoints;
+namespace Lingopi.Identity.Api.Endpoints.Users;
 
 public class UpdateUserStatusEndpoint : IEndpoint
 {

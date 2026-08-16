@@ -1,61 +1,67 @@
 using Lingopi.Core.Interfaces;
 using Lingopi.Identity.Application.Interfaces;
-using Lingopi.Identity.Application.Operations.Users;
+using Lingopi.Identity.Application.Operations.Auth;
 using Lingopi.Identity.Application.Types.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Minimals.Operations;
 
-namespace Lingopi.Identity.Api.UserEndpoints;
+namespace Lingopi.Identity.Api.Endpoints.Auth;
 
-public class GetUserByIdEndpoint : IEndpoint
+public class GetProfileEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.UserBaseRoute)
-            .WithSummary("Get User by ID")
-            .MapGet("{userId}", async (IOperationService operations,
-                [FromHeader] string requestedBy,
-                [FromRoute] string userId) =>
+        // Endpoint for getting user profile
+        app.MapGroup(Routes.AuthBaseRoute)
+            .WithSummary("Gets the current user's profile")
+            .MapGet("profile", async (IOperationService operations,
+                [FromHeader] string requestedBy) =>
             {
                 // Operation
-                var operationResult = await operations.GetUserById.ExecuteAsync(
-                    new GetUserByIdCommand(userId));
+                var operationResult = await operations.GetUserProfile
+                    .ExecuteAsync(new GetUserProfileCommand(RequestedById: requestedBy));
 
                 // Result
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.Ok(
-                        new GetUserByIdResponse(
+                        new GetUserProfileResponse(
                             UserId: operationResult.Value!.UserId,
                             Email: operationResult.Value.Email,
-                            Mobile: operationResult.Value.Mobile,
-                            Role: operationResult.Value.Role,
+                            IsEmailConfirmed: operationResult.Value.IsEmailConfirmed,
                             FirstName: operationResult.Value.FirstName,
                             LastName: operationResult.Value.LastName,
                             FullName: operationResult.Value.FullName,
+                            Role: operationResult.Value.Role,
+                            Status: operationResult.Value.Status,
+                            LastLoginDate: operationResult.Value.LastLoginDate,
                             CreatedAt: operationResult.Value.CreatedAt,
                             UpdatedAt: operationResult.Value.UpdatedAt
                         )),
+                    OperationStatus.Invalid => Results.BadRequest(operationResult.Error),
                     OperationStatus.NotFound => Results.UnprocessableEntity(operationResult.Error),
                     _ => Results.InternalServerError(operationResult.Error),
                 };
             })
-            .WithTags(Routes.UserEndpointGroupTag)
-            .WithDescription("Retrieves a user's details by their unique identifier.")
+            .WithTags(Routes.AuthEndpointGroupTag)
+            .WithDescription("Returns the profile information for the authenticated user.")
             .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status422UnprocessableEntity)
             .Produces(StatusCodes.Status500InternalServerError);
     }
 }
 
-public record GetUserByIdResponse(
+public record GetUserProfileResponse(
     string UserId,
     string Email,
-    string? Mobile,
-    Role Role,
+    bool IsEmailConfirmed,
     string? FirstName,
     string? LastName,
     string FullName,
+    Role Role,
+    UserState Status,
+    DateTime? LastLoginDate,
     DateTime CreatedAt,
     DateTime UpdatedAt
 );

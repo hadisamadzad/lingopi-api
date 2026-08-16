@@ -8,6 +8,5 @@ public record AuthTokenConfig
     public required string Audience { get; set; }
     public required string AccessTokenSecretKey { get; set; }
     public required TimeSpan AccessTokenLifetime { get; set; }
-    public required string RefreshTokenSecretKey { get; set; }
     public required TimeSpan RefreshTokenLifetime { get; set; }
 }

@@ -3,7 +3,7 @@ using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
 using Minimals.Operations;
 
-namespace Lingopi.Identity.Api.AuthEndpoints;
+namespace Lingopi.Identity.Api.Endpoints.Auth;
 
 public class GetOwnershipStatusEndpoint : IEndpoint
 {

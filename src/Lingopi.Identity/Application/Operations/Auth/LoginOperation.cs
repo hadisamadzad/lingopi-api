@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Identity.Application.Helpers;
+using FluentValidation;
 using Lingopi.Core.Helpers;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
@@ -17,16 +16,22 @@ public class LoginOperation(IRepositoryManager repository) :
         // Validation
         var validation = new LoginValidator().Validate(command);
         if (!validation.IsValid)
+        {
             return OperationResult<LoginResult>.ValidationFailure([.. validation.GetErrorMessages()]);
+        }
 
         // Get
         var user = await repository.Users.GetByEmailAsync(command.Email);
         if (user is null)
+        {
             return OperationResult<LoginResult>.NotFoundFailure("User not found");
+        }
 
         // Lockout check
         if (user.IsLockedOutOrNotActive())
+        {
             return OperationResult<LoginResult>.AuthorizationFailure("User is locked out or not active");
+        }
 
         // Login check via password
         var isLoginSuccessful = PasswordHelper.CheckPasswordHash(user.PasswordHash, command.Password);
@@ -44,13 +49,16 @@ public class LoginOperation(IRepositoryManager repository) :
         user.ResetLockoutHistory();
         _ = await repository.Users.UpdateAsync(user);
 
+        var (Token, Entity) = RefreshTokenHelper.Create(user.Id, TokenHelper.RefreshTokenLifetime);
+        await repository.RefreshTokens.InsertAsync(Entity);
+
         var result = new LoginResult
         (
             Email: user.Email,
             FullName: user.GetFullName(),
             AccessToken: user.CreateJwtAccessToken(),
-            RefreshToken: user.CreateJwtRefreshToken(),
-            RefreshTokenMaxAge: JwtHelper.RefreshTokenMaxAge
+            RefreshToken: Token,
+            RefreshTokenLifetime: TokenHelper.RefreshTokenLifetime
         );
 
         return OperationResult<LoginResult>.Success(result);

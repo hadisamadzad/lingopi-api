@@ -6,7 +6,7 @@ using Lingopi.Identity.Core.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Minimals.Operations;
 
-namespace Lingopi.Identity.Api.AuthEndpoints;
+namespace Lingopi.Identity.Api.Endpoints.Auth;
 
 public class LoginEndpoint : IEndpoint
 {
@@ -36,8 +36,8 @@ public class LoginEndpoint : IEndpoint
                         ))
                         .WithCookie("refreshToken", operationResult.Value!.RefreshToken,
                             CookieConfiguration.GetRefreshTokenOptions(
-                                operationResult.Value!.RefreshTokenMaxAge,
-                                isProduction: true)), // Set to false for local development
+                                operationResult.Value!.RefreshTokenLifetime,
+                                isProduction: app.Environment.IsProduction())),
 
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error),
                     OperationStatus.NotFound => Results.UnprocessableEntity(operationResult.Error),

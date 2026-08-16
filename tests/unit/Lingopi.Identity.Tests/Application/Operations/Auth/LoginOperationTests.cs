@@ -1,9 +1,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Identity.Application.Helpers;
+using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
+using Lingopi.Identity.Application.Types.Configs;
 using Lingopi.Identity.Application.Types.Entities;
 using Minimals.Operations;
 using NSubstitute;
@@ -19,6 +20,14 @@ public class LoginOperationTests
     public LoginOperationTests()
     {
         _repository = Substitute.For<IRepositoryManager>();
+        TokenHelper.Initialize(new AuthTokenConfig
+        {
+            Issuer = "lingopi.identity",
+            Audience = "lingopi.gateway",
+            AccessTokenSecretKey = "a-secret-key-that-is-long-enough-for-tests",
+            AccessTokenLifetime = TimeSpan.FromMinutes(30),
+            RefreshTokenLifetime = TimeSpan.FromDays(14)
+        });
         _operation = new LoginOperation(_repository);
     }
 
