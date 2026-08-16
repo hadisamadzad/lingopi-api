@@ -79,18 +79,26 @@ jobs:
                     sed -i "s|{auth_jwt_issuer}|${{ vars.AUTH_JWT_ISSUER }}|g" "$dir/appsettings.json"
                     sed -i "s|{auth_jwt_audience}|${{ vars.AUTH_JWT_AUDIENCE }}|g" "$dir/appsettings.json"
                     sed -i "s|{auth_jwt_access_token_secret_key}|${{ secrets.AUTH_JWT_ACCESS_SECRET }}|g" "$dir/appsettings.json"
+                    sed -i "s|{internal_auth_secret}|${{ secrets.AUTH_INTERNAL_SECRET }}|g" "$dir/appsettings.json"
+
+                    sed -i "s|{google_auth_client_id}|${{ secrets.AUTH_GOOGLE_CLIENT_ID }}|g" "$dir/appsettings.json"
+                    sed -i "s|{google_auth_client_secret}|${{ secrets.AUTH_GOOGLE_CLIENT_SECRET }}|g" "$dir/appsettings.json"
+                    sed -i "s|{google_auth_success_redirect_uri}|${{ vars.AUTH_GOOGLE_SUCCESS_REDIRECT_URI }}|g" "$dir/appsettings.json"
+
                     sed -i "s|{allowed_origins}|${{ vars.ALLOWED_ORIGINS }}|g" "$dir/appsettings.json"
                   fi
 
                   if [ "$dir_name" == "Lingopi.Identity" ]; then
                     sed -i "s|{mongodb_connection_string}|${{ secrets.MONGODB_CONNECTION_STRING }}|g" "$dir/appsettings.json"
                     sed -i "s|{mongodb_database_name}|${{ vars.MONGODB_DATABASE_NAME }}|g" "$dir/appsettings.json"
+
                     sed -i "s|{auth_jwt_issuer}|${{ vars.AUTH_JWT_ISSUER }}|g" "$dir/appsettings.json"
                     sed -i "s|{auth_jwt_audience}|${{ vars.AUTH_JWT_AUDIENCE }}|g" "$dir/appsettings.json"
                     sed -i "s|{auth_jwt_access_token_secret_key}|${{ secrets.AUTH_JWT_ACCESS_SECRET }}|g" "$dir/appsettings.json"
-                    sed -i "s|{auth_jwt_refresh_token_secret_key}|${{ secrets.AUTH_JWT_REFRESH_SECRET }}|g" "$dir/appsettings.json"
                     sed -i "s|{auth_access_token_lifetime}|${{ vars.AUTH_JWT_ACCESS_LIFETIME }}|g" "$dir/appsettings.json"
-                    sed -i "s|{auth_refresh_token_lifetime}|${{ vars.AUTH_JWT_REFRESH_LIFETIME }}|g" "$dir/appsettings.json"
+                    sed -i "s|{auth_refresh_token_lifetime}|${{ vars.AUTH_REFRESH_LIFETIME }}|g" "$dir/appsettings.json"
+                    sed -i "s|{internal_auth_secret}|${{ secrets.AUTH_INTERNAL_SECRET }}|g" "$dir/appsettings.json"
+
                     sed -i "s|"{failed_login_limit}"|${{ vars.AUTH_LOCKOUT_LIMIT }}|g" "$dir/appsettings.json"
                     sed -i "s|{auth_lockout_duration}|${{ vars.AUTH_LOCKOUT_DURATION }}|g" "$dir/appsettings.json"
                     sed -i "s|{password_reset_encryption_key}|${{ secrets.PASSWORD_RESET_ENCRYPTION_KEY }}|g" "$dir/appsettings.json"
