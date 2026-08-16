@@ -9,6 +9,9 @@ public static class OcelotMiddleware
         app.UseWhen(
             context =>
                 !context.Request.Path.StartsWithSegments(
+                    "/api/version",
+                    StringComparison.OrdinalIgnoreCase)
+                && !context.Request.Path.StartsWithSegments(
                     "/api/auth/google",
                     StringComparison.OrdinalIgnoreCase)
                 && !context.Request.Path.StartsWithSegments(
