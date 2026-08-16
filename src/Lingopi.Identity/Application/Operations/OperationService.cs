@@ -19,11 +19,9 @@ public class OperationService(
     IOperation<RefreshAccessTokenCommand, RefreshAccessTokenResult> getNewAccessToken,
     IOperation<RevokeRefreshTokenCommand, NoResult> revokeRefreshToken,
     IOperation<AuthenticateGoogleUserCommand, AuthenticateGoogleUserResult> authenticateGoogleUser,
-    IOperation<CreateUserCommand, string> createUser,
     IOperation<GetUserByIdCommand, UserModel> getUserById,
     IOperation<UpdateUserCommand, NoResult> updateUser,
     IOperation<UpdateUserPasswordCommand, NoResult> updateUserPassword,
-    IOperation<UpdateUserStatusCommand, NoResult> updateUserState,
     IOperation<SendPasswordResetEmailCommand, NoResult> sendPasswordResetEmail,
     IOperation<GetPasswordResetEmailCommand, string> getPasswordResetInfo,
     IOperation<ResetPasswordCommand, NoResult> resetPassword
@@ -48,16 +46,12 @@ public class OperationService(
         (authenticateGoogleUser as AuthenticateGoogleUserOperation)!;
 
     // Users
-    public CreateUserOperation CreateUser { get; } =
-        (createUser as CreateUserOperation)!;
     public GetUserByIdOperation GetUserById { get; } =
         (getUserById as GetUserByIdOperation)!;
     public UpdateUserOperation UpdateUser { get; } =
         (updateUser as UpdateUserOperation)!;
     public UpdateUserPasswordOperation UpdateUserPassword { get; } =
         (updateUserPassword as UpdateUserPasswordOperation)!;
-    public UpdateUserStatusOperation UpdateUserState { get; } =
-        (updateUserState as UpdateUserStatusOperation)!;
 
     // Password Reset
     public SendPasswordResetEmailOperation SendPasswordResetEmail { get; } =

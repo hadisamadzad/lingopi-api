@@ -83,7 +83,10 @@ catch (Exception ex)
 {
     Log.Fatal(ex, $"Application failed to build.");
 }
-if (app is null) return;
+if (app is null)
+{
+    return;
+}
 
 // Add middleware
 

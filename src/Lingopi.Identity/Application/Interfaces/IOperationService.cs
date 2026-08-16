@@ -17,11 +17,9 @@ public interface IOperationService
     AuthenticateGoogleUserOperation AuthenticateGoogleUser { get; }
 
     // Users
-    CreateUserOperation CreateUser { get; }
     GetUserByIdOperation GetUserById { get; }
     UpdateUserOperation UpdateUser { get; }
     UpdateUserPasswordOperation UpdateUserPassword { get; }
-    UpdateUserStatusOperation UpdateUserState { get; }
 
     // Password Reset
     SendPasswordResetEmailOperation SendPasswordResetEmail { get; }
