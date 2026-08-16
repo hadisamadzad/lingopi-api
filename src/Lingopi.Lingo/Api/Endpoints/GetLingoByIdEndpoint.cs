@@ -22,31 +22,7 @@ public class GetLingoByIdEndpoint : IEndpoint
 
                 return operationResult.Status switch
                 {
-                    OperationStatus.Completed => Results.Ok(new LingoResponse(
-                        LingoId: operationResult.Value!.Id,
-                        UserId: operationResult.Value!.UserId,
-                        Lingo: operationResult.Value!.Lingo,
-                        LingoType: operationResult.Value!.LingoType,
-                        Definition: operationResult.Value!.Definition,
-                        Translation: operationResult.Value!.Translation,
-                        SourceLanguage: operationResult.Value!.SourceLanguage,
-                        TargetLanguage: operationResult.Value!.TargetLanguage,
-                        Style: operationResult.Value!.Style,
-                        Examples: operationResult.Value!.Examples,
-                        Context: operationResult.Value!.Context,
-                        Tags: operationResult.Value!.Tags,
-                        LearningGoal: operationResult.Value!.LearningGoal,
-                        UserNote: operationResult.Value!.UserNote,
-                        SourceMethod: operationResult.Value!.SourceMethod,
-                        SourceModel: operationResult.Value!.SourceModel,
-                        SourceVersion: operationResult.Value!.SourceVersion,
-                        ReviewLastTime: operationResult.Value!.ReviewLastTime,
-                        ReviewNextTime: operationResult.Value!.ReviewNextTime,
-                        ReviewRepetitions: operationResult.Value!.ReviewRepetitions,
-                        ReviewSrsLevel: operationResult.Value!.ReviewSrsLevel,
-                        CreatedAt: operationResult.Value!.CreatedAt,
-                        UpdatedAt: operationResult.Value!.UpdatedAt
-                    )),
+                    OperationStatus.Completed => Results.Ok(operationResult.Value!.ToResponse()),
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error?.Messages),
                     OperationStatus.NotFound => Results.NotFound(operationResult.Error?.Messages),
                     _ => Results.Problem(

@@ -22,32 +22,8 @@ public class GetLingosByUserIdEndpoint : IEndpoint
 
                 return operationResult.Status switch
                 {
-                    OperationStatus.Completed => Results.Ok(
-                        operationResult.Value!.Select(lingo => new LingoResponse(
-                            LingoId: lingo.Id,
-                            UserId: lingo.UserId,
-                            Lingo: lingo.Lingo,
-                            LingoType: lingo.LingoType,
-                            Definition: lingo.Definition,
-                            Translation: lingo.Translation,
-                            SourceLanguage: lingo.SourceLanguage,
-                            TargetLanguage: lingo.TargetLanguage,
-                            Style: lingo.Style,
-                            Examples: lingo.Examples,
-                            Context: lingo.Context,
-                            Tags: lingo.Tags,
-                            LearningGoal: lingo.LearningGoal,
-                            UserNote: lingo.UserNote,
-                            SourceMethod: lingo.SourceMethod,
-                            SourceModel: lingo.SourceModel,
-                            SourceVersion: lingo.SourceVersion,
-                            ReviewLastTime: lingo.ReviewLastTime,
-                            ReviewNextTime: lingo.ReviewNextTime,
-                            ReviewRepetitions: lingo.ReviewRepetitions,
-                            ReviewSrsLevel: lingo.ReviewSrsLevel,
-                            CreatedAt: lingo.CreatedAt,
-                            UpdatedAt: lingo.UpdatedAt
-                        )).ToList()),
+                    OperationStatus.Completed => Results.Ok(operationResult.Value!
+                        .Select(lingo => lingo.ToResponse()).ToList()),
                     OperationStatus.NotFound => Results.NotFound(operationResult.Error),
                     _ => Results.InternalServerError(operationResult.Error),
                 };

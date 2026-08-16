@@ -93,6 +93,8 @@ Use suffixes correctly:
 - `ReadModel` → application/domain models
 - `Request` → API input
 - `Response` → API output
+- `InputMessage` → Bus messaging input
+- `OutputMessage` → Bus messaging output
 - `Command` → input to operations
 - `Result` → output from services
 - `Setting` → environment-loaded configuration

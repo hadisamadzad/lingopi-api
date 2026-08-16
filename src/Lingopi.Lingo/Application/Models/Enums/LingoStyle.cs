@@ -1,11 +1,13 @@
 namespace Lingopi.Lingo.Application.Models.Enums;
 
-public enum WordStyle
+public enum LingoStyle
 {
     Formal = 1,
     Informal,
+    Neutral,
     Casual,
     Slang,
     Academic,
-    Professional
+    Professional,
+    Offensive
 }

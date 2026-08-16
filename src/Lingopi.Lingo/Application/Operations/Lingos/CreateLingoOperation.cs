@@ -2,7 +2,7 @@ using Lingopi.Core.Helpers;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.Enums;
-using Lingopi.Lingo.Application.Models.ValueObjects;
+using Lingopi.Lingo.Application.Operations.Lingos.Validators;
 using Minimals.Operations;
 
 namespace Lingopi.Lingo.Application.Operations.Lingos;
@@ -13,72 +13,80 @@ public class CreateLingoOperation(IRepositoryManager repository) :
     public async Task<OperationResult<string>> ExecuteAsync(
         CreateLingoCommand command, CancellationToken? cancellation = null)
     {
-        // Create entity
+        var validation = new CreateLingoCommandValidator().Validate(command);
+        if (!validation.IsValid)
+        {
+            return OperationResult<string>.ValidationFailure([.. validation.GetErrorMessages()]);
+        }
+
+        var now = DateTime.UtcNow;
+        var lingoId = UidHelper.GenerateNewId("lingo");
+        var processingJobId = UidHelper.GenerateNewId("lingo-job");
+
         var entity = new LingoEntity
         {
-            Id = UidHelper.GenerateNewId("lingo"),
+            Id = lingoId,
             UserId = command.UserId,
-            Lingo = command.Lingo,
-            LingoType = command.LingoType,
-            Definition = command.Definition,
-            Translation = command.Translation,
-            Style = command.Style,
-            Examples = command.Examples ?? [],
-            Context = command.Context ?? [],
-            Tags = command.Tags ?? [],
-            LearningGoal = command.LearningGoal,
-            UserNote = command.UserNote,
-            Languages = new LanguagesValue
+            Capture = new CaptureValue
             {
-                SourceLanguageId = command.SourceLanguageId,
-                TargetLanguageId = command.TargetLanguageId,
-
+                OriginalText = command.OriginalText,
+                SourceLocaleCode = command.SourceLocaleCode,
+                CapturedAt = now
             },
-            Review = new ReviewValue
+            Content = null,
+            Learning = new LearningValue
             {
-                LastTime = null,
-                NextTime = null,
-                Repetitions = 0,
-                SrsLevel = 1
+                Goal = null,
+                Status = LearningStatus.NotStarted,
+                CurrentReviewState = LearningReviewState.New,
+                Review = new SrsReviewValue
+                {
+                    LastReviewedAt = null,
+                    NextReviewAt = null,
+                    Repetitions = 0,
+                    Level = 1
+                }
             },
-            Source = command.SourceMethod != null ? new SourceValue
+            Processing = new ProcessingValue
             {
-                Method = command.SourceMethod.Value,
-                Model = command.SourceModel,
-                Version = command.SourceVersion
-            } : null,
+                Status = ProcessingStatus.Queued,
+                CurrentJobId = processingJobId,
+                LastProcessedAt = null,
+                ErrorCode = null,
+                ErrorMessage = null
+            },
+            Suggestions = [],
             Audit = new AuditValue
             {
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                Version = 1
+                CreatedAt = now,
+                UpdatedAt = now,
+                Version = 1,
+                SchemaVersion = AuditValue.CurrentSchemaVersion
             }
         };
 
-        // Save to database using base repository method
-        await repository.Lingos.InsertAsync(entity);
+        var processingJob = new LingoProcessingJobEntity
+        {
+            Id = processingJobId,
+            LingoId = lingoId,
+            UserId = command.UserId,
+            Type = ProcessingJobType.EnrichLingo,
+            Status = ProcessingJobStatus.Queued,
+            InputRevision = entity.Audit.Version,
+            AttemptCount = 0,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
 
-        return OperationResult<string>.Success(entity.Id);
+        await repository.Lingos.InsertAsync(entity);
+        await repository.ProcessingJobs.InsertAsync(processingJob);
+
+        return OperationResult<string>.Success(lingoId);
     }
 }
 
 public record CreateLingoCommand(
     string UserId,
-    string Lingo,
-    LingoType LingoType,
-    string Definition,
-    string Translation,
-    string SourceLanguageId,
-    string TargetLanguageId
-) : IOperationCommand
-{
-    public WordStyle? Style { get; init; }
-    public List<string>? Examples { get; init; }
-    public List<Context>? Context { get; init; }
-    public List<string>? Tags { get; init; }
-    public LearningGoal? LearningGoal { get; init; }
-    public string? UserNote { get; init; }
-    public SourceMethod? SourceMethod { get; init; }
-    public string? SourceModel { get; init; }
-    public string? SourceVersion { get; init; }
-}
+    string OriginalText,
+    string? SourceLocaleCode
+) : IOperationCommand;

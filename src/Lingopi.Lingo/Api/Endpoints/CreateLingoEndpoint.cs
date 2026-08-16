@@ -12,7 +12,7 @@ public class CreateLingoEndpoint : IEndpoint
     public void MapEndpoints(WebApplication app)
     {
         app.MapGroup(Routes.LingoBaseRoute)
-            .WithSummary("Create a new lingo")
+            .WithSummary("Capture a new lingo")
             .MapPost("", async (
                 [FromServices] IOperationService operations,
                 [FromBody] CreateLingoRequest request) =>
@@ -20,23 +20,8 @@ public class CreateLingoEndpoint : IEndpoint
                 var operationResult = await operations.CreateLingo.ExecuteAsync(
                     new CreateLingoCommand(
                         UserId: request.UserId,
-                        Lingo: request.Lingo,
-                        LingoType: request.LingoType,
-                        Definition: request.Definition,
-                        Translation: request.Translation,
-                        SourceLanguageId: request.SourceLanguageId,
-                        TargetLanguageId: request.TargetLanguageId)
-                    {
-                        Style = request.Style,
-                        Examples = request.Examples,
-                        Context = request.Context,
-                        Tags = request.Tags,
-                        LearningGoal = request.LearningGoal,
-                        UserNote = request.UserNote,
-                        SourceMethod = request.SourceMethod,
-                        SourceModel = request.SourceAIModel,
-                        SourceVersion = request.SourceAIModelVersion
-                    });
+                        OriginalText: request.OriginalText,
+                        SourceLocaleCode: request.SourceLocaleCode));
 
                 return operationResult.Status switch
                 {
@@ -50,7 +35,7 @@ public class CreateLingoEndpoint : IEndpoint
             })
             .WithTags(Routes.LingoEndpointGroupTag)
             .WithName("CreateLingo")
-            .WithDescription("Create a new lingo (word, phrase, or expression) for language learning")
+            .WithDescription("Capture the user's original lingo text and queue it for later enrichment")
             .Produces<CreateLingoResponse>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status422UnprocessableEntity)

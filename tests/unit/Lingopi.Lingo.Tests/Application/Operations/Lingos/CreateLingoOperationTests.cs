@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Lingopi.Lingo.Application.Interfaces;
+using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.Enums;
 using Lingopi.Lingo.Application.Operations.Lingos;
 using Minimals.Operations;
@@ -22,64 +23,74 @@ public class CreateLingoOperationTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenValidCommand_ShouldCreateLingo()
+    public async Task ExecuteAsync_WhenMinimalCommand_ShouldCreateCapturedLingoWithoutAuthoritativeContent()
     {
-        // Arrange
+        LingoEntity insertedEntity = null!;
+        LingoProcessingJobEntity insertedJob = null!;
+        _repository.Lingos
+            .When(repository => repository.InsertAsync(Arg.Any<LingoEntity>()))
+            .Do(callInfo => insertedEntity = callInfo.Arg<LingoEntity>());
+        _repository.ProcessingJobs
+            .When(repository => repository.InsertAsync(Arg.Any<LingoProcessingJobEntity>()))
+            .Do(callInfo => insertedJob = callInfo.Arg<LingoProcessingJobEntity>());
+
         var command = new CreateLingoCommand(
             UserId: "user-123",
-            Lingo: "serendipity",
-            LingoType: LingoType.Word,
-            Definition: "The occurrence of events by chance in a happy way",
-            Translation: "یافتن چیزی خوب به طور تصادفی",
-            SourceLanguageId: "en",
-            TargetLanguageId: "fa"
-        );
+            OriginalText: "serendipity",
+            SourceLocaleCode: "en-US");
 
-        // Act
+        var beforeExecution = DateTime.UtcNow;
         var result = await _operation.ExecuteAsync(command, CancellationToken.None);
+        var afterExecution = DateTime.UtcNow;
 
-        // Assert
         Assert.True(result.Succeeded);
         Assert.Equal(OperationStatus.Completed, result.Status);
         Assert.NotNull(result.Value);
         Assert.StartsWith("lingo-", result.Value, StringComparison.Ordinal);
 
-        await _repository.Lingos.Received(1).InsertAsync(Arg.Any<Lingopi.Lingo.Application.Models.Entities.LingoEntity>());
+        Assert.NotNull(insertedEntity);
+        Assert.Equal("user-123", insertedEntity!.UserId);
+        Assert.Equal("serendipity", insertedEntity.Capture.OriginalText);
+        Assert.Equal("en-US", insertedEntity.Capture.SourceLocaleCode);
+        Assert.InRange(insertedEntity.Capture.CapturedAt, beforeExecution, afterExecution);
+        Assert.Null(insertedEntity.Content);
+        Assert.Empty(insertedEntity.Suggestions);
+        Assert.Null(insertedEntity.Learning.Goal);
+        Assert.Equal(LearningStatus.NotStarted, insertedEntity.Learning.Status);
+        Assert.Equal(LearningReviewState.New, insertedEntity.Learning.CurrentReviewState);
+        Assert.Equal(0, insertedEntity.Learning.Review.Repetitions);
+        Assert.Equal(1, insertedEntity.Learning.Review.Level);
+        Assert.Equal(ProcessingStatus.Queued, insertedEntity.Processing.Status);
+        Assert.NotNull(insertedEntity.Processing.CurrentJobId);
+        Assert.Equal(insertedEntity.Processing.CurrentJobId, insertedJob.Id);
+        Assert.Equal(ProcessingJobType.EnrichLingo, insertedJob.Type);
+        Assert.Equal(ProcessingJobStatus.Queued, insertedJob.Status);
+        Assert.Equal(insertedEntity.Id, insertedJob.LingoId);
+        Assert.Equal("user-123", insertedJob.UserId);
+        Assert.Equal(1, insertedJob.InputRevision);
+        Assert.Equal(0, insertedJob.AttemptCount);
+        Assert.Equal(1, insertedEntity.Audit.Version);
+        Assert.Equal(AuditValue.CurrentSchemaVersion, insertedEntity.Audit.SchemaVersion);
+        Assert.InRange(insertedEntity.Audit.CreatedAt, beforeExecution, afterExecution);
+        Assert.InRange(insertedEntity.Audit.UpdatedAt, beforeExecution, afterExecution);
+
+        await _repository.Lingos.Received(1).InsertAsync(Arg.Any<LingoEntity>());
+        await _repository.ProcessingJobs.Received(1).InsertAsync(Arg.Any<LingoProcessingJobEntity>());
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenOptionalFieldsProvided_ShouldCreateLingoWithAllFields()
+    public async Task ExecuteAsync_WhenOriginalTextIsMissing_ShouldReturnInvalid()
     {
-        // Arrange
         var command = new CreateLingoCommand(
             UserId: "user-123",
-            Lingo: "break the ice",
-            LingoType: LingoType.Expression,
-            Definition: "To initiate conversation in a relaxed manner",
-            Translation: "یخ را شکستن",
-            SourceLanguageId: "en",
-            TargetLanguageId: "fa"
-        )
-        {
-            Style = WordStyle.Informal,
-            Examples = ["Let's play a game to break the ice.", "He told a joke to break the ice."],
-            Context = [Context.Social, Context.Workplace],
-            Tags = ["conversation", "networking"],
-            LearningGoal = LearningGoal.Active,
-            UserNote = "Commonly used in social gatherings",
-            SourceMethod = SourceMethod.AI,
-            SourceModel = "gpt-4",
-            SourceVersion = "2024-01"
-        };
+            OriginalText: "   ",
+            SourceLocaleCode: null);
 
-        // Act
         var result = await _operation.ExecuteAsync(command, CancellationToken.None);
 
-        // Assert
-        Assert.True(result.Succeeded);
-        Assert.Equal(OperationStatus.Completed, result.Status);
-        Assert.NotNull(result.Value);
-
-        await _repository.Lingos.Received(1).InsertAsync(Arg.Any<Lingopi.Lingo.Application.Models.Entities.LingoEntity>());
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Invalid, result.Status);
+        await _repository.Lingos.DidNotReceive().InsertAsync(Arg.Any<LingoEntity>());
+        await _repository.ProcessingJobs.DidNotReceive().InsertAsync(Arg.Any<LingoProcessingJobEntity>());
     }
 }
