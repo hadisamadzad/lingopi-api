@@ -5,6 +5,7 @@ using Lingopi.Core.Extensions;
 using Lingopi.Gateway.Core;
 using Lingopi.Gateway.Core.DependencyInjection;
 using Lingopi.Gateway.Core.Middleware;
+using Microsoft.AspNetCore.HttpOverrides;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
 using Serilog;
@@ -19,6 +20,14 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder();
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor
+        | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 // Use Serilog as logging provider
 builder.Logging.ClearProviders();
@@ -77,6 +86,8 @@ catch (Exception ex)
 if (app is null) return;
 
 // Add middleware
+
+app.UseForwardedHeaders();
 
 if (builder.Environment.IsProduction())
     app.UseHsts();

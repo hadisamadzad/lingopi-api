@@ -16,10 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 🔧 Install .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
@@ -30,20 +30,20 @@ jobs:
           dotnet test --solution Lingopi.slnx --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --report-xunit-trx --report-xunit-trx-filename test_results.trx
 
       - name: 📊 Generate Coverage Report
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.1.12
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.5.11
         with:
           reports: '**/coverage.cobertura.xml'
           targetdir: 'coverage-report'
           reporttypes: 'HtmlInline;Cobertura;TextSummary'
 
       - name: 📤 Upload Coverage Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: coverage-report
 
       - name: 📊 Upload Test Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: '**/test_results.trx'
