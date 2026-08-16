@@ -9,6 +9,8 @@ if [ "$#" -lt 1 ] || [ -z "$1" ]; then
 fi
 
 ENV=$1
+APP_VERSION=${APP_VERSION:-unknown}
+GIT_SHA=${GIT_SHA:-unknown}
 
 echo "Starting deployment with environment: $ENV"
 
@@ -21,7 +23,8 @@ fi
 
 # Stop and remove existing containers first
 echo "Stopping existing containers..."
-ENV="$ENV" docker compose -p lingopi-api "$@" down --remove-orphans
+ENV="$ENV" APP_VERSION="$APP_VERSION" GIT_SHA="$GIT_SHA" \
+  docker compose -p lingopi-api "$@" down --remove-orphans
 
 # Remove dangling images from docker images AFTER stopping containers
 echo "Cleaning up dangling images..."
@@ -32,7 +35,8 @@ fi
 
 # Build docker images using Docker Compose (force rebuild)
 echo "Building images..."
-ENV="$ENV" docker compose -p lingopi-api "$@" build
+ENV="$ENV" APP_VERSION="$APP_VERSION" GIT_SHA="$GIT_SHA" \
+  docker compose -p lingopi-api "$@" build
 
 # Check if build was successful
 if [ $? -ne 0 ]; then
@@ -42,7 +46,8 @@ fi
 
 # Start containers using Docker Compose
 echo "Starting containers..."
-ENV="$ENV" docker compose -p lingopi-api "$@" up -d
+ENV="$ENV" APP_VERSION="$APP_VERSION" GIT_SHA="$GIT_SHA" \
+  docker compose -p lingopi-api "$@" up -d
 
 # Wait a moment for containers to start
 sleep 5

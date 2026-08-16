@@ -12,6 +12,8 @@ services:
       dockerfile: src/Lingopi.Gateway/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=$ENV
+      - APP_VERSION=${APP_VERSION:-unknown}
+      - GIT_SHA=${GIT_SHA:-unknown}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:

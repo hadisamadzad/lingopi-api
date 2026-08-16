@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Lingopi.Core.Helpers;
 using Lingopi.Core.Extensions;
+using Lingopi.Core.Helpers;
 using Lingopi.Gateway.Core;
 using Lingopi.Gateway.Core.DependencyInjection;
 using Lingopi.Gateway.Core.Middleware;
@@ -90,7 +90,15 @@ if (app is null) return;
 app.UseForwardedHeaders();
 
 if (builder.Environment.IsProduction())
+{
     app.UseHsts();
+}
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["Gateway-Version"] = DeploymentInfo.Version;
+    await next(context);
+});
 
 app.UseCors(Constants.CorsPolicyName);
 app.UseHealthChecks("/api/health");

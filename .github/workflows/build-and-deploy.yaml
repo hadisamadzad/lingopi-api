@@ -116,7 +116,10 @@ jobs:
             done
 
             chmod +x deploy.sh
-            sudo ./deploy.sh "${{ vars.ENV_NAME }}"
+            sudo env \
+              APP_VERSION="run-${{ github.run_number }}" \
+              GIT_SHA="${{ github.sha }}" \
+              ./deploy.sh "${{ vars.ENV_NAME }}"
 
       - name: 🏥 Verify Deployment
         run: |
