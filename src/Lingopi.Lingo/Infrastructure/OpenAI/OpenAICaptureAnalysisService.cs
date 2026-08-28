@@ -70,7 +70,7 @@ public sealed class OpenAICaptureAnalysisService(
                                     "enum": ["word", "phrasalVerb", "collocation", "idiom", "saying"]
                                 }
                             },
-                            "required": ["canonicalExpression", "meaning", "senseKey", "sourceLanguageCode", "expressionType"],
+                            "required": ["canonicalExpression", "meaning", "senseKey", "expressionType"],
                             "additionalProperties": false
                         }
                         """),

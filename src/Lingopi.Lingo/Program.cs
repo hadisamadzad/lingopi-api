@@ -83,11 +83,16 @@ if (app is null)
     return;
 }
 
+// Index creations
 await using (var initializationScope = app.Services.CreateAsyncScope())
 {
     var repositories = initializationScope.ServiceProvider.GetRequiredService<IRepositoryManager>();
     await repositories.Captures.EnsureIndexesAsync();
     await repositories.Lingos.EnsureIndexesAsync();
+    await repositories.EnrichmentJobs.EnsureIndexesAsync();
+    await repositories.UserSettings.EnsureIndexesAsync();
+    await repositories.Subscriptions.EnsureIndexesAsync();
+    await repositories.Usage.EnsureIndexesAsync();
 }
 
 // Add middleware

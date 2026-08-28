@@ -68,4 +68,29 @@ public class EnrichmentJobRepository(IMongoDatabase database) :
             options,
             cancellationToken);
     }
+
+    public async Task EnsureIndexesAsync(CancellationToken cancellationToken = default)
+    {
+        await _collection.Indexes.CreateManyAsync(
+            [
+                new CreateIndexModel<EnrichmentJobEntity>(
+                    Builders<EnrichmentJobEntity>.IndexKeys.Ascending(job => job.LingoId),
+                    new CreateIndexOptions { Name = "enrichment_job_lingo_id" }),
+                new CreateIndexModel<EnrichmentJobEntity>(
+                    Builders<EnrichmentJobEntity>.IndexKeys
+                        .Ascending(job => job.Status)
+                        .Ascending(job => job.AttemptCount)
+                        .Ascending(job => job.NextAttemptAt)
+                        .Ascending(job => job.CreatedAt),
+                    new CreateIndexOptions { Name = "enrichment_job_claim_queued" }),
+                new CreateIndexModel<EnrichmentJobEntity>(
+                    Builders<EnrichmentJobEntity>.IndexKeys
+                        .Ascending(job => job.Status)
+                        .Ascending(job => job.AttemptCount)
+                        .Ascending(job => job.StartedAt)
+                        .Ascending(job => job.CreatedAt),
+                    new CreateIndexOptions { Name = "enrichment_job_claim_running" })
+            ],
+            cancellationToken);
+    }
 }

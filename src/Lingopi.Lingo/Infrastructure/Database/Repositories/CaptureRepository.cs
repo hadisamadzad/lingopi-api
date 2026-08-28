@@ -78,12 +78,29 @@ public sealed class CaptureRepository(IMongoDatabase database) :
 
     public async Task EnsureIndexesAsync(CancellationToken cancellationToken = default)
     {
-        await _collection.Indexes.CreateOneAsync(
-            new CreateIndexModel<CaptureEntity>(
-                Builders<CaptureEntity>.IndexKeys
-                    .Ascending(capture => capture.Status)
-                    .Ascending(capture => capture.Audit.NextAttemptAt)
-                    .Ascending(capture => capture.Audit.CreatedAt)),
-            cancellationToken: cancellationToken);
+        await _collection.Indexes.CreateManyAsync(
+            [
+                new CreateIndexModel<CaptureEntity>(
+                    Builders<CaptureEntity>.IndexKeys
+                        .Ascending(capture => capture.Status)
+                        .Ascending(capture => capture.Audit.NextAttemptAt)
+                        .Ascending(capture => capture.Audit.CreatedAt),
+                    new CreateIndexOptions { Name = "capture_status_next_attempt_created" }),
+                new CreateIndexModel<CaptureEntity>(
+                    Builders<CaptureEntity>.IndexKeys
+                        .Ascending(capture => capture.Status)
+                        .Ascending(capture => capture.Audit.AttemptCount)
+                        .Ascending(capture => capture.Audit.NextAttemptAt)
+                        .Ascending(capture => capture.Audit.CreatedAt),
+                    new CreateIndexOptions { Name = "capture_claim_queued" }),
+                new CreateIndexModel<CaptureEntity>(
+                    Builders<CaptureEntity>.IndexKeys
+                        .Ascending(capture => capture.Status)
+                        .Ascending(capture => capture.Audit.AttemptCount)
+                        .Ascending(capture => capture.Audit.StartedAt)
+                        .Ascending(capture => capture.Audit.CreatedAt),
+                    new CreateIndexOptions { Name = "capture_claim_running" })
+            ],
+            cancellationToken);
     }
 }

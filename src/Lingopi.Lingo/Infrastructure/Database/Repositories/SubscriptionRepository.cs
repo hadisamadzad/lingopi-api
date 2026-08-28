@@ -15,4 +15,17 @@ public sealed class SubscriptionRepository(IMongoDatabase database) :
             .Find(subscription => subscription.UserId == userId)
             .FirstOrDefaultAsync();
     }
+
+    public async Task EnsureIndexesAsync(CancellationToken cancellationToken = default)
+    {
+        await _collection.Indexes.CreateOneAsync(
+            new CreateIndexModel<SubscriptionEntity>(
+                Builders<SubscriptionEntity>.IndexKeys.Ascending(subscription => subscription.UserId),
+                new CreateIndexOptions
+                {
+                    Name = "subscription_user_id",
+                    Unique = true
+                }),
+            cancellationToken: cancellationToken);
+    }
 }

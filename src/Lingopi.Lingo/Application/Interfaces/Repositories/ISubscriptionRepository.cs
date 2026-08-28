@@ -6,4 +6,5 @@ namespace Lingopi.Lingo.Application.Interfaces.Repositories;
 public interface ISubscriptionRepository : IRepository<SubscriptionEntity>
 {
     Task<SubscriptionEntity?> GetByUserIdAsync(string userId);
+    Task EnsureIndexesAsync(CancellationToken cancellationToken = default);
 }

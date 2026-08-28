@@ -112,6 +112,8 @@ Apart from Entities, all other types are preferably immutable flat records.
 - Repositories must not contain business logic.
 - Filters must be passed explicitly via Filter DTOs.
 - MongoDB entities must remain persistence-focused.
+- MongoDB indexes are created in the codebase and ensured by the repository layer to the DB.
+- EnsureIndexesAsync method is required in repositories with one empty line distance with actual methods.
 
 ## Azure Integrations
 

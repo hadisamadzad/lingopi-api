@@ -12,4 +12,5 @@ public interface IUsageRepository : IRepository<UsageRecordEntity>
         DateTime periodEnd);
 
     Task<bool> RecordAsync(UsageRecordEntity record);
+    Task EnsureIndexesAsync(CancellationToken cancellationToken = default);
 }

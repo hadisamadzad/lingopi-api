@@ -11,4 +11,5 @@ public interface IEnrichmentJobRepository : IRepository<EnrichmentJobEntity>
     Task<EnrichmentJobEntity?> ClaimNextAndUpdateAsync(
         EnrichmentJobClaimFilter filter,
         CancellationToken cancellationToken = default);
+    Task EnsureIndexesAsync(CancellationToken cancellationToken = default);
 }

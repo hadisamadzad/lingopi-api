@@ -26,4 +26,17 @@ public sealed class UserSettingsRepository(IMongoDatabase database) :
         return result.IsAcknowledged &&
             (result.MatchedCount == 1 || result.UpsertedId is not null);
     }
+
+    public async Task EnsureIndexesAsync(CancellationToken cancellationToken = default)
+    {
+        await _collection.Indexes.CreateOneAsync(
+            new CreateIndexModel<UserSettingsEntity>(
+                Builders<UserSettingsEntity>.IndexKeys.Ascending(settings => settings.UserId),
+                new CreateIndexOptions
+                {
+                    Name = "user_settings_user_id",
+                    Unique = true
+                }),
+            cancellationToken: cancellationToken);
+    }
 }

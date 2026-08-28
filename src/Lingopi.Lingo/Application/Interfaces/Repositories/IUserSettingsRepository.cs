@@ -7,4 +7,5 @@ public interface IUserSettingsRepository : IRepository<UserSettingsEntity>
 {
     Task<UserSettingsEntity?> GetByUserIdAsync(string userId);
     Task<bool> UpsertAsync(UserSettingsEntity settings);
+    Task EnsureIndexesAsync(CancellationToken cancellationToken = default);
 }

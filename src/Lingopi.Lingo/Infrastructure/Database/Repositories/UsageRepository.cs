@@ -51,4 +51,15 @@ public sealed class UsageRepository(IMongoDatabase database) :
             return true;
         }
     }
+
+    public async Task EnsureIndexesAsync(CancellationToken cancellationToken = default)
+    {
+        await _collection.Indexes.CreateOneAsync(
+            new CreateIndexModel<UsageRecordEntity>(
+                Builders<UsageRecordEntity>.IndexKeys
+                    .Ascending(record => record.UserId)
+                    .Ascending(record => record.OccurredAt),
+                new CreateIndexOptions { Name = "usage_user_occurred_at" }),
+            cancellationToken: cancellationToken);
+    }
 }

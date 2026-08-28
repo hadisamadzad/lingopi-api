@@ -10,6 +10,9 @@ namespace Lingopi.Lingo.Infrastructure.Database.Repositories;
 public class LingoRepository(IMongoDatabase database) :
     MongoDbRepositoryBase<LingoEntity>(database, "lingo.lingos"), ILingoRepository
 {
+    private const string EmbeddingVectorIndexName = "lingo_embedding_vector";
+    private const int EmbeddingDimensions = 1536;
+
     public async Task<LingoEntity?> GetByIdAsync(string lingoId)
     {
         return await _collection
@@ -87,10 +90,48 @@ public class LingoRepository(IMongoDatabase database) :
 
     public async Task EnsureIndexesAsync(CancellationToken cancellationToken = default)
     {
-        await _collection.Indexes.CreateOneAsync(
-            new CreateIndexModel<LingoEntity>(
-                Builders<LingoEntity>.IndexKeys.Ascending(lingo => lingo.UserId),
-                new CreateIndexOptions { Unique = true, Sparse = true }),
-            cancellationToken: cancellationToken);
+        await _collection.Indexes.CreateManyAsync(
+            [
+                new CreateIndexModel<LingoEntity>(
+                    Builders<LingoEntity>.IndexKeys.Ascending(lingo => lingo.UserId),
+                    new CreateIndexOptions { Name = "lingo_user_id" }),
+                new CreateIndexModel<LingoEntity>(
+                    Builders<LingoEntity>.IndexKeys
+                        .Ascending(lingo => lingo.UserId)
+                        .Ascending(lingo => lingo.SourceLocaleCodes)
+                        .Ascending(lingo => lingo.TargetLocaleCode)
+                        .Ascending(lingo => lingo.Expression),
+                    new CreateIndexOptions { Name = "lingo_user_locale_expression" }),
+                new CreateIndexModel<LingoEntity>(
+                    Builders<LingoEntity>.IndexKeys.Ascending("Encounters.CaptureId"),
+                    new CreateIndexOptions { Name = "lingo_encounter_capture_id" })
+            ],
+            cancellationToken);
+
+        await EnsureEmbeddingVectorIndexAsync(cancellationToken);
+    }
+
+    private async Task EnsureEmbeddingVectorIndexAsync(CancellationToken cancellationToken)
+    {
+        var indexCursor = await _collection.SearchIndexes
+            .ListAsync(cancellationToken: cancellationToken);
+        var indexes = await indexCursor.ToListAsync(cancellationToken);
+
+        if (indexes.Any(index =>
+                index.TryGetValue("name", out var nameValue) &&
+                nameValue.IsString &&
+                nameValue.AsString == EmbeddingVectorIndexName))
+        {
+            return;
+        }
+
+        var indexModel = new CreateVectorSearchIndexModel<LingoEntity>(
+            lingo => lingo.Embedding!.Vector,
+            EmbeddingVectorIndexName,
+            VectorSimilarity.Cosine,
+            EmbeddingDimensions,
+            [lingo => lingo.UserId]);
+
+        await _collection.SearchIndexes.CreateOneAsync(indexModel, cancellationToken);
     }
 }
