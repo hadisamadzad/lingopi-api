@@ -5,42 +5,38 @@ namespace Lingopi.Lingo.Application.Models.ReadModels;
 public record LingoModel(
     string Id,
     string UserId,
-    CaptureReadModel Capture,
-    ContentReadModel? Content,
+    List<EncounterReadModel> Encounters,
+    LingoReadModel Lingo,
     LearningReadModel Learning,
-    ProcessingReadModel Processing,
-    List<LingoSuggestionReadModel> Suggestions,
+    EnrichmentReadModel Enrichment,
     AuditReadModel Audit
 );
 
-public record CaptureReadModel(
+public record EncounterReadModel(
     string OriginalText,
+    string? SourceLanguageCode,
     string? SourceLocaleCode,
+    LingoContext? Context,
     DateTime CapturedAt
 );
 
-public record ContentReadModel(
-    string NormalizedText,
-    LingoType Type,
-    ContentReviewStatus ReviewStatus,
-    LingoStyle? Register,
-    List<MeaningReadModel> Meanings,
-    List<LingoContext> Contexts,
-    List<string> Tags
-);
-
-public record MeaningReadModel(
-    string Id,
-    string Definition,
-    List<TranslationReadModel> Translations,
+public record LingoReadModel(
+    string? Expression,
+    string? Pattern,
+    string? SourceLanguageCode,
+    List<string> SourceLocaleCodes,
+    string? TargetLocaleCode,
+    string? SenseKey,
+    LingoType? Type,
+    List<LingoRegister> Registers,
+    List<LingoDomain> Domains,
+    bool IsOffensive,
+    string? Definition,
+    string? Translation,
+    string? Note,
     List<ExampleReadModel> Examples,
-    string? Note
-);
-
-public record TranslationReadModel(
-    string LocaleCode,
-    string Text,
-    bool IsPrimary
+    List<string> CommonMistakes,
+    List<string> Tags
 );
 
 public record ExampleReadModel(
@@ -62,24 +58,15 @@ public record SrsReviewReadModel(
     int Level
 );
 
-public record ProcessingReadModel(
-    ProcessingStatus Status,
-    string? CurrentJobId,
-    DateTime? LastProcessedAt,
+public record EnrichmentReadModel(
+    EnrichmentStatus Status,
+    string? EnrichmentJobId,
+    DateTime? LastEnrichedAt,
+    string? Provider,
+    string? Model,
+    string? PromptVersion,
     string? ErrorCode,
     string? ErrorMessage
-);
-
-public record LingoSuggestionReadModel(
-    string Id,
-    SuggestionStatus Status,
-    int GeneratedForRevision,
-    string Provider,
-    string Model,
-    string PromptVersion,
-    string? ProcessingJobId,
-    DateTime GeneratedAt,
-    ContentReadModel CandidateContent
 );
 
 public record AuditReadModel(

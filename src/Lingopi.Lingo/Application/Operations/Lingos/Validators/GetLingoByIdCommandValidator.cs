@@ -6,6 +6,9 @@ public class GetLingoByIdCommandValidator : AbstractValidator<GetLingoByIdComman
 {
     public GetLingoByIdCommandValidator()
     {
+        RuleFor(x => x.UserId)
+            .NotEmpty()
+            .WithMessage("UserId is required");
         RuleFor(x => x.LingoId)
             .NotEmpty()
             .WithMessage("LingoId is required");

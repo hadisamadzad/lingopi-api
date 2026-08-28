@@ -14,7 +14,7 @@ public class GetUserByIdEndpoint : IEndpoint
         app.MapGroup(Routes.UserBaseRoute)
             .WithSummary("Get User by ID")
             .MapGet("{userId}", async (IOperationService operations,
-                [FromHeader] string requestedBy,
+                [FromHeader(Name = "User-Id")] string authenticatedUserId,
                 [FromRoute] string userId) =>
             {
                 // Operation

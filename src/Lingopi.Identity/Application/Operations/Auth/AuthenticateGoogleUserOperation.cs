@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using Lingopi.Core.Helpers;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
@@ -8,7 +6,7 @@ using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 
-public class AuthenticateGoogleUserOperation(
+public partial class AuthenticateGoogleUserOperation(
     IRepositoryManager repository,
     IConfiguration configuration) :
     IOperation<AuthenticateGoogleUserCommand, AuthenticateGoogleUserResult>
@@ -69,19 +67,6 @@ public class AuthenticateGoogleUserOperation(
             TokenHelper.RefreshTokenLifetime));
     }
 
-    private bool IsAuthorized(string providedSecret)
-    {
-        var expectedSecret = configuration["InternalAuthSecret"];
-        if (string.IsNullOrEmpty(expectedSecret))
-        {
-            return false;
-        }
-
-        var expectedBytes = Encoding.UTF8.GetBytes(expectedSecret);
-        var providedBytes = Encoding.UTF8.GetBytes(providedSecret);
-        return expectedBytes.Length == providedBytes.Length &&
-            CryptographicOperations.FixedTimeEquals(expectedBytes, providedBytes);
-    }
 }
 
 public record AuthenticateGoogleUserCommand(

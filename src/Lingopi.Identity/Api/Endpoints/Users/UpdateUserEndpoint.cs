@@ -14,13 +14,13 @@ public class UpdateUserEndpoint : IEndpoint
             .WithSummary("Update user details by admins")
             .MapPatch("{userId}", async (IOperationService operations,
                 [FromRoute] string userId,
-                [FromHeader] string requestedBy,
+                [FromHeader(Name = "User-Id")] string authenticatedUserId,
                 [FromBody] UpdateUserRequest request) =>
             {
                 // Operation
                 var operationResult = await operations.UpdateUser.ExecuteAsync(
                     new UpdateUserCommand(
-                        requestedBy,
+                        authenticatedUserId,
                         userId,
                         request.FirstName,
                         request.LastName));

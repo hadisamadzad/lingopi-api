@@ -9,11 +9,29 @@ public static class LingoModelMapper
         return new LingoModel(
             Id: entity.Id,
             UserId: entity.UserId,
-            Capture: new CaptureReadModel(
-                entity.Capture.OriginalText,
-                entity.Capture.SourceLocaleCode,
-                entity.Capture.CapturedAt),
-            Content: entity.Content is null ? null : MapContent(entity.Content),
+            Encounters: entity.Encounters.ConvertAll(x => new EncounterReadModel(
+                x.OriginalText,
+                x.SourceLanguageCode,
+                x.SourceLocaleCode,
+                x.Context,
+                x.CapturedAt)),
+            Lingo: new LingoReadModel(
+                entity.Expression,
+                entity.Pattern,
+                entity.SourceLanguageCode,
+                entity.SourceLocaleCodes,
+                entity.TargetLocaleCode,
+                entity.SenseKey,
+                entity.Type,
+                entity.Registers,
+                entity.Domains,
+                entity.IsOffensive,
+                entity.Meaning,
+                entity.Translation,
+                entity.UserNote,
+                entity.Examples.ConvertAll(example => new ExampleReadModel(example.Text, example.Translation)),
+                entity.CommonMistakes,
+                entity.Tags),
             Learning: new LearningReadModel(
                 entity.Learning.Goal,
                 entity.Learning.Status,
@@ -23,53 +41,19 @@ public static class LingoModelMapper
                     entity.Learning.Review.NextReviewAt,
                     entity.Learning.Review.Repetitions,
                     entity.Learning.Review.Level)),
-            Processing: new ProcessingReadModel(
-                entity.Processing.Status,
-                entity.Processing.CurrentJobId,
-                entity.Processing.LastProcessedAt,
-                entity.Processing.ErrorCode,
-                entity.Processing.ErrorMessage),
-            Suggestions: entity.Suggestions.Select(MapSuggestion).ToList(),
+            Enrichment: new EnrichmentReadModel(
+                entity.Enrichment.Status,
+                entity.Enrichment.EnrichmentJobId,
+                entity.Enrichment.LastEnrichedAt,
+                entity.Enrichment.Provider,
+                entity.Enrichment.Model,
+                entity.Enrichment.PromptVersion,
+                entity.Enrichment.ErrorCode,
+                entity.Enrichment.ErrorMessage),
             Audit: new AuditReadModel(
                 entity.Audit.CreatedAt,
                 entity.Audit.UpdatedAt,
                 entity.Audit.Version,
                 entity.Audit.SchemaVersion));
-    }
-
-    private static ContentReadModel MapContent(ContentValue content)
-    {
-        return new ContentReadModel(
-            content.NormalizedText,
-            content.Type,
-            content.ReviewStatus,
-            content.Register,
-            content.Meanings.Select(meaning => new MeaningReadModel(
-                meaning.Id,
-                meaning.Definition,
-                meaning.Translations.Select(translation => new TranslationReadModel(
-                    translation.LocaleCode,
-                    translation.Text,
-                    translation.IsPrimary)).ToList(),
-                meaning.Examples.Select(example => new ExampleReadModel(
-                    example.Text,
-                    example.Translation)).ToList(),
-                meaning.Note)).ToList(),
-            [.. content.Contexts],
-            [.. content.Tags]);
-    }
-
-    private static LingoSuggestionReadModel MapSuggestion(LingoSuggestionValue suggestion)
-    {
-        return new LingoSuggestionReadModel(
-            suggestion.Id,
-            suggestion.Status,
-            suggestion.GeneratedForRevision,
-            suggestion.Provider,
-            suggestion.Model,
-            suggestion.PromptVersion,
-            suggestion.ProcessingJobId,
-            suggestion.GeneratedAt,
-            MapContent(suggestion.CandidateContent));
     }
 }

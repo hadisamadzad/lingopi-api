@@ -7,52 +7,55 @@ public class LingoEntity : IEntity
 {
     public string Id { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
-    public CaptureValue Capture { get; set; } = new();
-    public ProcessingValue Processing { get; set; } = new();
-    public ContentValue? Content { get; set; }
+
+    public string? Expression { get; set; }
+    public string? SourceLanguageCode { get; set; }
+    public List<string> SourceLocaleCodes { get; set; } = [];
+    public string? TargetLocaleCode { get; set; }
+
+    public LingoType? Type { get; set; }
+    public string? Meaning { get; set; }
+    public string? Pattern { get; set; }
+    public string? SenseKey { get; set; }
+    public string? Translation { get; set; }
+    public List<LingoRegister> Registers { get; set; } = [];
+    public List<LingoDomain> Domains { get; set; } = [];
+    public bool IsOffensive { get; set; }
+    public List<ExampleValue> Examples { get; set; } = [];
+    public List<string> CommonMistakes { get; set; } = [];
+    public string? UserNote { get; set; }
+
+    public List<string> Tags { get; set; } = [];
+    public EmbeddingValue? Embedding { get; set; }
+    public EnrichmentValue Enrichment { get; set; } = new();
+    public List<EncounterValue> Encounters { get; set; } = [];
     public LearningValue Learning { get; set; } = new();
-    public List<LingoSuggestionValue> Suggestions { get; set; } = [];
+
     public AuditValue Audit { get; set; } = new();
 }
 
-public record CaptureValue
+public record EncounterValue
 {
+    public string? CaptureId { get; set; }
     public string OriginalText { get; set; } = string.Empty;
+    public string? SourceLanguageCode { get; set; }
     public string? SourceLocaleCode { get; set; }
+    public LingoContext? Context { get; set; }
     public DateTime CapturedAt { get; set; }
-}
-
-public record ContentValue
-{
-    public string NormalizedText { get; set; } = string.Empty;
-    public LingoType Type { get; set; }
-    public LingoStyle? Register { get; set; }
-    public ContentReviewStatus ReviewStatus { get; set; } = ContentReviewStatus.Unreviewed;
-    public List<MeaningValue> Meanings { get; set; } = [];
-    public List<LingoContext> Contexts { get; set; } = [];
-    public List<string> Tags { get; set; } = [];
-}
-
-public record MeaningValue
-{
-    public string Id { get; set; } = string.Empty;
-    public string Definition { get; set; } = string.Empty;
-    public List<TranslationValue> Translations { get; set; } = [];
-    public List<ExampleValue> Examples { get; set; } = [];
-    public string? Note { get; set; }
-}
-
-public record TranslationValue
-{
-    public string LocaleCode { get; set; } = string.Empty;
-    public string Text { get; set; } = string.Empty;
-    public bool IsPrimary { get; set; }
 }
 
 public record ExampleValue
 {
     public string Text { get; set; } = string.Empty;
     public string? Translation { get; set; }
+}
+
+public record EmbeddingValue
+{
+    public List<float> Vector { get; set; } = [];
+    public string Model { get; set; } = string.Empty;
+    public int Dimension { get; set; }
+    public DateTime GeneratedAt { get; set; }
 }
 
 public record LearningValue
@@ -71,31 +74,23 @@ public record SrsReviewValue
     public int Level { get; set; } = 1;
 }
 
-public record ProcessingValue
+public record EnrichmentValue
 {
-    public ProcessingStatus Status { get; set; } = ProcessingStatus.Queued;
-    public string? CurrentJobId { get; set; }
-    public DateTime? LastProcessedAt { get; set; }
+    public EnrichmentStatus Status { get; set; } = EnrichmentStatus.Queued;
+
+    public string? EnrichmentJobId { get; set; }
+
+    public DateTime? LastEnrichedAt { get; set; }
+    public string? Provider { get; set; }
+    public string? Model { get; set; }
+    public string? PromptVersion { get; set; }
     public string? ErrorCode { get; set; }
     public string? ErrorMessage { get; set; }
 }
 
-public record LingoSuggestionValue
-{
-    public string Id { get; set; } = string.Empty;
-    public SuggestionStatus Status { get; set; } = SuggestionStatus.Pending;
-    public int GeneratedForRevision { get; set; }
-    public string Provider { get; set; } = string.Empty;
-    public string Model { get; set; } = string.Empty;
-    public string PromptVersion { get; set; } = string.Empty;
-    public string? ProcessingJobId { get; set; }
-    public DateTime GeneratedAt { get; set; }
-    public ContentValue CandidateContent { get; set; } = new();
-}
-
 public record AuditValue
 {
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 25;
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

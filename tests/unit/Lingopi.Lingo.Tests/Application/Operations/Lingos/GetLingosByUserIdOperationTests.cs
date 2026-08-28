@@ -38,47 +38,33 @@ public class GetLingosByUserIdOperationTests
             {
                 Id = "lingo-1",
                 UserId = userId,
-                Capture = new CaptureValue
-                {
-                    OriginalText = "serendipity",
-                    SourceLocaleCode = "en-GB",
-                    CapturedAt = capturedAt
-                },
-                Content = new ContentValue
-                {
-                    NormalizedText = "serendipity",
-                    Type = LingoType.Word,
-                    ReviewStatus = ContentReviewStatus.Reviewed,
-                    Register = LingoStyle.Formal,
-                    Meanings =
-                    [
-                        new MeaningValue
-                        {
-                            Id = "meaning-1",
-                            Definition = "Happy accident",
-                            Translations =
-                            [
-                                new TranslationValue
-                                {
-                                    LocaleCode = "fa-IR",
-                                    Text = "تصادف خوشایند",
-                                    IsPrimary = true
-                                }
-                            ],
-                            Examples =
-                            [
-                                new ExampleValue
-                                {
-                                    Text = "Finding that book was pure serendipity.",
-                                    Translation = "پیدا کردن آن کتاب یک تصادف خوشایند بود."
-                                }
-                            ],
-                            Note = "Common literary usage"
-                        }
-                    ],
-                    Contexts = [LingoContext.Social],
-                    Tags = ["vocabulary"]
-                },
+                Expression = "serendipity",
+                SourceLanguageCode = "en",
+                SourceLocaleCodes = ["en-GB"],
+                Type = LingoType.Word,
+                Registers = [LingoRegister.Formal],
+                Meaning = "Happy accident",
+                Translation = "تصادف خوشایند",
+                Domains = [LingoDomain.General],
+                IsOffensive = true,
+                UserNote = "Common literary usage",
+                Examples =
+                [
+                    new ExampleValue
+                    {
+                        Text = "Finding that book was pure serendipity.",
+                        Translation = "پیدا کردن آن کتاب یک تصادف خوشایند بود."
+                    }
+                ],
+                Tags = ["vocabulary"],
+                Encounters =
+                [
+                    new EncounterValue
+                    {
+                        OriginalText = "serendipity",
+                        CapturedAt = capturedAt
+                    }
+                ],
                 Learning = new LearningValue
                 {
                     Goal = LearningGoal.Active,
@@ -92,53 +78,15 @@ public class GetLingosByUserIdOperationTests
                         Level = 3
                     }
                 },
-                Processing = new ProcessingValue
+                Enrichment = new EnrichmentValue
                 {
-                    Status = ProcessingStatus.Ready,
-                    CurrentJobId = "lingo-job-1",
-                    LastProcessedAt = updatedAt
+                    Status = EnrichmentStatus.Ready,
+                    EnrichmentJobId = "lingo-job-1",
+                    LastEnrichedAt = updatedAt,
+                    Provider = "openai",
+                    Model = "gpt-4.1-mini",
+                    PromptVersion = "v1"
                 },
-                Suggestions =
-                [
-                    new LingoSuggestionValue
-                    {
-                        Id = "suggestion-1",
-                        Status = SuggestionStatus.Pending,
-                        GeneratedForRevision = 1,
-                        Provider = "openai",
-                        Model = "gpt-4.1-mini",
-                        PromptVersion = "v1",
-                        ProcessingJobId = "lingo-job-1",
-                        GeneratedAt = updatedAt,
-                        CandidateContent = new ContentValue
-                        {
-                            NormalizedText = "serendipity",
-                            Type = LingoType.Word,
-                            ReviewStatus = ContentReviewStatus.Unreviewed,
-                            Meanings =
-                            [
-                                new MeaningValue
-                                {
-                                    Id = "suggested-meaning-1",
-                                    Definition = "A fortunate discovery",
-                                    Translations =
-                                    [
-                                        new TranslationValue
-                                        {
-                                            LocaleCode = "fa-IR",
-                                            Text = "کشف خوشایند",
-                                            IsPrimary = true
-                                        }
-                                    ],
-                                    Examples = [],
-                                    Note = null
-                                }
-                            ],
-                            Contexts = [],
-                            Tags = []
-                        }
-                    }
-                ],
                 Audit = new AuditValue
                 {
                     CreatedAt = createdAt,
@@ -158,18 +106,19 @@ public class GetLingosByUserIdOperationTests
         Assert.NotNull(result.Value);
         Assert.Single(result.Value);
         Assert.Equal("lingo-1", result.Value[0].Id);
-        Assert.Equal("serendipity", result.Value[0].Capture.OriginalText);
-        Assert.Equal("en-GB", result.Value[0].Capture.SourceLocaleCode);
-        Assert.NotNull(result.Value[0].Content);
-        Assert.Equal(LingoType.Word, result.Value[0].Content!.Type);
-        Assert.Equal("Happy accident", result.Value[0].Content.Meanings[0].Definition);
-        Assert.Equal("تصادف خوشایند", result.Value[0].Content.Meanings[0].Translations[0].Text);
+        Assert.Equal("serendipity", result.Value[0].Encounters[0].OriginalText);
+        Assert.Equal("en", result.Value[0].Lingo.SourceLanguageCode);
+        Assert.Equal(["en-GB"], result.Value[0].Lingo.SourceLocaleCodes);
+        Assert.NotNull(result.Value[0].Lingo);
+        Assert.Equal(LingoType.Word, result.Value[0].Lingo.Type);
+        Assert.Equal("Happy accident", result.Value[0].Lingo.Definition);
+        Assert.Equal("تصادف خوشایند", result.Value[0].Lingo.Translation);
         Assert.Equal(LearningStatus.Active, result.Value[0].Learning.Status);
-        Assert.Equal(ProcessingStatus.Ready, result.Value[0].Processing.Status);
-        Assert.Equal("lingo-job-1", result.Value[0].Processing.CurrentJobId);
-        Assert.Single(result.Value[0].Suggestions);
-        Assert.Equal(SuggestionStatus.Pending, result.Value[0].Suggestions[0].Status);
-        Assert.Equal("lingo-job-1", result.Value[0].Suggestions[0].ProcessingJobId);
+        Assert.Equal(EnrichmentStatus.Ready, result.Value[0].Enrichment.Status);
+        Assert.Equal("lingo-job-1", result.Value[0].Enrichment.EnrichmentJobId);
+        Assert.Equal("openai", result.Value[0].Enrichment.Provider);
+        Assert.Equal("gpt-4.1-mini", result.Value[0].Enrichment.Model);
+        Assert.Equal("v1", result.Value[0].Enrichment.PromptVersion);
         Assert.Equal(2, result.Value[0].Audit.DocumentRevision);
         Assert.Equal(AuditValue.CurrentSchemaVersion, result.Value[0].Audit.SchemaVersion);
 

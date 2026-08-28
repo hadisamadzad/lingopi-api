@@ -12,10 +12,10 @@ public class GetLingosByUserIdEndpoint : IEndpoint
     public void MapEndpoints(WebApplication app)
     {
         app.MapGroup(Routes.LingoBaseRoute)
-            .WithSummary("Get lingos by user ID")
-            .MapGet("user/{userId}", async (
+            .WithSummary("Get the current user's lingos")
+            .MapGet("user", async (
                 [FromServices] IOperationService operations,
-                [FromRoute] string userId) =>
+                [FromHeader(Name = "User-Id")] string userId) =>
             {
                 var operationResult = await operations.GetLingosByUserId.ExecuteAsync(
                     new GetLingosByUserIdCommand(userId));
@@ -25,12 +25,15 @@ public class GetLingosByUserIdEndpoint : IEndpoint
                     OperationStatus.Completed => Results.Ok(operationResult.Value!
                         .Select(lingo => lingo.ToResponse()).ToList()),
                     OperationStatus.NotFound => Results.NotFound(operationResult.Error),
-                    _ => Results.InternalServerError(operationResult.Error),
+                    _ => Results.Problem(
+                        statusCode: StatusCodes.Status500InternalServerError,
+                        title: operationResult.Error?.Messages?.FirstOrDefault() ??
+                            "An unexpected error occurred while retrieving the user's lingos."),
                 };
             })
             .WithTags(Routes.LingoEndpointGroupTag)
             .WithName("GetLingosByUserId")
-            .WithDescription("Get all lingos for a specific user")
+            .WithDescription("Get all lingos for the authenticated user")
             .Produces<List<LingoResponse>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status500InternalServerError);

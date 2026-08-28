@@ -3,9 +3,14 @@ using Lingopi.Core.Extensions;
 using Lingopi.Core.Helpers;
 using Lingopi.Core.Persistence.MongoDB;
 using Lingopi.Lingo.Application.Interfaces;
+using Lingopi.Lingo.Application.Interfaces.Services;
+using Lingopi.Lingo.Application.Models.Configs;
 using Lingopi.Lingo.Application.Operations;
 using Lingopi.Lingo.Core.Bootstrap;
 using Lingopi.Lingo.Infrastructure.Database;
+using Lingopi.Lingo.Infrastructure.OpenAI;
+using Lingopi.Lingo.Infrastructure.Usage;
+using Lingopi.Lingo.Workers;
 using Minimals.Operations;
 using Serilog;
 
@@ -39,6 +44,22 @@ builder.Services.AddCustomConfigurations(configs);
 builder.Services.AddOperations();
 builder.Services.AddTransient<IOperationService, OperationService>();
 
+builder.Services.AddConfiguredOpenAI(configs);
+builder.Services
+    .AddOptions<LingoEntitlementOptions>()
+    .Bind(configs.GetSection(LingoEntitlementOptions.Key))
+    .Validate(options => options.Plans.Count > 0, "At least one Lingo entitlement plan must be configured.")
+    .ValidateOnStart();
+
+builder.Services.AddScoped<IEnrichmentUsageService, EnrichmentUsageService>();
+builder.Services.AddScoped<ICaptureUsageService, CaptureUsageService>();
+
+// Add hosted services
+builder.Services.AddSingleton(TimeProvider.System);
+
+builder.Services.AddHostedService<CaptureAnalysisWorker>();
+builder.Services.AddHostedService<LingoEnrichmentWorker>();
+
 // Database
 builder.Services.AddConfiguredMongoDB(configs);
 builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
@@ -62,17 +83,26 @@ if (app is null)
     return;
 }
 
+await using (var initializationScope = app.Services.CreateAsyncScope())
+{
+    var repositories = initializationScope.ServiceProvider.GetRequiredService<IRepositoryManager>();
+    await repositories.Captures.EnsureIndexesAsync();
+    await repositories.Lingos.EnsureIndexesAsync();
+}
+
 // Add middleware
 app.MapHealthChecks("/api/health");
 
 // Add endpoints
 app.MapEndpoints();
 
+// Swagger
 if (!app.Environment.IsProduction())
 {
     app.UseConfiguredSwagger();
 }
 
+// Run
 try
 { await app.RunAsync(); }
 catch (Exception ex) { Log.Fatal(ex, "Application failed to start."); }

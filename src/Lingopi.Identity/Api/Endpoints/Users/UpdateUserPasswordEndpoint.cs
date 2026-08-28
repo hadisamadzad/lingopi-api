@@ -14,13 +14,13 @@ public class UpdateUserPasswordEndpoint : IEndpoint
             .WithSummary("Update User Password")
             .MapPatch("{userId}/password", async (IOperationService operations,
                 [FromRoute] string userId,
-                [FromHeader] string requestedBy,
+                [FromHeader(Name = "User-Id")] string authenticatedUserId,
                 [FromBody] UpdateUserPasswordRequest request) =>
             {
                 // Operation
                 var operationResult = await operations.UpdateUserPassword.ExecuteAsync(
                     new UpdateUserPasswordCommand(
-                        requestedBy,
+                        authenticatedUserId,
                         userId,
                         request.CurrentPassword,
                         request.NewPassword));

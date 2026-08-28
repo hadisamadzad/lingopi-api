@@ -2,11 +2,11 @@ namespace Lingopi.Lingo.Application.Models.Enums;
 
 public enum LingoContext
 {
-    Workplace = 1,
-    Academic,
+    Everyday = 1,
     Social,
-    Daily,
     Travel,
+    Workplace,
+    Academic,
     Medical,
     Legal,
     Technical,
@@ -14,6 +14,5 @@ public enum LingoContext
     Entertainment,
     Sports,
     News,
-    Media,
     Literature
 }

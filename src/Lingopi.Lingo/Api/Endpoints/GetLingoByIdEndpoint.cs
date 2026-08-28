@@ -15,10 +15,11 @@ public class GetLingoByIdEndpoint : IEndpoint
             .WithSummary("Get a lingo by ID")
             .MapGet("{lingoId}", async (
                 [FromServices] IOperationService operations,
+                [FromHeader(Name = "User-Id")] string userId,
                 [FromRoute] string lingoId) =>
             {
                 var operationResult = await operations.GetLingoById.ExecuteAsync(
-                    new GetLingoByIdCommand(lingoId));
+                    new GetLingoByIdCommand(userId, lingoId));
 
                 return operationResult.Status switch
                 {
@@ -27,7 +28,8 @@ public class GetLingoByIdEndpoint : IEndpoint
                     OperationStatus.NotFound => Results.NotFound(operationResult.Error?.Messages),
                     _ => Results.Problem(
                         statusCode: StatusCodes.Status500InternalServerError,
-                        title: "An error occurred while processing your request")
+                        title: operationResult.Error?.Messages?.FirstOrDefault() ??
+                            "An unexpected error occurred while retrieving the lingo.")
                 };
             })
             .WithTags(Routes.LingoEndpointGroupTag)

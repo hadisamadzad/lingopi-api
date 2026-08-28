@@ -5,7 +5,9 @@ using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations;
 using Lingopi.Identity.Core.Bootstrap;
 using Lingopi.Identity.Infrastructure.Database;
+using Lingopi.Identity.Infrastructure.Database.Repositories;
 using Minimals.Operations;
+using MongoDB.Driver;
 using Serilog;
 
 var env = BootstrapHelper.GetEnvironmentName("Local");
@@ -53,13 +55,19 @@ WebApplication app = default!;
 try
 {
     app = builder.Build();
+    await RefreshTokenRepository.EnsureIndexesAsync(
+        app.Services.GetRequiredService<IMongoDatabase>());
     Log.Information("Application started on: {0} ({1})", configs["Urls"], env);
 }
 catch (Exception ex)
 {
     Log.Fatal(ex, $"Application failed to build.");
+    app = null!;
 }
-if (app is null) return;
+if (app is null)
+{
+    return;
+}
 
 // Add middleware
 app.MapHealthChecks("/api/health");
@@ -68,7 +76,9 @@ app.MapHealthChecks("/api/health");
 app.MapEndpoints();
 
 if (!app.Environment.IsProduction())
+{
     app.UseConfiguredSwagger();
+}
 
 try
 { await app.RunAsync(); }

@@ -12,13 +12,17 @@ public class GetUserProfileOperation(
         GetUserProfileCommand command, CancellationToken? cancellation = null)
     {
         // Validation
-        if (string.IsNullOrWhiteSpace(command.RequestedById))
-            return OperationResult<UserModel>.ValidationFailure(["Invalid userId"]);
+        if (string.IsNullOrWhiteSpace(command.UserId))
+        {
+            return OperationResult<UserModel>.ValidationFailure("Invalid userId");
+        }
 
         // Get
-        var user = await repository.Users.GetByIdAsync(command.RequestedById);
+        var user = await repository.Users.GetByIdAsync(command.UserId);
         if (user is null)
+        {
             return OperationResult<UserModel>.NotFoundFailure("User not found");
+        }
 
         // Mapping
         var response = user.MapToUserModel();
@@ -27,4 +31,4 @@ public class GetUserProfileOperation(
     }
 }
 
-public record GetUserProfileCommand(string RequestedById) : IOperationCommand;
+public record GetUserProfileCommand(string UserId) : IOperationCommand;

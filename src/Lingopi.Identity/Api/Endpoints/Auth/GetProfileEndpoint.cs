@@ -15,11 +15,11 @@ public class GetProfileEndpoint : IEndpoint
         app.MapGroup(Routes.AuthBaseRoute)
             .WithSummary("Gets the current user's profile")
             .MapGet("profile", async (IOperationService operations,
-                [FromHeader] string requestedBy) =>
+                [FromHeader(Name = "User-Id")] string userId) =>
             {
                 // Operation
                 var operationResult = await operations.GetUserProfile
-                    .ExecuteAsync(new GetUserProfileCommand(RequestedById: requestedBy));
+                    .ExecuteAsync(new GetUserProfileCommand(UserId: userId));
 
                 // Result
                 return operationResult.Status switch
