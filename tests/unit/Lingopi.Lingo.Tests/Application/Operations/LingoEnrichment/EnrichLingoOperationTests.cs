@@ -77,6 +77,125 @@ public class EnrichLingoOperationTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_WhenProvidedJobHasNoId_ReturnsInvalid()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        job.Id = string.Empty;
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Invalid, result.Status);
+        await _repository.Lingos.DidNotReceive().GetByIdAsync(Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenLingoIsMissing_MarksJobFailed()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns((LingoEntity?)null);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(true);
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.NotFound, result.Status);
+        Assert.Equal(JobProcessingStatus.Failed, job.Status);
+        Assert.Equal(1, job.AttemptCount);
+        Assert.Equal("lingo_not_found", job.ErrorCode);
+        Assert.Equal(_fixedNow.UtcDateTime, job.CompletedAt);
+        await _repository.EnrichmentJobs.Received(1).UpdateAsync(job);
+        await _translationService.DidNotReceive().TranslateAsync(
+            Arg.Any<TranslationRequest>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenMissingLingoFailureCannotBePersisted_ReturnsFailure()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns((LingoEntity?)null);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(false);
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Failed, result.Status);
+        Assert.Contains("Failed to persist", result.Error?.Messages[0], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenOriginalTextIsMissing_MarksLingoAndJobFailed()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        lingo.Expression = null;
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(true);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(true);
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Invalid, result.Status);
+        Assert.Equal("original_text_missing", job.ErrorCode);
+        Assert.Equal(EnrichmentStatus.Failed, lingo.Enrichment.Status);
+        Assert.Equal("original_text_missing", lingo.Enrichment.ErrorCode);
+        await _translationService.DidNotReceive().TranslateAsync(
+            Arg.Any<TranslationRequest>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenSourceLocaleIsMissing_MarksLingoAndJobFailed()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        lingo.SourceLocaleCodes = [];
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(true);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(true);
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Invalid, result.Status);
+        Assert.Equal("source_locale_missing", job.ErrorCode);
+        Assert.Equal(EnrichmentStatus.Failed, lingo.Enrichment.Status);
+        await _translationService.DidNotReceive().TranslateAsync(
+            Arg.Any<TranslationRequest>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenInvalidLingoFailureCannotBePersisted_ReturnsFailure()
+    {
+        var job = CreateJob(targetLocaleCode: null);
+        var lingo = CaptureLingo();
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(false);
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Failed, result.Status);
+        Assert.Contains("Failed to persist", result.Error?.Messages[0], StringComparison.Ordinal);
+        await _repository.EnrichmentJobs.DidNotReceive().UpdateAsync(job);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_WhenTranslationSucceeds_ShouldCreateEnrichedLingoAndCompleteJob()
     {
         var job = CreateJob(targetLocaleCode: "fa-IR");
@@ -193,6 +312,389 @@ public class EnrichLingoOperationTests
         Assert.Equal("target_locale_missing", lingo.Enrichment.ErrorCode);
 
         await _translationService.DidNotReceive().TranslateAsync(Arg.Any<TranslationRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenExistingContentCannotBePersisted_ReturnsFailure()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        lingo.Meaning = "already enriched";
+        lingo.Enrichment.Status = EnrichmentStatus.Ready;
+        lingo.Enrichment.EnrichmentJobId = job.Id;
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(false);
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Failed, result.Status);
+        Assert.Equal(JobProcessingStatus.Completed, job.Status);
+        await _translationService.DidNotReceive().TranslateAsync(
+            Arg.Any<TranslationRequest>(),
+            Arg.Any<CancellationToken>());
+        await _repository.EnrichmentJobs.DidNotReceive().UpdateAsync(job);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenEnrichmentIsNotAuthorized_FailsWithoutCallingTranslator()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        var usage = Substitute.For<IEnrichmentUsageService>();
+        usage.AuthorizeAsync("user-1", _fixedNow.UtcDateTime, Arg.Any<CancellationToken>())
+            .Returns(new EnrichmentAuthorization(false, "quota_exceeded", "Enrichment quota exceeded."));
+        var operation = new EnrichLingoOperation(
+            _repository,
+            _translationService,
+            new FixedTimeProvider(_fixedNow),
+            usage);
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(true);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(true);
+
+        var result = await operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Failed, result.Status);
+        Assert.Equal(JobProcessingStatus.Failed, job.Status);
+        Assert.Equal("quota_exceeded", job.ErrorCode);
+        Assert.Equal(EnrichmentStatus.Failed, lingo.Enrichment.Status);
+        await _translationService.DidNotReceive().TranslateAsync(
+            Arg.Any<TranslationRequest>(),
+            Arg.Any<CancellationToken>());
+        await usage.DidNotReceive().RecordAsync(
+            Arg.Any<EnrichmentJobEntity>(),
+            Arg.Any<TranslationResult>(),
+            Arg.Any<DateTime>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenAuthorizationFailureCannotBePersisted_ReturnsFailure()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        var usage = Substitute.For<IEnrichmentUsageService>();
+        usage.AuthorizeAsync(
+                Arg.Any<string>(),
+                Arg.Any<DateTime>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new EnrichmentAuthorization(false, "quota_exceeded", "Quota exceeded."));
+        var operation = new EnrichLingoOperation(
+            _repository,
+            _translationService,
+            new FixedTimeProvider(_fixedNow),
+            usage);
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(true);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(false);
+
+        var result = await operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Failed, result.Status);
+        Assert.Contains("Failed to persist", result.Error?.Messages[0], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenEnrichmentStateCannotBePersisted_RequeuesJob()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(false, true);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(true);
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Failed, result.Status);
+        Assert.Equal(JobProcessingStatus.Queued, job.Status);
+        Assert.Equal(1, job.AttemptCount);
+        Assert.Equal("lingo_update_failed", job.ErrorCode);
+        await _translationService.DidNotReceive().TranslateAsync(
+            Arg.Any<TranslationRequest>(),
+            Arg.Any<CancellationToken>());
+        await _repository.Lingos.Received(2).UpdateAsync(lingo);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenTranslationThrows_RequeuesJob()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(true);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(true);
+        _translationService.TranslateAsync(
+                Arg.Any<TranslationRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<OperationResult<TranslationResult>>(
+                new InvalidOperationException("provider unavailable")));
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Failed, result.Status);
+        Assert.Equal(JobProcessingStatus.Queued, job.Status);
+        Assert.Equal("translation_failed", job.ErrorCode);
+        Assert.Equal("provider unavailable", job.ErrorMessage);
+        Assert.Equal(1, job.AttemptCount);
+        Assert.Equal(EnrichmentStatus.Queued, lingo.Enrichment.Status);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenTranslationIsCanceled_PropagatesCancellation()
+    {
+        using var cancellationSource = new CancellationTokenSource();
+        cancellationSource.Cancel();
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(true);
+        _translationService.TranslateAsync(
+                Arg.Any<TranslationRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<OperationResult<TranslationResult>>(
+                new OperationCanceledException(cancellationSource.Token)));
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() =>
+            _operation.ExecuteAsync(
+                new EnrichLingoCommand(job),
+                cancellationSource.Token));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenTranslationFailsWithoutMessage_UsesFallbackError()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(true);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(true);
+        _translationService.TranslateAsync(
+                Arg.Any<TranslationRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new OperationResult<TranslationResult>(
+                OperationStatus.Failed,
+                null!,
+                null!,
+                null!));
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("Translation failed without an error message.", job.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenTranslationSucceedsWithoutValue_RequeuesJob()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(true);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(true);
+        _translationService.TranslateAsync(
+                Arg.Any<TranslationRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(OperationResult<TranslationResult>.Success(null!));
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("translation_failed", job.ErrorCode);
+        Assert.Equal("Translation completed without a result.", job.ErrorMessage);
+        Assert.Equal(JobProcessingStatus.Queued, job.Status);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenAuthorizationSucceeds_RecordsUsageAfterEnrichment()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        var usage = Substitute.For<IEnrichmentUsageService>();
+        usage.AuthorizeAsync("user-1", _fixedNow.UtcDateTime, Arg.Any<CancellationToken>())
+            .Returns(new EnrichmentAuthorization(true, null, null));
+        usage.RecordAsync(job, Arg.Any<TranslationResult>(), _fixedNow.UtcDateTime)
+            .Returns(true);
+        var operation = new EnrichLingoOperation(
+            _repository,
+            _translationService,
+            new FixedTimeProvider(_fixedNow),
+            usage);
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(true);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(true);
+        _translationService.TranslateAsync(
+                Arg.Any<TranslationRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(OperationResult<TranslationResult>.Success(CreateTranslationResult()));
+
+        var result = await operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        await usage.Received(1).AuthorizeAsync(
+            "user-1",
+            _fixedNow.UtcDateTime,
+            Arg.Any<CancellationToken>());
+        await usage.Received(1).RecordAsync(
+            job,
+            Arg.Any<TranslationResult>(),
+            _fixedNow.UtcDateTime);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenUsageCannotBeRecorded_ReturnsFailureAfterCompletingEnrichment()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        var usage = Substitute.For<IEnrichmentUsageService>();
+        usage.AuthorizeAsync(Arg.Any<string>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(new EnrichmentAuthorization(true, null, null));
+        usage.RecordAsync(Arg.Any<EnrichmentJobEntity>(), Arg.Any<TranslationResult>(), Arg.Any<DateTime>())
+            .Returns(false);
+        var operation = new EnrichLingoOperation(
+            _repository,
+            _translationService,
+            new FixedTimeProvider(_fixedNow),
+            usage);
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(true);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(true);
+        _translationService.TranslateAsync(
+                Arg.Any<TranslationRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(OperationResult<TranslationResult>.Success(CreateTranslationResult()));
+
+        var result = await operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Failed, result.Status);
+        Assert.Equal(JobProcessingStatus.Completed, job.Status);
+        Assert.Equal(EnrichmentStatus.Ready, lingo.Enrichment.Status);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenTranslationFailsAtMaxAttempts_MarksJobAndLingoFailed()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR", attemptCount: 2);
+        var lingo = CaptureLingo();
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(true);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(true);
+        _translationService.TranslateAsync(
+                Arg.Any<TranslationRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(OperationResult<TranslationResult>.Failure("provider unavailable"));
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(JobProcessingStatus.Failed, job.Status);
+        Assert.Equal(3, job.AttemptCount);
+        Assert.Equal(_fixedNow.UtcDateTime, job.CompletedAt);
+        Assert.Null(job.NextAttemptAt);
+        Assert.Equal(EnrichmentStatus.Failed, lingo.Enrichment.Status);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenFinalEnrichmentPersistenceFails_ReturnsFailure()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(true, false);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(true);
+        _translationService.TranslateAsync(
+                Arg.Any<TranslationRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(OperationResult<TranslationResult>.Success(CreateTranslationResult()));
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Failed, result.Status);
+        await _repository.Lingos.Received(2).UpdateAsync(lingo);
+        await _repository.EnrichmentJobs.DidNotReceive().UpdateAsync(job);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenJobPersistenceFailsAfterEnrichment_ReturnsFailure()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(true);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(false);
+        _translationService.TranslateAsync(
+                Arg.Any<TranslationRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(OperationResult<TranslationResult>.Success(CreateTranslationResult()));
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Failed, result.Status);
+        await _repository.Lingos.Received(2).UpdateAsync(lingo);
+        await _repository.EnrichmentJobs.Received(1).UpdateAsync(job);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenSourceMetadataExistsOnlyOnEncounter_MergesItBeforeTranslation()
+    {
+        var job = CreateJob(targetLocaleCode: "fa-IR");
+        var lingo = CaptureLingo();
+        lingo.SourceLanguageCode = null;
+        lingo.SourceLocaleCodes = [];
+        lingo.Encounters =
+        [
+            new EncounterValue
+            {
+                OriginalText = "break the ice",
+                SourceLanguageCode = "en",
+                SourceLocaleCode = "en-gb"
+            }
+        ];
+        _repository.Lingos.GetByIdAsync(job.LingoId).Returns(lingo);
+        _repository.Lingos.UpdateAsync(lingo).Returns(true);
+        _repository.EnrichmentJobs.UpdateAsync(job).Returns(true);
+        _translationService.TranslateAsync(
+                Arg.Any<TranslationRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(OperationResult<TranslationResult>.Success(CreateTranslationResult()));
+
+        var result = await _operation.ExecuteAsync(
+            new EnrichLingoCommand(job),
+            CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal("en", lingo.SourceLanguageCode);
+        Assert.Equal(["en-gb"], lingo.SourceLocaleCodes);
     }
 
     [Fact]
@@ -338,6 +840,19 @@ public class EnrichLingoOperationTests
         Assert.Equal("translation_failed", lingo.Enrichment.ErrorCode);
         Assert.Null(lingo.Meaning);
     }
+
+    private static TranslationResult CreateTranslationResult() =>
+        new(
+            Translation: "یخ را شکستن",
+            RequestId: "request-1",
+            Model: "model-1",
+            PromptVersion: "prompt-1",
+            InputTokens: 1,
+            OutputTokens: 1,
+            EstimatedCost: 0.01m,
+            Expression: "break the ice",
+            SenseKey: "break_the_ice",
+            Meaning: "to start a conversation");
 
     private static LingoEntity CaptureLingo()
     {

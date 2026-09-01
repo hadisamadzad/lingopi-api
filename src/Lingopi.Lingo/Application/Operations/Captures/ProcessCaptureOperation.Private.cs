@@ -88,12 +88,7 @@ public partial class ProcessCaptureOperation
             GeneratedAt = now
         };
 
-        entity.Status = CaptureAnalysisStatus.ResolutionQueued;
-        entity.Audit.AttemptCount = 0;
-        entity.Audit.StartedAt = null;
-        entity.Audit.NextAttemptAt = null;
-        entity.ClearError();
-        entity.Audit.UpdatedAt = now;
+        entity.SetResolutionQueued(now);
 
         return entity;
     }
@@ -139,15 +134,7 @@ public partial class ProcessCaptureOperation
             captureEntity.CaptureOutcome = CaptureOutcome.NewLingo;
         }
 
-        captureEntity.LingoId = lingoEntity.Id;
-        captureEntity.Status = CaptureAnalysisStatus.Completed;
-        captureEntity.Audit.AttemptCount += 1;
-        captureEntity.ClearError();
-
-        captureEntity.Audit.NextAttemptAt = null;
-        captureEntity.Audit.CompletedAt = now;
-        captureEntity.Audit.StartedAt = null;
-        captureEntity.Audit.UpdatedAt = now;
+        captureEntity.SetCompleted(lingoEntity.Id, now);
 
         return captureEntity;
     }

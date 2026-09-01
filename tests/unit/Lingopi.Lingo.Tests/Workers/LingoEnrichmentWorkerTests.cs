@@ -73,9 +73,7 @@ public class LingoEnrichmentWorkerTests
         services.AddScoped(_ => operationService);
         await using var provider = services.BuildServiceProvider();
         var logger = new RecordingLogger();
-        var worker = new LingoEnrichmentWorker(
-            provider.GetRequiredService<IServiceScopeFactory>(),
-            logger);
+        var worker = new LingoEnrichmentWorker(provider.GetRequiredService<IServiceScopeFactory>(), logger);
 
         var cancellationToken = TestContext.Current.CancellationToken;
         await worker.StartAsync(cancellationToken);

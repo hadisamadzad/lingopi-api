@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -87,6 +88,97 @@ public class CaptureLingoOperationTests
         Assert.Equal(OperationStatus.Invalid, result.Status);
         await _repository.Captures.DidNotReceive().InsertAsync(Arg.Any<CaptureEntity>());
         await _repository.EnrichmentJobs.DidNotReceive().InsertAsync(Arg.Any<EnrichmentJobEntity>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenCommandIsInvalid_ShouldReturnValidationFailureWithoutLoadingSettings()
+    {
+        var command = new CaptureLingoCommand(
+            UserId: string.Empty,
+            Expression: "ok",
+            SourceLocaleCode: string.Empty,
+            SourceLanguageCode: string.Empty);
+
+        var result = await _operation.ExecuteAsync(command, CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Invalid, result.Status);
+        Assert.NotEmpty(result.Error?.Messages ?? []);
+        await _repository.UserSettings.DidNotReceive().GetByUserIdAsync(Arg.Any<string>());
+        await _repository.Captures.DidNotReceive().InsertAsync(Arg.Any<CaptureEntity>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenUserSettingsAreMissing_ShouldReturnValidationFailure()
+    {
+        _repository.UserSettings.GetByUserIdAsync("user-123")
+            .Returns((UserSettingsEntity?)null);
+
+        var command = new CaptureLingoCommand(
+            UserId: "user-123",
+            Expression: "serendipity",
+            SourceLocaleCode: "en-US",
+            SourceLanguageCode: "en");
+
+        var result = await _operation.ExecuteAsync(command, CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Invalid, result.Status);
+        Assert.Contains("must be configured", result.Error?.Messages[0], StringComparison.Ordinal);
+        await _repository.Captures.DidNotReceive().InsertAsync(Arg.Any<CaptureEntity>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenSourceLocaleIsNotConfigured_ShouldReturnValidationFailure()
+    {
+        _repository.UserSettings.GetByUserIdAsync("user-123")
+            .Returns(new UserSettingsEntity
+            {
+                UserId = "user-123",
+                TargetLocaleCode = "fa-IR",
+                SourceLocaleCodes = ["de-DE"]
+            });
+
+        var command = new CaptureLingoCommand(
+            UserId: "user-123",
+            Expression: "serendipity",
+            SourceLocaleCode: "en-US",
+            SourceLanguageCode: "en");
+
+        var result = await _operation.ExecuteAsync(command, CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Invalid, result.Status);
+        Assert.Contains("is not configured", result.Error?.Messages[0], StringComparison.Ordinal);
+        await _repository.Captures.DidNotReceive().InsertAsync(Arg.Any<CaptureEntity>());
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenSourceLocaleHasWhitespace_ShouldNormalizeIt()
+    {
+        CaptureEntity insertedCapture = null!;
+        _repository.Captures
+            .When(repository => repository.InsertAsync(Arg.Any<CaptureEntity>()))
+            .Do(callInfo => insertedCapture = callInfo.Arg<CaptureEntity>());
+        _repository.UserSettings.GetByUserIdAsync("user-123")
+            .Returns(new UserSettingsEntity
+            {
+                UserId = "user-123",
+                TargetLocaleCode = "fa-IR",
+                SourceLocaleCodes = ["en-us"]
+            });
+
+        var command = new CaptureLingoCommand(
+            UserId: "user-123",
+            Expression: "serendipity",
+            SourceLocaleCode: " EN-us ",
+            SourceLanguageCode: "en");
+
+        var result = await _operation.ExecuteAsync(command, CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        Assert.NotNull(insertedCapture);
+        Assert.Equal("EN-us", insertedCapture.SourceLocaleCode);
     }
 
 }
