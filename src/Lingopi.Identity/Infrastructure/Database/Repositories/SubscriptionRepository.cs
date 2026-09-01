@@ -16,6 +16,25 @@ public sealed class SubscriptionRepository(IMongoDatabase database) :
             .FirstOrDefaultAsync();
     }
 
+    public async Task<SubscriptionEntity?> MarkExpiredAsync(string userId, DateTime now)
+    {
+        var update = Builders<SubscriptionEntity>.Update
+            .Set(subscription => subscription.Status, SubscriptionStatus.Expired)
+            .Set(subscription => subscription.UpdatedAt, now);
+
+        return await _collection.FindOneAndUpdateAsync(
+            subscription =>
+                subscription.UserId == userId &&
+                subscription.Status == SubscriptionStatus.Active &&
+                subscription.ExpiresAt != null &&
+                subscription.ExpiresAt <= now,
+            update,
+            new FindOneAndUpdateOptions<SubscriptionEntity>
+            {
+                ReturnDocument = ReturnDocument.Before
+            });
+    }
+
     public async Task<bool> UpsertAsync(SubscriptionEntity subscription)
     {
         var result = await _collection.ReplaceOneAsync(

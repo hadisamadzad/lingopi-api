@@ -56,6 +56,12 @@ public partial class AuthenticateGoogleUserOperation(
                 return OperationResult<AuthenticateGoogleUserResult>.Failure(
                     $"Failed to create the Free subscription for user '{user.Id}'.");
             }
+
+            var subscriptionHistory = SubscriptionHistoryEntityFactory.Create(
+                subscription,
+                SubscriptionHistoryEventType.Created,
+                user.CreatedAt);
+            await repository.SubscriptionHistory.InsertAsync(subscriptionHistory);
         }
 
         if (user.IsLockedOutOrNotActive())

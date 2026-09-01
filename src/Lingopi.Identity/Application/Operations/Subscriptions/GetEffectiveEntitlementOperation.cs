@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Entities;
 using Minimals.Operations;
@@ -37,6 +38,27 @@ public sealed class GetEffectiveEntitlementOperation(
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var subscription = await repository.Subscriptions.GetByUserIdAsync(command.UserId);
+        var isExpiredByDate = subscription is not null &&
+            subscription.Status == SubscriptionStatus.Active &&
+            subscription.ExpiresAt is { } expirationAt &&
+            expirationAt <= now;
+        if (isExpiredByDate)
+        {
+            var expiredSubscription = await repository.Subscriptions.MarkExpiredAsync(
+                command.UserId,
+                now);
+            var expirationMarked = expiredSubscription is not null;
+            if (expirationMarked)
+            {
+                var history = SubscriptionHistoryEntityFactory.Create(
+                    expiredSubscription!,
+                    SubscriptionHistoryEventType.Expired,
+                    now,
+                    SubscriptionStatus.Expired);
+                await repository.SubscriptionHistory.InsertAsync(history);
+            }
+        }
+
         var isActive = subscription is not null &&
             subscription.Status == SubscriptionStatus.Active &&
             subscription.StartedAt <= now &&

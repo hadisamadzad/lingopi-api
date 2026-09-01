@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Subscriptions;
 using Lingopi.Identity.Application.Types.Configs;
@@ -150,6 +151,85 @@ public sealed class SubscriptionOperationTests
                 subscription.UserId == "user-1" &&
                 subscription.Plan == SubscriptionPlan.Explorer &&
                 subscription.Status == SubscriptionStatus.Active));
+        await repository.SubscriptionHistory.Received(1).InsertAsync(
+            Arg.Is<SubscriptionHistoryEntity>(history =>
+                history.UserId == "user-1" &&
+                history.EventType == SubscriptionHistoryEventType.Created &&
+                history.Plan == SubscriptionPlan.Explorer &&
+                history.Status == SubscriptionStatus.Active));
+    }
+
+    [Fact]
+    public async Task GetSubscription_WhenExpiredByDate_ShouldMarkExpiredAndRecordHistory()
+    {
+        var repository = CreateRepository();
+        repository.Users.GetByIdAsync("user-1").Returns(new UserEntity { Id = "user-1" });
+        var subscription = new SubscriptionEntity
+        {
+            Id = "subscription-1",
+            UserId = "user-1",
+            Plan = SubscriptionPlan.Explorer,
+            Status = SubscriptionStatus.Active,
+            StartedAt = Now.AddDays(-10),
+            ExpiresAt = Now.AddMinutes(-1),
+            CreatedAt = Now.AddDays(-10),
+            UpdatedAt = Now.AddDays(-10)
+        };
+        repository.Subscriptions.GetByUserIdAsync("user-1").Returns(subscription);
+        repository.Subscriptions.MarkExpiredAsync("user-1", Now).Returns(subscription);
+
+        var operation = new GetSubscriptionOperation(repository, new FixedTimeProvider(Now));
+
+        var result = await operation.ExecuteAsync(
+            new GetSubscriptionCommand("user-1"),
+            CancellationToken.None);
+
+        Assert.Equal(OperationStatus.Completed, result.Status);
+        Assert.Equal(SubscriptionPlan.Free, result.Value!.Plan);
+        Assert.Equal(SubscriptionStatus.Expired, result.Value.Status);
+        await repository.Subscriptions.Received(1).MarkExpiredAsync("user-1", Now);
+        await repository.SubscriptionHistory.Received(1).InsertAsync(
+            Arg.Is<SubscriptionHistoryEntity>(history =>
+                history.SubscriptionId == "subscription-1" &&
+                history.EventType == SubscriptionHistoryEventType.Expired &&
+                history.Plan == SubscriptionPlan.Explorer &&
+                history.Status == SubscriptionStatus.Expired &&
+                history.RecordedAt == Now));
+    }
+
+    [Fact]
+    public async Task GetSubscriptionHistory_ShouldReturnUserSnapshots()
+    {
+        var repository = CreateRepository();
+        repository.Users.GetByIdAsync("user-1").Returns(new UserEntity { Id = "user-1" });
+        repository.SubscriptionHistory.GetByUserIdAsync("user-1").Returns(
+        [
+            new SubscriptionHistoryEntity
+            {
+                Id = "history-2",
+                SubscriptionId = "subscription-1",
+                UserId = "user-1",
+                EventType = SubscriptionHistoryEventType.Updated,
+                Plan = SubscriptionPlan.Immersion,
+                Status = SubscriptionStatus.Active,
+                StartedAt = Now,
+                SubscriptionCreatedAt = Now.AddDays(-10),
+                SubscriptionUpdatedAt = Now,
+                RecordedAt = Now
+            }
+        ]);
+
+        var operation = new GetSubscriptionHistoryOperation(repository);
+
+        var result = await operation.ExecuteAsync(
+            new GetSubscriptionHistoryCommand("user-1"),
+            CancellationToken.None);
+
+        Assert.Equal(OperationStatus.Completed, result.Status);
+        var history = Assert.Single(result.Value!);
+        Assert.Equal("history-2", history.Id);
+        Assert.Equal(SubscriptionHistoryEventType.Updated, history.EventType);
+        Assert.Equal(SubscriptionPlan.Immersion, history.Plan);
     }
 
     [Fact]
@@ -175,6 +255,84 @@ public sealed class SubscriptionOperationTests
         Assert.Contains("payment gateway checkout", result.Error!.Messages[0], StringComparison.Ordinal);
         await repository.Users.DidNotReceiveWithAnyArgs().GetByIdAsync(default!);
         await repository.Subscriptions.DidNotReceiveWithAnyArgs().UpsertAsync(default!);
+    }
+
+    [Fact]
+    public async Task UpsertSubscription_WhenExistingSubscriptionIsUpdated_ShouldRecordUpdatedHistory()
+    {
+        var repository = CreateRepository();
+        repository.Users.GetByIdAsync("user-1").Returns(new UserEntity { Id = "user-1" });
+        repository.Subscriptions.GetByUserIdAsync("user-1").Returns(new SubscriptionEntity
+        {
+            Id = "subscription-1",
+            UserId = "user-1",
+            Plan = SubscriptionPlan.Free,
+            Status = SubscriptionStatus.Active,
+            StartedAt = Now.AddMonths(-1),
+            CreatedAt = Now.AddMonths(-1),
+            UpdatedAt = Now.AddMonths(-1)
+        });
+        repository.Subscriptions.UpsertAsync(Arg.Any<SubscriptionEntity>()).Returns(true);
+        var operation = new UpsertSubscriptionOperation(
+            repository,
+            CreateConfiguration(),
+            new FixedTimeProvider(Now));
+
+        var result = await operation.ExecuteAsync(
+            new UpsertSubscriptionCommand(
+                Secret,
+                "user-1",
+                SubscriptionPlan.Immersion,
+                SubscriptionStatus.Active,
+                Now,
+                Now.AddMonths(1)),
+            CancellationToken.None);
+
+        Assert.Equal(OperationStatus.Completed, result.Status);
+        await repository.SubscriptionHistory.Received(1).InsertAsync(
+            Arg.Is<SubscriptionHistoryEntity>(history =>
+                history.SubscriptionId == "subscription-1" &&
+                history.EventType == SubscriptionHistoryEventType.Updated &&
+                history.Plan == SubscriptionPlan.Immersion &&
+                history.Status == SubscriptionStatus.Active));
+    }
+
+    [Fact]
+    public async Task GetEffectiveEntitlement_WhenExpiredByDate_ShouldMarkExpiredAndRecordHistory()
+    {
+        var repository = CreateRepository();
+        repository.Users.GetByIdAsync("user-1").Returns(new UserEntity { Id = "user-1" });
+        var subscription = new SubscriptionEntity
+        {
+            Id = "subscription-1",
+            UserId = "user-1",
+            Plan = SubscriptionPlan.Explorer,
+            Status = SubscriptionStatus.Active,
+            StartedAt = Now.AddDays(-10),
+            ExpiresAt = Now.AddMinutes(-1),
+            CreatedAt = Now.AddDays(-10),
+            UpdatedAt = Now.AddDays(-10)
+        };
+        repository.Subscriptions.GetByUserIdAsync("user-1").Returns(subscription);
+        repository.Subscriptions.MarkExpiredAsync("user-1", Now).Returns(subscription);
+
+        var operation = new GetEffectiveEntitlementOperation(
+            repository,
+            CreateConfiguration(),
+            new FixedTimeProvider(Now));
+
+        var result = await operation.ExecuteAsync(
+            new GetEffectiveEntitlementCommand(Secret, "user-1"),
+            CancellationToken.None);
+
+        Assert.Equal(OperationStatus.Completed, result.Status);
+        Assert.Equal(SubscriptionPlan.Free, result.Value!.Plan);
+        Assert.Equal(SubscriptionStatus.Expired, result.Value.SubscriptionStatus);
+        await repository.SubscriptionHistory.Received(1).InsertAsync(
+            Arg.Is<SubscriptionHistoryEntity>(history =>
+                history.SubscriptionId == "subscription-1" &&
+                history.EventType == SubscriptionHistoryEventType.Expired &&
+                history.Status == SubscriptionStatus.Expired));
     }
 
     private static IRepositoryManager CreateRepository() => Substitute.For<IRepositoryManager>();

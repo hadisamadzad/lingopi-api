@@ -13,4 +13,6 @@ public class RepositoryManager(IMongoDatabase mongoDatabase) : IRepositoryManage
         new RefreshTokenRepository(mongoDatabase);
     public ISubscriptionRepository Subscriptions { get; } =
         new SubscriptionRepository(mongoDatabase);
+    public ISubscriptionHistoryRepository SubscriptionHistory { get; } =
+        new SubscriptionHistoryRepository(mongoDatabase);
 }

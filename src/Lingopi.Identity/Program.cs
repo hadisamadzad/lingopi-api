@@ -59,6 +59,7 @@ try
     await RefreshTokenRepository.EnsureIndexesAsync(
         app.Services.GetRequiredService<IMongoDatabase>());
     await app.Services.GetRequiredService<IRepositoryManager>().Subscriptions.EnsureIndexesAsync();
+    await app.Services.GetRequiredService<IRepositoryManager>().SubscriptionHistory.EnsureIndexesAsync();
     Log.Information("Application started on: {0} ({1})", configs["Urls"], env);
 }
 catch (Exception ex)

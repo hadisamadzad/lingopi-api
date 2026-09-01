@@ -1,3 +1,4 @@
+using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Entities;
 using Lingopi.Identity.Application.Types.Models.Subscriptions;
@@ -34,6 +35,26 @@ public sealed class GetSubscriptionOperation(
         }
 
         var now = (timeProvider ?? TimeProvider.System).GetUtcNow().UtcDateTime;
+        var isExpiredByDate = subscription.Status == SubscriptionStatus.Active &&
+            subscription.ExpiresAt is { } expirationAt &&
+            expirationAt <= now;
+        if (isExpiredByDate)
+        {
+            var expiredSubscription = await repository.Subscriptions.MarkExpiredAsync(
+                command.UserId,
+                now);
+            var expirationMarked = expiredSubscription is not null;
+            if (expirationMarked)
+            {
+                var history = SubscriptionHistoryEntityFactory.Create(
+                    expiredSubscription!,
+                    SubscriptionHistoryEventType.Expired,
+                    now,
+                    SubscriptionStatus.Expired);
+                await repository.SubscriptionHistory.InsertAsync(history);
+            }
+        }
+
         var isActive = subscription.Status == SubscriptionStatus.Active &&
             subscription.StartedAt <= now &&
             (subscription.ExpiresAt is null || subscription.ExpiresAt > now);

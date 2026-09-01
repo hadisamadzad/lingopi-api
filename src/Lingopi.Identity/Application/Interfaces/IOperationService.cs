@@ -31,4 +31,5 @@ public interface IOperationService
     GetSubscriptionOperation GetSubscription { get; }
     UpsertSubscriptionOperation UpsertSubscription { get; }
     GetEffectiveEntitlementOperation GetEffectiveEntitlement { get; }
+    GetSubscriptionHistoryOperation GetSubscriptionHistory { get; }
 }

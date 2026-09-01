@@ -101,18 +101,25 @@ public class RegisterOperationTests
         Assert.Equal(command.Email.ToLower(), result.Value.Email);
 
         // Verify user was created with correct properties
+        Assert.NotNull(capturedUser);
+        var createdUser = capturedUser!;
         await _repository.Users.Received(1).InsertAsync(Arg.Any<UserEntity>());
         await _repository.Subscriptions.Received(1).UpsertAsync(
             Arg.Is<SubscriptionEntity>(subscription =>
-                subscription.UserId == capturedUser!.Id &&
+                subscription.UserId == createdUser.Id &&
                 subscription.Plan == SubscriptionPlan.Free &&
                 subscription.Status == SubscriptionStatus.Active &&
-                subscription.StartedAt == capturedUser.CreatedAt));
-        Assert.NotNull(capturedUser);
-        Assert.Equal(Role.Owner, capturedUser.Role);
-        Assert.Equal(UserState.Active, capturedUser.Status);
-        Assert.NotNull(capturedUser.SecurityStamp);
-        Assert.NotNull(capturedUser.ConcurrencyStamp);
+                subscription.StartedAt == createdUser.CreatedAt));
+        await _repository.SubscriptionHistory.Received(1).InsertAsync(
+            Arg.Is<SubscriptionHistoryEntity>(history =>
+                history.UserId == createdUser.Id &&
+                history.EventType == SubscriptionHistoryEventType.Created &&
+                history.Plan == SubscriptionPlan.Free &&
+                history.Status == SubscriptionStatus.Active));
+        Assert.Equal(Role.Owner, createdUser.Role);
+        Assert.Equal(UserState.Active, createdUser.Status);
+        Assert.NotNull(createdUser.SecurityStamp);
+        Assert.NotNull(createdUser.ConcurrencyStamp);
     }
 
     [Fact]

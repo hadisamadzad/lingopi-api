@@ -94,6 +94,12 @@ public class AuthenticateGoogleUserOperationTests
                 subscription.Plan == SubscriptionPlan.Free &&
                 subscription.Status == SubscriptionStatus.Active &&
                 subscription.StartedAt == createdUser.CreatedAt));
+        await _repository.SubscriptionHistory.Received(1).InsertAsync(
+            Arg.Is<SubscriptionHistoryEntity>(history =>
+                history.UserId == createdUser.Id &&
+                history.EventType == SubscriptionHistoryEventType.Created &&
+                history.Plan == SubscriptionPlan.Free &&
+                history.Status == SubscriptionStatus.Active));
         await _repository.Users.Received(1).UpdateAsync(createdUser);
         await _repository.RefreshTokens.Received(1).InsertAsync(Arg.Any<RefreshTokenEntity>());
     }

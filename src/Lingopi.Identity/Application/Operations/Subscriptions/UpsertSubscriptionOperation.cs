@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Lingopi.Core.Helpers;
+using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Configs;
 using Lingopi.Identity.Application.Types.Entities;
@@ -66,6 +67,11 @@ public sealed class UpsertSubscriptionOperation(
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var existing = await repository.Subscriptions.GetByUserIdAsync(command.UserId);
+        var historyEventType = command.Status == SubscriptionStatus.Expired
+            ? SubscriptionHistoryEventType.Expired
+            : existing is null
+                ? SubscriptionHistoryEventType.Created
+                : SubscriptionHistoryEventType.Updated;
         var subscription = existing ?? new SubscriptionEntity
         {
             Id = UidHelper.GenerateNewId("subscription"),
@@ -85,6 +91,12 @@ public sealed class UpsertSubscriptionOperation(
             return OperationResult<SubscriptionModel>.Failure(
                 $"Failed to persist subscription for user '{command.UserId}'.");
         }
+
+        var history = SubscriptionHistoryEntityFactory.Create(
+            subscription,
+            historyEventType,
+            now);
+        await repository.SubscriptionHistory.InsertAsync(history);
 
         return OperationResult<SubscriptionModel>.Success(
             new SubscriptionModel(

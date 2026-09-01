@@ -29,7 +29,8 @@ public class OperationService(
     IOperation<ResetPasswordCommand, NoResult> resetPassword,
     IOperation<GetSubscriptionCommand, SubscriptionModel> getSubscription,
     IOperation<UpsertSubscriptionCommand, SubscriptionModel> upsertSubscription,
-    IOperation<GetEffectiveEntitlementCommand, EffectiveEntitlementModel> getEffectiveEntitlement
+    IOperation<GetEffectiveEntitlementCommand, EffectiveEntitlementModel> getEffectiveEntitlement,
+    IOperation<GetSubscriptionHistoryCommand, List<SubscriptionHistoryModel>> getSubscriptionHistory
 ) : IOperationService
 {
     // Auth
@@ -71,4 +72,6 @@ public class OperationService(
         (upsertSubscription as UpsertSubscriptionOperation)!;
     public GetEffectiveEntitlementOperation GetEffectiveEntitlement { get; } =
         (getEffectiveEntitlement as GetEffectiveEntitlementOperation)!;
+    public GetSubscriptionHistoryOperation GetSubscriptionHistory { get; } =
+        (getSubscriptionHistory as GetSubscriptionHistoryOperation)!;
 }
