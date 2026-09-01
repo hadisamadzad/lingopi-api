@@ -9,8 +9,6 @@ public static class OpenAIModels
 }
 
 public sealed record OpenAIModelSettings(
-    string Model,
+    string ModelId,
     decimal? InputCostPerMillionTokens = null,
-    decimal? OutputCostPerMillionTokens = null,
-    decimal? CachedInputCostPerMillionTokens = null,
-    decimal? CacheWriteCostPerMillionTokens = null);
+    decimal? OutputCostPerMillionTokens = null);

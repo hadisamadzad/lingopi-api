@@ -78,11 +78,11 @@ public sealed class OpenAIModelSettingsProvider : IOpenAIModelSettingsProvider
 
         foreach (var setting in settings)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(setting.Model);
-            if (!result.TryAdd(setting.Model.Trim(), setting with { Model = setting.Model.Trim() }))
+            ArgumentException.ThrowIfNullOrWhiteSpace(setting.ModelId);
+            if (!result.TryAdd(setting.ModelId.Trim(), setting with { ModelId = setting.ModelId.Trim() }))
             {
                 throw new ArgumentException(
-                    $"OpenAI model '{setting.Model}' is configured more than once.",
+                    $"OpenAI model '{setting.ModelId}' is configured more than once.",
                     nameof(settings));
             }
         }

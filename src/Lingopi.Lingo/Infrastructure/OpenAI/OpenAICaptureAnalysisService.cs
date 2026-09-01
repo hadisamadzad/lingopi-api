@@ -32,7 +32,7 @@ public sealed class OpenAICaptureAnalysisService(
         ArgumentException.ThrowIfNullOrWhiteSpace(targetLocaleCode);
 
         var aiModelSettings = modelSettingsProvider.Get(OpenAIModels.Gpt5Nano);
-        var chatClient = openAIClient.GetChatClient(aiModelSettings.Model);
+        var chatClient = openAIClient.GetChatClient(aiModelSettings.ModelId);
 
         // Prepare chat messages for OpenAI client
         var messages = new ChatMessage[]
@@ -80,9 +80,9 @@ public sealed class OpenAICaptureAnalysisService(
         catch (ClientResultException exception)
         {
             var errorMessage =
-                $"OpenAI capture analysis failed with status code {exception.Status} using model '{aiModelSettings.Model}'.";
-            logger.LogError(exception, "OpenAI capture analysis failed with status code {StatusCode} using model {Model}.",
-                exception.Status, aiModelSettings.Model);
+                $"OpenAI capture analysis failed with status code {exception.Status} using model '{aiModelSettings.ModelId}'.";
+            logger.LogError(exception, "OpenAI capture analysis failed with status code {StatusCode} using model {ModelId}.",
+                exception.Status, aiModelSettings.ModelId);
 
             return OperationResult<CaptureAnalysisResult>.Failure(errorMessage);
         }
@@ -130,7 +130,7 @@ public sealed class OpenAICaptureAnalysisService(
                 SenseKey: payload.SenseKey.Trim().ToLowerInvariant(),
                 ExpressionType: payload.ExpressionType.Trim(),
 
-                Model: string.IsNullOrWhiteSpace(completion.Model) ? aiModelSettings.Model : completion.Model,
+                Model: string.IsNullOrWhiteSpace(completion.Model) ? aiModelSettings.ModelId : completion.Model,
                 TrackingId: completion.Id,
                 PromptVersion: PromptVersion,
                 InputTokens: aiUsage?.InputTokenCount ?? 0,
@@ -147,12 +147,7 @@ public sealed class OpenAICaptureAnalysisService(
             return null;
         }
 
-        var cachedInputTokens = Math.Min(usage.InputTokenDetails?.CachedTokenCount ?? 0, usage.InputTokenCount);
-        var uncachedInputTokens = usage.InputTokenCount - cachedInputTokens;
-        var cachedInputPrice = modelSettings.CachedInputCostPerMillionTokens ?? modelSettings.InputCostPerMillionTokens.Value;
-
-        return (uncachedInputTokens / 1_000_000m * modelSettings.InputCostPerMillionTokens.Value) +
-               (cachedInputTokens / 1_000_000m * cachedInputPrice) +
+        return (usage.InputTokenCount / 1_000_000m * modelSettings.InputCostPerMillionTokens.Value) +
                (usage.OutputTokenCount / 1_000_000m * modelSettings.OutputCostPerMillionTokens.Value);
     }
 

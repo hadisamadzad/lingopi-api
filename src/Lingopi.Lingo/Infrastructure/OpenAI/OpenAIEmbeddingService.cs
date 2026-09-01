@@ -18,7 +18,7 @@ public sealed class OpenAIEmbeddingService(OpenAIClient openAIClient,
 
         var modelSettings = modelSettingsProvider.Get(OpenAIModels.TextEmbedding3Small);
         var response = await openAIClient
-            .GetEmbeddingClient(modelSettings.Model)
+            .GetEmbeddingClient(modelSettings.ModelId)
             .GenerateEmbeddingsAsync([text], null, cancellationToken);
 
         var embedding = response.Value.FirstOrDefault();
@@ -36,7 +36,7 @@ public sealed class OpenAIEmbeddingService(OpenAIClient openAIClient,
             new EmbeddingGenerationResult(
                 Vector: [.. vector],
 
-                Model: modelSettings.Model,
+                Model: modelSettings.ModelId,
                 InputTokens: tokenCount,
                 EstimatedCost: modelSettings.InputCostPerMillionTokens is { } inputCost
                     ? tokenCount / 1_000_000m * inputCost

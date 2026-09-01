@@ -34,8 +34,8 @@ public sealed class OpenAITranslationService(
         ArgumentException.ThrowIfNullOrWhiteSpace(request.TargetLocaleCode);
 
         var modelSettings = modelSettingsProvider.Get(request.Model);
-        var chatClient = openAiClient.GetChatClient(modelSettings.Model);
-        logger.LogInformation("Sending OpenAI translation request using model {Model}.", modelSettings.Model);
+        var chatClient = openAiClient.GetChatClient(modelSettings.ModelId);
+        logger.LogInformation("Sending OpenAI translation request using model {ModelId}.", modelSettings.ModelId);
 
         var messages = new ChatMessage[]
         {
@@ -213,10 +213,9 @@ public sealed class OpenAITranslationService(
 
             logger.LogError(exception,
                 "OpenAI translation request failed with status code {StatusCode} using model {Model}. Provider error: {ProviderError}.",
-                exception.Status, modelSettings.Model, providerError ?? "No provider error details were returned.");
-
+                exception.Status, modelSettings.ModelId, providerError ?? "No provider error details were returned.");
             var errorMessage =
-                $"OpenAI translation request failed with status code {exception.Status} using model '{modelSettings.Model}'.";
+                $"OpenAI translation request failed with status code {exception.Status} using model '{modelSettings.ModelId}'.";
             if (providerError is not null)
             {
                 errorMessage += $" Provider error: {providerError}";
@@ -327,7 +326,7 @@ public sealed class OpenAITranslationService(
         return OperationResult<TranslationResult>.Success(new TranslationResult(
             translatedText,
             requestId,
-            string.IsNullOrWhiteSpace(completion.Model) ? modelSettings.Model : completion.Model,
+            string.IsNullOrWhiteSpace(completion.Model) ? modelSettings.ModelId : completion.Model,
             _config.PromptVersion,
             usage?.InputTokenCount ?? 0,
             usage?.OutputTokenCount ?? 0,
@@ -487,15 +486,7 @@ public sealed class OpenAITranslationService(
             return null;
         }
 
-        var cachedInputTokens = Math.Min(
-            usage.InputTokenDetails?.CachedTokenCount ?? 0,
-            usage.InputTokenCount);
-        var uncachedInputTokens = usage.InputTokenCount - cachedInputTokens;
-        var cachedInputPrice = modelSettings.CachedInputCostPerMillionTokens ??
-                               modelSettings.InputCostPerMillionTokens.Value;
-
-        return (uncachedInputTokens / 1_000_000m * modelSettings.InputCostPerMillionTokens.Value) +
-               (cachedInputTokens / 1_000_000m * cachedInputPrice) +
+        return (usage.InputTokenCount / 1_000_000m * modelSettings.InputCostPerMillionTokens.Value) +
                (usage.OutputTokenCount / 1_000_000m * modelSettings.OutputCostPerMillionTokens.Value);
     }
 
