@@ -55,10 +55,11 @@ public sealed class OpenAITranslationService(
                 "Determine whether the expression is offensive or unsuitable for ordinary learner use. " +
                 "Set isOffensive to true for vulgarities, slurs, taboo terms, strongly insulting expressions, or " +
                 "other expressions the learner should generally avoid using; set it to false otherwise. " +
+                "If isOffensive is true, return an empty examples array; otherwise generate at least five example " +
+                "sentences. " +
                 "Base this only on the expression's meaning and usage, not where the learner encountered it. " +
                 "Provide a concise definition/meaning in the source language and locale. " +
                 "Translate the expression naturally into the target language. " +
-                "Generate at least five example sentences. " +
                 "Provide three to five concise lowercase tags. " +
                 "Every learner-facing generated field must use the correct language: " +
                 "the definition/meaning must remain in the source language, while the translation and every " +
@@ -149,7 +150,7 @@ public sealed class OpenAITranslationService(
                         },
                         "examples": {
                           "type": "array",
-                          "minItems": 3,
+                          "minItems": 0,
                           "maxItems": 5,
                           "items": {
                             "type": "object",
@@ -271,7 +272,7 @@ public sealed class OpenAITranslationService(
                 !string.IsNullOrWhiteSpace(example.Text) &&
                 !string.IsNullOrWhiteSpace(example.Translation))
             .ToArray() ?? [];
-        if (examples.Length < 3)
+        if (!translation.IsOffensive && examples.Length < 3)
         {
             const string errorMessage = "OpenAI returned fewer than three translation examples.";
             logger.LogError("{ErrorMessage}", errorMessage);
@@ -335,7 +336,9 @@ public sealed class OpenAITranslationService(
             pattern,
             translation.SenseKey,
             translation.Meaning,
-            examples.Select(example => new ExampleValue(example.Text!, example.Translation!)).ToArray(),
+            translation.IsOffensive
+                ? []
+                : examples.Select(example => new ExampleValue(example.Text!, example.Translation!)).ToArray(),
             tags,
             typeResult.Value,
             registersResult.Value,

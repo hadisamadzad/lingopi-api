@@ -11,6 +11,7 @@ public class LingoRepository(IMongoDatabase database) :
 {
     private const string EmbeddingVectorIndexName = "lingo_embedding_vector";
     private const int EmbeddingDimensions = 1536;
+    private const int MaxSimilarLingoResults = 5;
 
     public async Task<LingoEntity?> GetByIdAsync(string lingoId)
     {
@@ -52,7 +53,7 @@ public class LingoRepository(IMongoDatabase database) :
             return [];
         }
 
-        var limit = Math.Max(1, (int)Math.Ceiling(eligibleCount * 0.10));
+        var limit = (int)Math.Min(eligibleCount, MaxSimilarLingoResults);
         var options = new VectorSearchOptions<LingoEntity>
         {
             Filter = Builders<LingoEntity>.Filter.And(

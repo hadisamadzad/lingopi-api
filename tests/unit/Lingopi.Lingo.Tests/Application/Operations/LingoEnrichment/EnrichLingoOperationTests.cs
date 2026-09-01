@@ -271,7 +271,7 @@ public class EnrichLingoOperationTests
         Assert.Equal([LingoRegister.Neutral], lingo.Registers);
         Assert.Equal("the main idea someone wants to communicate", lingo.Meaning);
         Assert.Equal("یخ را شکستن", lingo.Translation);
-        Assert.Equal(5, lingo.Examples.Count);
+        Assert.Empty(lingo.Examples);
         Assert.Equal([LingoDomain.Communication], lingo.Domains);
         Assert.True(lingo.IsOffensive);
         Assert.Equal(

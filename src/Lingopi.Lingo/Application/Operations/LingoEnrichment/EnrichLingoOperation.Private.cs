@@ -99,13 +99,15 @@ public partial class EnrichLingoOperation
             .ToList() ?? [];
         lingo.IsOffensive = translationResult.IsOffensive;
         lingo.UserNote = null;
-        lingo.Examples = translationResult.Examples?
-            .Select(example => new Models.Entities.ExampleValue
-            {
-                Text = example.Text,
-                Translation = example.Translation
-            })
-            .ToList() ?? [];
+        lingo.Examples = translationResult.IsOffensive
+            ? []
+            : translationResult.Examples?
+                .Select(example => new Models.Entities.ExampleValue
+                {
+                    Text = example.Text,
+                    Translation = example.Translation
+                })
+                .ToList() ?? [];
         lingo.CommonMistakes = translationResult.CommonMistakes?.ToList() ?? [];
         lingo.Tags = translationResult.Tags?.ToList() ?? [];
     }

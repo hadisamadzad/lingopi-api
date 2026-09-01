@@ -137,6 +137,41 @@ public class OpenAITranslationServiceTests
     }
 
     [Fact]
+    public async Task TranslateAsync_WhenTranslationIsOffensive_ShouldReturnNoExamples()
+    {
+        var model = OpenAIModels.Gpt5Nano;
+        var chatClient = Substitute.For<ChatClient>(
+            model,
+            new ApiKeyCredential("test-key"));
+        var openAiClient = Substitute.For<OpenAIClient>(
+            new ApiKeyCredential("test-key"));
+        openAiClient.GetChatClient(model).Returns(chatClient);
+        chatClient.CompleteChatAsync(
+                Arg.Any<IEnumerable<ChatMessage>>(),
+                Arg.Any<ChatCompletionOptions>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(
+                ClientResult.FromValue(
+                    CreateCompletion(
+                        "{\"translation\":\"...\",\"expression\":\"bad expression\",\"pattern\":\"bad expression\",\"senseKey\":\"bad_expression\",\"domains\":[\"communication\"],\"isOffensive\":true,\"meaning\":\"offensive expression\",\"examples\":[{\"text\":\"Bad example one\",\"translation\":\"ترجمه یک\"},{\"text\":\"Bad example two\",\"translation\":\"ترجمه دو\"},{\"text\":\"Bad example three\",\"translation\":\"ترجمه سه\"}],\"commonMistakes\":[\"Using this expression in ordinary conversation\"],\"tags\":[\"slang\",\"offensive\",\"communication\"],\"type\":\"idiom\",\"registers\":[\"slang\"]}",
+                        "req-offensive",
+                        model,
+                        inputTokens: 10,
+                        outputTokens: 5,
+                        totalTokens: 15),
+                    Substitute.For<PipelineResponse>())));
+        var service = CreateService(openAiClient, new OpenAIModelSettingsProvider());
+
+        var result = await service.TranslateAsync(
+            new TranslationRequest("bad expression", "en-US", "fa-IR", model),
+            TestContext.Current.CancellationToken);
+
+        Assert.True(result.Succeeded, result.Error?.Messages[0]);
+        Assert.True(result.Value!.IsOffensive);
+        Assert.Empty(result.Value.Examples!);
+    }
+
+    [Fact]
     public async Task CaptureAnalysisAsync_ShouldAlwaysUseGpt5Nano()
     {
         var chatClient = Substitute.For<ChatClient>(

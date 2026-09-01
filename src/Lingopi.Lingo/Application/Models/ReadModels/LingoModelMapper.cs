@@ -29,7 +29,9 @@ public static class LingoModelMapper
                 entity.Meaning,
                 entity.Translation,
                 entity.UserNote,
-                entity.Examples.ConvertAll(example => new ExampleReadModel(example.Text, example.Translation)),
+                entity.IsOffensive
+                    ? []
+                    : entity.Examples.ConvertAll(example => new ExampleReadModel(example.Text, example.Translation)),
                 entity.CommonMistakes,
                 entity.Tags),
             Learning: new LearningReadModel(
