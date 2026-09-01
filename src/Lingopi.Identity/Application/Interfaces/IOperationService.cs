@@ -20,6 +20,8 @@ public interface IOperationService
     // Users
     GetUserByIdOperation GetUserById { get; }
     UpdateUserOperation UpdateUser { get; }
+    UpdateUserTimezoneOperation UpdateUserTimezone { get; }
+    UpdateUserThemeOperation UpdateUserTheme { get; }
     UpdateUserPasswordOperation UpdateUserPassword { get; }
 
     // Password Reset

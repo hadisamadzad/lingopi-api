@@ -17,6 +17,8 @@ public static class UserModelMapper
             Status = entity.Status,
             FirstName = entity.FirstName,
             LastName = entity.LastName,
+            TimeZoneId = entity.Settings.TimeZoneId,
+            Theme = entity.Settings.Theme,
             FullName = entity.GetFullName(),
             NotificationCount = 0,
             IsLockedOut = entity.IsLockedOut(),

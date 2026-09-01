@@ -23,6 +23,8 @@ public class OperationService(
     IOperation<AuthenticateGoogleUserCommand, AuthenticateGoogleUserResult> authenticateGoogleUser,
     IOperation<GetUserByIdCommand, UserModel> getUserById,
     IOperation<UpdateUserCommand, NoResult> updateUser,
+    IOperation<UpdateUserTimezoneCommand, NoResult> updateUserTimezone,
+    IOperation<UpdateUserThemeCommand, NoResult> updateUserTheme,
     IOperation<UpdateUserPasswordCommand, NoResult> updateUserPassword,
     IOperation<SendPasswordResetEmailCommand, NoResult> sendPasswordResetEmail,
     IOperation<GetPasswordResetEmailCommand, string> getPasswordResetInfo,
@@ -56,6 +58,10 @@ public class OperationService(
         (getUserById as GetUserByIdOperation)!;
     public UpdateUserOperation UpdateUser { get; } =
         (updateUser as UpdateUserOperation)!;
+    public UpdateUserTimezoneOperation UpdateUserTimezone { get; } =
+        (updateUserTimezone as UpdateUserTimezoneOperation)!;
+    public UpdateUserThemeOperation UpdateUserTheme { get; } =
+        (updateUserTheme as UpdateUserThemeOperation)!;
     public UpdateUserPasswordOperation UpdateUserPassword { get; } =
         (updateUserPassword as UpdateUserPasswordOperation)!;
 

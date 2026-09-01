@@ -32,6 +32,8 @@ public class GetUserByIdEndpoint : IEndpoint
                             Role: operationResult.Value.Role,
                             FirstName: operationResult.Value.FirstName,
                             LastName: operationResult.Value.LastName,
+                            TimeZoneId: operationResult.Value.TimeZoneId,
+                            Theme: operationResult.Value.Theme,
                             FullName: operationResult.Value.FullName,
                             CreatedAt: operationResult.Value.CreatedAt,
                             UpdatedAt: operationResult.Value.UpdatedAt
@@ -55,6 +57,8 @@ public record GetUserByIdResponse(
     Role Role,
     string? FirstName,
     string? LastName,
+    string? TimeZoneId,
+    ThemePreference? Theme,
     string FullName,
     DateTime CreatedAt,
     DateTime UpdatedAt
