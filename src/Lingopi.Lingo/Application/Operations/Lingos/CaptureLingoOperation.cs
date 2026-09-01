@@ -1,6 +1,7 @@
 using Lingopi.Core.Helpers;
 using Lingopi.Lingo.Application.Helpers;
 using Lingopi.Lingo.Application.Interfaces;
+using Lingopi.Lingo.Application.Interfaces.Services;
 using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.Enums;
 using Lingopi.Lingo.Application.Operations.Lingos.Validators;
@@ -8,7 +9,10 @@ using Minimals.Operations;
 
 namespace Lingopi.Lingo.Application.Operations.Lingos;
 
-public class CaptureLingoOperation(IRepositoryManager repository) :
+public class CaptureLingoOperation(
+    IRepositoryManager repository,
+    IEntitlementService? entitlementService = null,
+    TimeProvider? timeProvider = null) :
     IOperation<CaptureLingoCommand, string>
 {
     public async Task<OperationResult<string>> ExecuteAsync(
@@ -19,6 +23,20 @@ public class CaptureLingoOperation(IRepositoryManager repository) :
         if (!validation.IsValid)
         {
             return OperationResult<string>.ValidationFailure([.. validation.GetErrorMessages()]);
+        }
+
+        if (entitlementService is not null)
+        {
+            var authorization = await entitlementService.AuthorizeCaptureAsync(
+                command.UserId,
+                (timeProvider ?? TimeProvider.System).GetUtcNow().UtcDateTime,
+                cancellation ?? CancellationToken.None);
+            if (!authorization.IsAllowed)
+            {
+                return OperationResult<string>.AuthorizationFailure(
+                    $"{authorization.ErrorCode ?? "capture_not_authorized"}: " +
+                    (authorization.ErrorMessage ?? "Capture is not available for this user."));
+            }
         }
 
         // Load user settings to determine the default locales

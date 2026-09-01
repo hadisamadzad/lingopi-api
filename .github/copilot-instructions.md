@@ -19,6 +19,7 @@ Copilot must follow that document when suggesting:
 - Use Operation-based **Clean Architecture** strictly.
 - Do NOT introduce new libraries or NuGet packages unless explicitly requested.
 - Prefer clarity and explicitness over cleverness.
+- Do not use `.Bind(...)`, `.Validate(...)`, or `.ValidateOnStart()` when registering configuration options unless explicitly requested. Read configuration values directly using the existing configuration conventions.
 
 ## Architecture Rules
 
@@ -141,6 +142,15 @@ Apart from Entities, all other types are preferably immutable flat records.
 - Prefer immutable records where possible.
 - Methods should be small and focused.
 - Be explicit rather than implicit.
+- Do not assign business defaults to enum properties in their declarations. For example, do not write `public SubscriptionPlan Plan { get; set; } = SubscriptionPlan.Free;`; assign enum values explicitly in the operation or factory that creates the entity.
+- Do not place function or repository calls directly in `if` conditions. Assign the result to a clearly named local variable first, then evaluate that variable:
+  ```csharp
+  var user = await repository.Users.GetByIdAsync(command.UserId);
+  if (user is null)
+  {
+      // ...
+  }
+  ```
 
 ## Forbidden
 

@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Lingopi.Lingo.Application.Interfaces;
+using Lingopi.Lingo.Application.Interfaces.Services;
 using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.Enums;
 using Lingopi.Lingo.Application.Operations.Lingos;
@@ -179,6 +180,37 @@ public class CaptureLingoOperationTests
         Assert.True(result.Succeeded);
         Assert.NotNull(insertedCapture);
         Assert.Equal("EN-us", insertedCapture.SourceLocaleCode);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenCaptureEntitlementIsDenied_ShouldNotInsertCapture()
+    {
+        var entitlementService = Substitute.For<IEntitlementService>();
+        entitlementService.AuthorizeCaptureAsync(
+                "user-123",
+                Arg.Any<DateTime>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new EnrichmentAuthorization(
+                false,
+                "monthly_lingo_limit_reached",
+                "Capture limit reached."));
+        var operation = new CaptureLingoOperation(
+            _repository,
+            entitlementService,
+            TimeProvider.System);
+
+        var result = await operation.ExecuteAsync(
+            new CaptureLingoCommand(
+                "user-123",
+                "serendipity",
+                "en-US",
+                "en"),
+            CancellationToken.None);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OperationStatus.Unauthorized, result.Status);
+        await _repository.Captures.DidNotReceive().InsertAsync(Arg.Any<CaptureEntity>());
+        await _repository.UserSettings.DidNotReceive().GetByUserIdAsync(Arg.Any<string>());
     }
 
 }

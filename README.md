@@ -97,6 +97,25 @@ curl http://localhost:45000/api/identity/health
 curl http://localhost:45000/api/lingo/health
 ```
 
+### Payments
+
+Identity owns subscription and payment lifecycle. Payment processing is currently bypassed:
+
+```json
+{
+  "Payments": {
+    "Enabled": false,
+    "Provider": ""
+  }
+}
+```
+
+With payments disabled, Free subscriptions are provisioned during registration and paid plans
+can be assigned through the protected internal subscription endpoint for testing. When payments
+are enabled, paid-plan assignments are blocked until a provider checkout and webhook integration
+is implemented. Lingo continues to read effective entitlements from Identity and does not depend
+on the payment provider.
+
 Open Swagger:
 
 - Identity: `http://localhost:45000/api/identity/swagger/index.html`

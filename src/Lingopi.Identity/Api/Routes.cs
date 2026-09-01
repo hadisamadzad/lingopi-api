@@ -5,6 +5,9 @@ public static class Routes
     public const string AuthBaseRoute = "api/auth/";
     public const string AuthEndpointGroupTag = "Auth";
 
+    public const string SubscriptionBaseRoute = "api/subscription/";
+    public const string SubscriptionEndpointGroupTag = "Subscription";
+
     public const string DevBaseRoute = "api/dev/";
     public const string DevEndpointGroupTag = "Dev";
 

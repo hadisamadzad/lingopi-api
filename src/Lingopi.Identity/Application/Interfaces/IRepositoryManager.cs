@@ -6,4 +6,5 @@ public interface IRepositoryManager
 {
     IUserRepository Users { get; }
     IRefreshTokenRepository RefreshTokens { get; }
+    ISubscriptionRepository Subscriptions { get; }
 }

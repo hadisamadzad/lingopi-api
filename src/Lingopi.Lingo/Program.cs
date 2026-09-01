@@ -35,14 +35,17 @@ builder.Configuration.AddConfiguration(configs);
 
 // Configure JSON options to serialize enums as strings
 builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 // Add services to the container
 builder.Services.AddCustomConfigurations(configs);
 builder.Services.AddOperations();
 builder.Services.AddTransient<IOperationService, OperationService>();
+builder.Services.AddHttpClient(IdentityServiceOptions.Key, client =>
+{
+    var baseUrl = configs[$"{IdentityServiceOptions.Key}:BaseUrl"];
+    client.BaseAddress = new Uri(baseUrl!, UriKind.Absolute);
+});
 
 builder.Services.AddConfiguredOpenAI(configs);
 builder.Services
@@ -52,6 +55,9 @@ builder.Services
     .ValidateOnStart();
 
 builder.Services.AddScoped<IEnrichmentUsageService, EnrichmentUsageService>();
+builder.Services.AddScoped<IEntitlementService>(serviceProvider =>
+    (EnrichmentUsageService)serviceProvider.GetRequiredService<IEnrichmentUsageService>());
+builder.Services.AddScoped<IIdentityEntitlementClient, IdentityEntitlementClient>();
 builder.Services.AddScoped<ICaptureUsageService, CaptureUsageService>();
 
 // Add hosted services
@@ -91,7 +97,6 @@ await using (var initializationScope = app.Services.CreateAsyncScope())
     await repositories.Lingos.EnsureIndexesAsync();
     await repositories.EnrichmentJobs.EnsureIndexesAsync();
     await repositories.UserSettings.EnsureIndexesAsync();
-    await repositories.Subscriptions.EnsureIndexesAsync();
     await repositories.Usage.EnsureIndexesAsync();
 }
 

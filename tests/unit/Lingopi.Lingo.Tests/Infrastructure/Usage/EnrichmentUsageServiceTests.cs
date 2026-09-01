@@ -1,6 +1,8 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Lingopi.Lingo.Application.Interfaces;
+using Lingopi.Lingo.Application.Interfaces.Services;
 using Lingopi.Lingo.Application.Models.Configs;
 using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.Enums;
@@ -9,6 +11,7 @@ using Lingopi.Lingo.Application.Models.Services;
 using Lingopi.Lingo.Infrastructure.Usage;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Minimals.Operations;
 using NSubstitute;
 using Xunit;
 
@@ -20,10 +23,17 @@ public class EnrichmentUsageServiceTests
     public async Task AuthorizeAsync_WhenFreePlanMonthlyLimitIsReached_ShouldDenyEnrichment()
     {
         var repository = Substitute.For<IRepositoryManager>();
+        repository.Lingos
+            .CountByUserIdAsync("user-1", Arg.Any<DateTime>(), Arg.Any<DateTime>())
+            .Returns(30);
         repository.Usage
             .GetSummaryAsync("user-1", Arg.Any<DateTime>(), Arg.Any<DateTime>())
             .Returns(new UsageSummary(30, 1_000, 500, 0.02m));
-        var service = CreateService(repository);
+        var identityClient = Substitute.For<IIdentityEntitlementClient>();
+        identityClient.GetAsync("user-1", Arg.Any<CancellationToken>())
+            .Returns(OperationResult<IdentityEntitlement>.Success(
+                new IdentityEntitlement("user-1", LingoPlan.Free, null, null, null)));
+        var service = CreateService(repository, identityClient);
 
         var result = await service.AuthorizeAsync(
             "user-1",
@@ -31,7 +41,29 @@ public class EnrichmentUsageServiceTests
             TestContext.Current.CancellationToken);
 
         Assert.False(result.IsAllowed);
-        Assert.Equal("monthly_enrichment_limit_reached", result.ErrorCode);
+        Assert.Equal("monthly_lingo_limit_reached", result.ErrorCode);
+    }
+
+    [Fact]
+    public async Task AuthorizeCaptureAsync_WhenMonthlyLimitIsReached_ShouldDenyCapture()
+    {
+        var repository = Substitute.For<IRepositoryManager>();
+        repository.Lingos
+            .CountByUserIdAsync("user-1", Arg.Any<DateTime>(), Arg.Any<DateTime>())
+            .Returns(30);
+        var identityClient = Substitute.For<IIdentityEntitlementClient>();
+        identityClient.GetAsync("user-1", Arg.Any<CancellationToken>())
+            .Returns(OperationResult<IdentityEntitlement>.Success(
+                new IdentityEntitlement("user-1", LingoPlan.Free, null, null, null)));
+        var service = CreateService(repository, identityClient);
+
+        var result = await service.AuthorizeCaptureAsync(
+            "user-1",
+            new DateTime(2026, 8, 20, 0, 0, 0, DateTimeKind.Utc),
+            TestContext.Current.CancellationToken);
+
+        Assert.False(result.IsAllowed);
+        Assert.Equal("monthly_lingo_limit_reached", result.ErrorCode);
     }
 
     [Fact]
@@ -41,7 +73,7 @@ public class EnrichmentUsageServiceTests
         repository.Usage
             .RecordAsync(Arg.Any<UsageRecordEntity>())
             .Returns(true);
-        var service = CreateService(repository);
+        var service = CreateService(repository, Substitute.For<IIdentityEntitlementClient>());
 
         var result = await service.RecordAsync(
             new EnrichmentJobEntity
@@ -73,7 +105,9 @@ public class EnrichmentUsageServiceTests
                 record.EstimatedCost == 0.00014m));
     }
 
-    private static EnrichmentUsageService CreateService(IRepositoryManager repository)
+    private static EnrichmentUsageService CreateService(
+        IRepositoryManager repository,
+        IIdentityEntitlementClient identityClient)
     {
         return new EnrichmentUsageService(
             repository,
@@ -99,6 +133,7 @@ public class EnrichmentUsageServiceTests
                     }
                 ]
             }),
-            NullLogger<EnrichmentUsageService>.Instance);
+            NullLogger<EnrichmentUsageService>.Instance,
+            identityClient);
     }
 }

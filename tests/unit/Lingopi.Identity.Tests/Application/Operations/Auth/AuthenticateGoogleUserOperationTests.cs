@@ -26,6 +26,7 @@ public class AuthenticateGoogleUserOperationTests
         _repository = Substitute.For<IRepositoryManager>();
         _configuration = Substitute.For<IConfiguration>();
         _configuration["InternalAuthSecret"].Returns("internal-secret");
+        _repository.Subscriptions.UpsertAsync(Arg.Any<SubscriptionEntity>()).Returns(true);
         TokenHelper.Initialize(new AuthTokenConfig
         {
             Issuer = "lingopi.identity",
@@ -87,6 +88,12 @@ public class AuthenticateGoogleUserOperationTests
         Assert.Equal("Jane", createdUser.FirstName);
         Assert.Equal("Doe", createdUser.LastName);
         Assert.Equal(createdUser.Id, createdToken!.UserId);
+        await _repository.Subscriptions.Received(1).UpsertAsync(
+            Arg.Is<SubscriptionEntity>(subscription =>
+                subscription.UserId == createdUser.Id &&
+                subscription.Plan == SubscriptionPlan.Free &&
+                subscription.Status == SubscriptionStatus.Active &&
+                subscription.StartedAt == createdUser.CreatedAt));
         await _repository.Users.Received(1).UpdateAsync(createdUser);
         await _repository.RefreshTokens.Received(1).InsertAsync(Arg.Any<RefreshTokenEntity>());
     }
@@ -114,6 +121,7 @@ public class AuthenticateGoogleUserOperationTests
         Assert.NotNull(existingUser.LastLoginDate);
         await _repository.Users.DidNotReceive().AnyAsync();
         await _repository.Users.DidNotReceive().InsertAsync(Arg.Any<UserEntity>());
+        await _repository.Subscriptions.DidNotReceive().UpsertAsync(Arg.Any<SubscriptionEntity>());
         await _repository.Users.Received(1).UpdateAsync(existingUser);
         await _repository.RefreshTokens.Received(1).InsertAsync(Arg.Any<RefreshTokenEntity>());
     }

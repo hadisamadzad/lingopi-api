@@ -6,31 +6,46 @@ using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.Enums;
 using Lingopi.Lingo.Application.Models.Services;
 using Microsoft.Extensions.Options;
+using Minimals.Operations;
 
 namespace Lingopi.Lingo.Infrastructure.Usage;
 
 public sealed class EnrichmentUsageService(
     IRepositoryManager repository,
     IOptions<LingoEntitlementOptions> options,
-    ILogger<EnrichmentUsageService> logger) : IEnrichmentUsageService
+    ILogger<EnrichmentUsageService> logger,
+    IIdentityEntitlementClient identityEntitlementClient) : IEntitlementService
 {
     private readonly LingoEntitlementOptions _options = options.Value;
 
     public async Task<EnrichmentAuthorization> AuthorizeAsync(string userId, DateTime now,
         CancellationToken cancellationToken = default)
     {
-        var plan = await GetPlanAsync(userId, now);
-        var limits = _options.GetLimits(plan);
-        var (periodStart, periodEnd) = GetCurrentPeriod(now);
-        var usage = await repository.Usage.GetSummaryAsync(userId, periodStart, periodEnd);
-
-        if (limits.MonthlyLingoLimit is { } lingoLimit &&
-            usage.EnrichmentCount >= lingoLimit)
+        var planResult = await GetPlanAsync(userId, now, cancellationToken);
+        if (planResult.Status != OperationStatus.Completed)
         {
             return new EnrichmentAuthorization(
                 false,
-                "monthly_enrichment_limit_reached",
-                $"The '{plan}' plan allows {lingoLimit} enrichments per month.");
+                "entitlement_unavailable",
+                planResult.Error?.Messages?.FirstOrDefault() ??
+                $"Unable to evaluate entitlements for user '{userId}'.");
+        }
+
+        var plan = planResult.Value;
+        var limits = _options.GetLimits(plan);
+        var (periodStart, periodEnd) = GetCurrentPeriod(now);
+        var lingoCountTask = repository.Lingos.CountByUserIdAsync(
+            userId, periodStart, periodEnd);
+        var usage = await repository.Usage.GetSummaryAsync(userId, periodStart, periodEnd);
+        var lingoCount = await lingoCountTask;
+
+        if (limits.MonthlyLingoLimit is { } lingoLimit &&
+            lingoCount >= lingoLimit)
+        {
+            return new EnrichmentAuthorization(
+                false,
+                "monthly_lingo_limit_reached",
+                $"The '{plan}' plan allows {lingoLimit} lingos per month.");
         }
 
         if (limits.MonthlyCostLimit is { } costLimit &&
@@ -40,6 +55,39 @@ public sealed class EnrichmentUsageService(
                 false,
                 "monthly_cost_limit_reached",
                 $"The '{plan}' plan allows provider usage up to {costLimit:0.####} USD per month.");
+        }
+
+        return new EnrichmentAuthorization(true, null, null);
+    }
+
+    public async Task<EnrichmentAuthorization> AuthorizeCaptureAsync(
+        string userId,
+        DateTime now,
+        CancellationToken cancellationToken = default)
+    {
+        var planResult = await GetPlanAsync(userId, now, cancellationToken);
+        if (planResult.Status != OperationStatus.Completed)
+        {
+            return new EnrichmentAuthorization(
+                false,
+                "entitlement_unavailable",
+                planResult.Error?.Messages?.FirstOrDefault() ??
+                $"Unable to evaluate entitlements for user '{userId}'.");
+        }
+
+        var plan = planResult.Value;
+        var limits = _options.GetLimits(plan);
+        var (periodStart, periodEnd) = GetCurrentPeriod(now);
+        var lingoCount = await repository.Lingos.CountByUserIdAsync(
+            userId, periodStart, periodEnd);
+
+        if (limits.MonthlyLingoLimit is { } lingoLimit &&
+            lingoCount >= lingoLimit)
+        {
+            return new EnrichmentAuthorization(
+                false,
+                "monthly_lingo_limit_reached",
+                $"The '{plan}' plan allows {lingoLimit} lingos per month.");
         }
 
         return new EnrichmentAuthorization(true, null, null);
@@ -75,18 +123,25 @@ public sealed class EnrichmentUsageService(
         return recorded;
     }
 
-    private async Task<LingoPlan> GetPlanAsync(string userId, DateTime now)
+    private async Task<OperationResult<LingoPlan>> GetPlanAsync(
+        string userId,
+        DateTime now,
+        CancellationToken cancellationToken)
     {
-        var subscription = await repository.Subscriptions.GetByUserIdAsync(userId);
-        if (subscription is null ||
-            subscription.Status != SubscriptionStatus.Active ||
-            subscription.StartedAt > now ||
-            (subscription.ExpiresAt is { } expiresAt && expiresAt <= now))
+        var entitlement = await identityEntitlementClient.GetAsync(userId, cancellationToken);
+        if (entitlement.Status != OperationStatus.Completed)
         {
-            return _options.DefaultPlan;
+            return OperationResult<LingoPlan>.Failure(
+                entitlement.Error?.Messages?.FirstOrDefault() ?? "Entitlement lookup failed.");
         }
 
-        return subscription.Plan;
+        var value = entitlement.Value!;
+        var isActive = value.SubscriptionStatus == SubscriptionStatus.Active &&
+            (value.SubscriptionStartedAt is null || value.SubscriptionStartedAt <= now) &&
+            (value.SubscriptionExpiresAt is null || value.SubscriptionExpiresAt > now);
+
+        return OperationResult<LingoPlan>.Success(
+            isActive ? value.Plan : _options.DefaultPlan);
     }
 
     private static (DateTime Start, DateTime End) GetCurrentPeriod(DateTime now)

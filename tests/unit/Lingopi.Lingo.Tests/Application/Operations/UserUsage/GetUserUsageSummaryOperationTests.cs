@@ -1,10 +1,16 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Lingopi.Lingo.Application.Interfaces;
+using Lingopi.Lingo.Application.Interfaces.Services;
+using Lingopi.Lingo.Application.Models.Configs;
 using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.Enums;
 using Lingopi.Lingo.Application.Models.ReadModels;
+using Lingopi.Lingo.Application.Models.Services;
 using Lingopi.Lingo.Application.Operations.UserUsage;
+using Microsoft.Extensions.Options;
+using Minimals.Operations;
 using NSubstitute;
 using Xunit;
 
@@ -46,13 +52,15 @@ public sealed class GetUserUsageSummaryOperationTests
                 new DateTime(2026, 08, 15, 0, 0, 0, DateTimeKind.Utc),
                 new DateTime(2026, 09, 15, 12, 0, 0, DateTimeKind.Utc))
             .Returns(new UsageSummary(1, 20, 10, 0.15m));
-        repository.Subscriptions.GetByUserIdAsync("user-1").Returns(new SubscriptionEntity
-        {
-            UserId = "user-1",
-            Plan = LingoPlan.Explorer,
-            Status = SubscriptionStatus.Active,
-            StartedAt = new DateTime(2026, 01, 01, 0, 0, 0, DateTimeKind.Utc)
-        });
+        var identityClient = Substitute.For<IIdentityEntitlementClient>();
+        identityClient.GetAsync("user-1", Arg.Any<CancellationToken>())
+            .Returns(OperationResult<IdentityEntitlement>.Success(
+                new IdentityEntitlement(
+                    "user-1",
+                    LingoPlan.Explorer,
+                    SubscriptionStatus.Active,
+                    new DateTime(2026, 01, 01, 0, 0, 0, DateTimeKind.Utc),
+                    null)));
         repository.UserSettings.GetByUserIdAsync("user-1").Returns(new UserSettingsEntity
         {
             UserId = "user-1",
@@ -60,7 +68,11 @@ public sealed class GetUserUsageSummaryOperationTests
             SourceLocaleCodes = ["en-US"]
         });
 
-        var operation = new GetUserUsageSummaryOperation(repository, new FixedTimeProvider());
+        var operation = new GetUserUsageSummaryOperation(
+            repository,
+            new FixedTimeProvider(),
+            identityClient,
+            Options.Create(new LingoEntitlementOptions()));
 
         var result = await operation.ExecuteAsync(new GetUserUsageSummaryCommand("user-1"));
 
@@ -83,12 +95,21 @@ public sealed class GetUserUsageSummaryOperationTests
     public async Task ExecuteAsync_WhenUserIdIsMissing_ShouldReturnValidationFailure()
     {
         var repository = Substitute.For<IRepositoryManager>();
-        var operation = new GetUserUsageSummaryOperation(repository, new FixedTimeProvider());
+        var identityClient = Substitute.For<IIdentityEntitlementClient>();
+        var operation = new GetUserUsageSummaryOperation(
+            repository,
+            new FixedTimeProvider(),
+            identityClient,
+            Options.Create(new LingoEntitlementOptions()));
 
-        var result = await operation.ExecuteAsync(new GetUserUsageSummaryCommand(" "));
+        var result = await operation.ExecuteAsync(
+            new GetUserUsageSummaryCommand(" "),
+            TestContext.Current.CancellationToken);
 
         Assert.False(result.Succeeded);
-        await repository.DidNotReceiveWithAnyArgs().Subscriptions.GetByUserIdAsync(default!);
+        await identityClient.DidNotReceiveWithAnyArgs().GetAsync(
+            default!,
+            TestContext.Current.CancellationToken);
     }
 
     private sealed class FixedTimeProvider : TimeProvider

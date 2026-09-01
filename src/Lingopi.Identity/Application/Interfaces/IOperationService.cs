@@ -1,6 +1,7 @@
 using Lingopi.Identity.Application.Operations.Auth;
 using Lingopi.Identity.Application.Operations.PasswordReset;
 using Lingopi.Identity.Application.Operations.Users;
+using Lingopi.Identity.Application.Operations.Subscriptions;
 
 namespace Lingopi.Identity.Application.Interfaces;
 
@@ -25,4 +26,9 @@ public interface IOperationService
     SendPasswordResetEmailOperation SendPasswordResetEmail { get; }
     GetPasswordResetEmailOperation GetPasswordResetEmail { get; }
     ResetPasswordOperation ResetPassword { get; }
+
+    // Subscription
+    GetSubscriptionOperation GetSubscription { get; }
+    UpsertSubscriptionOperation UpsertSubscription { get; }
+    GetEffectiveEntitlementOperation GetEffectiveEntitlement { get; }
 }

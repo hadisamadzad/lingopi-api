@@ -2,7 +2,9 @@ using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
 using Lingopi.Identity.Application.Operations.PasswordReset;
 using Lingopi.Identity.Application.Operations.Users;
+using Lingopi.Identity.Application.Operations.Subscriptions;
 using Lingopi.Identity.Application.Types.Models.Auth;
+using Lingopi.Identity.Application.Types.Models.Subscriptions;
 using Lingopi.Identity.Application.Types.Models.Users;
 using Minimals.Operations;
 
@@ -24,7 +26,10 @@ public class OperationService(
     IOperation<UpdateUserPasswordCommand, NoResult> updateUserPassword,
     IOperation<SendPasswordResetEmailCommand, NoResult> sendPasswordResetEmail,
     IOperation<GetPasswordResetEmailCommand, string> getPasswordResetInfo,
-    IOperation<ResetPasswordCommand, NoResult> resetPassword
+    IOperation<ResetPasswordCommand, NoResult> resetPassword,
+    IOperation<GetSubscriptionCommand, SubscriptionModel> getSubscription,
+    IOperation<UpsertSubscriptionCommand, SubscriptionModel> upsertSubscription,
+    IOperation<GetEffectiveEntitlementCommand, EffectiveEntitlementModel> getEffectiveEntitlement
 ) : IOperationService
 {
     // Auth
@@ -60,4 +65,10 @@ public class OperationService(
         (getPasswordResetInfo as GetPasswordResetEmailOperation)!;
     public ResetPasswordOperation ResetPassword { get; } =
         (resetPassword as ResetPasswordOperation)!;
+    public GetSubscriptionOperation GetSubscription { get; } =
+        (getSubscription as GetSubscriptionOperation)!;
+    public UpsertSubscriptionOperation UpsertSubscription { get; } =
+        (upsertSubscription as UpsertSubscriptionOperation)!;
+    public GetEffectiveEntitlementOperation GetEffectiveEntitlement { get; } =
+        (getEffectiveEntitlement as GetEffectiveEntitlementOperation)!;
 }

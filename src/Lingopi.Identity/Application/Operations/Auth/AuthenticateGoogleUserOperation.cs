@@ -47,6 +47,15 @@ public partial class AuthenticateGoogleUserOperation(
                 UpdatedAt = DateTime.UtcNow
             };
             await repository.Users.InsertAsync(user);
+
+            // Create a free subscription for the user
+            var subscription = SubscriptionEntityFactory.CreateFree(user.Id, user.CreatedAt);
+            var subscriptionPersisted = await repository.Subscriptions.UpsertAsync(subscription);
+            if (!subscriptionPersisted)
+            {
+                return OperationResult<AuthenticateGoogleUserResult>.Failure(
+                    $"Failed to create the Free subscription for user '{user.Id}'.");
+            }
         }
 
         if (user.IsLockedOutOrNotActive())

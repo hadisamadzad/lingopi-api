@@ -48,6 +48,15 @@ public class RegisterOperation(IRepositoryManager repository)
 
         await repository.Users.InsertAsync(user);
 
+        // Add free subscription to user
+        var subscription = SubscriptionEntityFactory.CreateFree(user.Id, user.CreatedAt);
+        var subscriptionPersisted = await repository.Subscriptions.UpsertAsync(subscription);
+        if (!subscriptionPersisted)
+        {
+            return OperationResult<RegisterResult>.Failure(
+                $"Failed to create the Free subscription for user '{user.Id}'.");
+        }
+
         var result = new RegisterResult
         {
             UserId = user.Id,

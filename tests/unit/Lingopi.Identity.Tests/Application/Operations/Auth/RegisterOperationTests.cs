@@ -22,6 +22,7 @@ public class RegisterOperationTests
     {
         _repository = Substitute.For<IRepositoryManager>();
         _operation = new RegisterOperation(_repository);
+        _repository.Subscriptions.UpsertAsync(Arg.Any<SubscriptionEntity>()).Returns(true);
     }
 
     [Fact]
@@ -101,6 +102,12 @@ public class RegisterOperationTests
 
         // Verify user was created with correct properties
         await _repository.Users.Received(1).InsertAsync(Arg.Any<UserEntity>());
+        await _repository.Subscriptions.Received(1).UpsertAsync(
+            Arg.Is<SubscriptionEntity>(subscription =>
+                subscription.UserId == capturedUser!.Id &&
+                subscription.Plan == SubscriptionPlan.Free &&
+                subscription.Status == SubscriptionStatus.Active &&
+                subscription.StartedAt == capturedUser.CreatedAt));
         Assert.NotNull(capturedUser);
         Assert.Equal(Role.Owner, capturedUser.Role);
         Assert.Equal(UserState.Active, capturedUser.Status);

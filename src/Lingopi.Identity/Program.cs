@@ -43,6 +43,7 @@ builder.Services.AddTransient<IOperationService, OperationService>();
 
 builder.Services.AddConfiguredMongoDB(configs);
 builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
+builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddConfiguredRedisCache(configs);
 
@@ -57,6 +58,7 @@ try
     app = builder.Build();
     await RefreshTokenRepository.EnsureIndexesAsync(
         app.Services.GetRequiredService<IMongoDatabase>());
+    await app.Services.GetRequiredService<IRepositoryManager>().Subscriptions.EnsureIndexesAsync();
     Log.Information("Application started on: {0} ({1})", configs["Urls"], env);
 }
 catch (Exception ex)

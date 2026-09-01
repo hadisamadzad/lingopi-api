@@ -8,7 +8,6 @@ public interface IRepositoryManager
     ILingoRepository Lingos { get; }
     IEnrichmentJobRepository EnrichmentJobs { get; }
     IUserSettingsRepository UserSettings { get; }
-    ISubscriptionRepository Subscriptions { get; }
     IUsageRepository Usage { get; }
     ILanguageRepository Languages { get; }
 }

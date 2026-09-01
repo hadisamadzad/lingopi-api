@@ -11,4 +11,6 @@ public class RepositoryManager(IMongoDatabase mongoDatabase) : IRepositoryManage
         new UserRepository(mongoDatabase, "identity.users");
     public IRefreshTokenRepository RefreshTokens { get; } =
         new RefreshTokenRepository(mongoDatabase);
+    public ISubscriptionRepository Subscriptions { get; } =
+        new SubscriptionRepository(mongoDatabase);
 }
