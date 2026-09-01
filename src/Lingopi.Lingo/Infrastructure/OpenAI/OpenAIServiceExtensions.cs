@@ -39,6 +39,7 @@ public static class OpenAIServiceExtensions
 
         services.AddSingleton<ITranslationService, OpenAITranslationService>();
         services.AddSingleton<ICaptureAnalysisService, OpenAICaptureAnalysisService>();
+        services.AddSingleton<ILingoDuplicateCheckService, OpenAILingoDuplicateCheckService>();
         services.AddSingleton<IEmbeddingService, OpenAIEmbeddingService>();
 
         return services;

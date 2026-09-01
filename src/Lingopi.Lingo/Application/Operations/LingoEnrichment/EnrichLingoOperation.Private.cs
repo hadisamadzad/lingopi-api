@@ -212,10 +212,7 @@ public partial class EnrichLingoOperation
         job.UpdatedAt = now;
         job.CompletedAt = hasRemainingAttempts ? null : now;
         job.NextAttemptAt = hasRemainingAttempts
-            ? now.Add(JobRetryPolicy.CalculateDelay(
-                nextAttemptCount,
-                _retryInitialDelay,
-                _retryMaxDelay))
+            ? now.Add(JobRetryPolicy.CalculateDelay(nextAttemptCount, _retryInitialDelay, _retryMaxDelay))
             : null;
     }
 

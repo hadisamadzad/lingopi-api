@@ -49,7 +49,7 @@ public class CaptureUsageServiceTests
                 record.Id.StartsWith("usage-", StringComparison.Ordinal) &&
                 record.UserId == "user-1" &&
                 record.EntityId == "capture-1" &&
-                record.UsageType == UsageType.CaptureAnalysis &&
+                record.UsageType == TokenUsageType.CaptureAnalysis &&
                 record.Model == "gpt-5-nano" &&
                 record.InputTokens == 10 &&
                 record.OutputTokens == 5 &&
@@ -86,7 +86,7 @@ public class CaptureUsageServiceTests
                 record.Id.StartsWith("usage-", StringComparison.Ordinal) &&
                 record.UserId == "user-1" &&
                 record.EntityId == "capture-1" &&
-                record.UsageType == UsageType.Embedding &&
+                record.UsageType == TokenUsageType.Embedding &&
                 record.TrackingId == null &&
                 record.Model == "text-embedding-3-small" &&
                 record.InputTokens == 8 &&

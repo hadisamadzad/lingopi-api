@@ -16,7 +16,7 @@ public sealed class CaptureUsageService(IRepositoryManager repository,
         {
             Id = UidHelper.GenerateNewId("usage"),
             UserId = capture.UserId,
-            UsageType = UsageType.CaptureAnalysis,
+            UsageType = TokenUsageType.CaptureAnalysis,
             EntityId = capture.Id,
             LingoId = capture.LingoId,
 
@@ -49,7 +49,7 @@ public sealed class CaptureUsageService(IRepositoryManager repository,
         {
             Id = UidHelper.GenerateNewId("usage"),
             UserId = capture.UserId,
-            UsageType = UsageType.Embedding,
+            UsageType = TokenUsageType.Embedding,
             EntityId = capture.Id,
             LingoId = capture.LingoId,
 
@@ -68,6 +68,41 @@ public sealed class CaptureUsageService(IRepositoryManager repository,
         {
             logger.LogError("Failed to record embedding usage for user {UserId}, capture {CaptureId}.",
                 capture.UserId, capture.Id);
+        }
+
+        return recorded;
+    }
+
+    public async Task<bool> RecordDuplicateCheckAsync(
+        CaptureEntity capture,
+        LingoDuplicateCheckResult duplicateCheck,
+        DateTime occurredAt)
+    {
+        var record = new UsageRecordEntity
+        {
+            Id = UidHelper.GenerateNewId("usage"),
+            UserId = capture.UserId,
+            UsageType = TokenUsageType.DuplicateCheck,
+            EntityId = capture.Id,
+            LingoId = duplicateCheck.DuplicateLingoId,
+
+            Provider = "openai",
+            TrackingId = duplicateCheck.TrackingId,
+            Model = duplicateCheck.Model,
+            PromptVersion = duplicateCheck.PromptVersion,
+            InputTokens = duplicateCheck.InputTokens,
+            OutputTokens = duplicateCheck.OutputTokens,
+            EstimatedCost = duplicateCheck.EstimatedCost,
+
+            OccurredAt = occurredAt
+        };
+
+        var recorded = await repository.Usage.RecordAsync(record);
+        if (!recorded)
+        {
+            logger.LogError(
+                "Failed to record duplicate check usage for user {UserId}, capture {CaptureId}, and request {RequestId}.",
+                capture.UserId, capture.Id, duplicateCheck.TrackingId);
         }
 
         return recorded;

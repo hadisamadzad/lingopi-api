@@ -8,4 +8,6 @@ public interface ICaptureUsageService
     Task<bool> RecordAsync(CaptureEntity capture, CaptureAnalysisResult analysis, DateTime occurredAt);
 
     Task<bool> RecordEmbeddingAsync(CaptureEntity capture, EmbeddingGenerationResult embedding, DateTime occurredAt);
+
+    Task<bool> RecordDuplicateCheckAsync(CaptureEntity capture, LingoDuplicateCheckResult duplicateCheck, DateTime occurredAt);
 }

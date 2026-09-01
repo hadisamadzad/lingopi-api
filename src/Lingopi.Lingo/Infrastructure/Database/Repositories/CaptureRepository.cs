@@ -16,6 +16,25 @@ public sealed class CaptureRepository(IMongoDatabase database) :
         return await _collection.Find(capture => capture.Id == captureId).FirstOrDefaultAsync();
     }
 
+    public async Task<long> CountByUserIdAsync(
+        string userId,
+        DateTime? periodStart = null,
+        DateTime? periodEnd = null)
+    {
+        var filter = Builders<CaptureEntity>.Filter.Eq(capture => capture.UserId, userId);
+        if (periodStart is { } start)
+        {
+            filter &= Builders<CaptureEntity>.Filter.Gte(capture => capture.Audit.CreatedAt, start);
+        }
+
+        if (periodEnd is { } end)
+        {
+            filter &= Builders<CaptureEntity>.Filter.Lt(capture => capture.Audit.CreatedAt, end);
+        }
+
+        return await _collection.CountDocumentsAsync(filter);
+    }
+
     public async Task<CaptureEntity?> ClaimNextAndUpdateAsync(CaptureClaimFilter filter,
         CancellationToken cancellationToken = default)
     {

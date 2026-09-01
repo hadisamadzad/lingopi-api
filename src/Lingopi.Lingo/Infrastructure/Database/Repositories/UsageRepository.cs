@@ -13,21 +13,39 @@ public sealed class UsageRepository(IMongoDatabase database) :
 {
     public async Task<UsageSummary> GetSummaryAsync(
         string userId,
-        DateTime periodStart,
-        DateTime periodEnd)
+        DateTime? periodStart = null,
+        DateTime? periodEnd = null)
     {
+        var filter = Builders<UsageRecordEntity>.Filter.Eq(record => record.UserId, userId);
+        if (periodStart is { } start)
+        {
+            filter &= Builders<UsageRecordEntity>.Filter.Gte(record => record.OccurredAt, start);
+        }
+
+        if (periodEnd is { } end)
+        {
+            filter &= Builders<UsageRecordEntity>.Filter.Lt(record => record.OccurredAt, end);
+        }
+
         var records = await _collection
-            .Find(record =>
-                record.UserId == userId &&
-                record.OccurredAt >= periodStart &&
-                record.OccurredAt < periodEnd)
+            .Find(filter)
             .ToListAsync();
 
         return new UsageSummary(
-            records.Count(record => record.UsageType == UsageType.Enrichment),
+            records.Count(record => record.UsageType == TokenUsageType.Enrichment),
             records.Sum(record => record.InputTokens),
             records.Sum(record => record.OutputTokens),
-            records.Sum(record => record.EstimatedCost ?? 0m));
+            records.Sum(record => record.EstimatedCost ?? 0m),
+            records
+                .GroupBy(record => record.Model)
+                .Select(group => new ModelUsageSummary(
+                    group.Key,
+                    group.Sum(record => record.InputTokens),
+                    group.Sum(record => record.OutputTokens),
+                    group.Sum(record => record.EstimatedCost ?? 0m)))
+                .OrderByDescending(model => model.EstimatedCost)
+                .ThenBy(model => model.ModelId)
+                .ToArray());
     }
 
     public async Task<bool> RecordAsync(UsageRecordEntity record)

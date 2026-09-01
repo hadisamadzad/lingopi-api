@@ -2,6 +2,7 @@ using Lingopi.Lingo.Application.Operations.Captures;
 using Lingopi.Lingo.Application.Operations.LingoEnrichment;
 using Lingopi.Lingo.Application.Operations.Lingos;
 using Lingopi.Lingo.Application.Operations.UserSettings;
+using Lingopi.Lingo.Application.Operations.UserUsage;
 using Minimals.Operations;
 
 namespace Lingopi.Lingo.Application.Interfaces;
@@ -15,4 +16,5 @@ public interface IOperationService
     GetLingosByUserIdOperation GetLingosByUserId { get; }
     GetUserSettingsOperation GetUserSettings { get; }
     SaveUserSettingsOperation SaveUserSettings { get; }
+    GetUserUsageSummaryOperation GetUserUsageSummary { get; }
 }

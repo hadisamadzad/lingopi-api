@@ -7,7 +7,7 @@ public class UsageRecordEntity : IEntity
 {
     public string Id { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
-    public UsageType UsageType { get; set; } = UsageType.Enrichment;
+    public TokenUsageType UsageType { get; set; }
     public string? LingoId { get; set; }
     public string? EntityId { get; set; }
     public string? EnrichmentJobId { get; set; }

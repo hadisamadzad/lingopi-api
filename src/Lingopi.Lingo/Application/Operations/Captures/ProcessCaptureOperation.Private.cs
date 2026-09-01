@@ -98,7 +98,19 @@ public partial class ProcessCaptureOperation
     {
         // A capture ID match is definitive because it means this capture was already processed.
         var lingoEntity = await repository.Lingos.GetByCaptureIdAsync(captureEntity.Id);
-        lingoEntity ??= await FindFirstSimilarLingoAsync(captureEntity, cancellationToken);
+        if (lingoEntity is null)
+        {
+            captureEntity = await FindTopSimilarLingoAsync(captureEntity, now, cancellationToken);
+            if (captureEntity.Error is not null)
+            {
+                return captureEntity;
+            }
+
+            if (captureEntity.LingoId is not null)
+            {
+                lingoEntity = await repository.Lingos.GetByIdAsync(captureEntity.LingoId);
+            }
+        }
 
         if (lingoEntity is not null) // Existing Lingo - New Encounter
         {
@@ -139,18 +151,40 @@ public partial class ProcessCaptureOperation
         return captureEntity;
     }
 
-    private async Task<LingoEntity?> FindFirstSimilarLingoAsync(CaptureEntity capture, CancellationToken cancellationToken)
+    private async Task<CaptureEntity> FindTopSimilarLingoAsync(CaptureEntity capture, DateTime now,
+        CancellationToken cancellationToken)
     {
         if (capture.Embedding?.Vector is not { Count: > 0 } embedding ||
             string.IsNullOrWhiteSpace(capture.SourceLanguageCode) ||
             string.IsNullOrWhiteSpace(capture.TargetLocaleCode))
         {
-            return null;
+            return capture;
         }
 
-        var similarLingos = await repository.Lingos.GetTopSimilarByEmbeddingAsync(capture.UserId,
-                capture.SourceLanguageCode, capture.TargetLocaleCode, embedding, cancellationToken);
+        var similarLingos = (await repository.Lingos.GetTopSimilarByEmbeddingAsync(capture.UserId,
+                capture.SourceLanguageCode, capture.TargetLocaleCode, embedding, cancellationToken))
+            .Take(5)
+            .ToArray();
+        if (similarLingos.Length == 0)
+        {
+            return capture;
+        }
 
-        return similarLingos.FirstOrDefault();
+        var duplicateCheckResult = await duplicateCheckService.CheckAsync(capture, similarLingos, cancellationToken);
+        if (!duplicateCheckResult.Succeeded)
+        {
+            capture.SetError("duplicate_check_failed", duplicateCheckResult.Error!.Messages[0]);
+            return capture;
+        }
+
+        var duplicateCheck = duplicateCheckResult.Value!;
+        var isUsageRecorded = await captureUsageService.RecordDuplicateCheckAsync(capture, duplicateCheck, now);
+        if (!isUsageRecorded)
+        {
+            logger.LogError("Failed to record duplicate check usage for capture {CaptureId}.", capture.Id);
+        }
+
+        capture.LingoId = duplicateCheck.DuplicateLingoId;
+        return capture;
     }
 }

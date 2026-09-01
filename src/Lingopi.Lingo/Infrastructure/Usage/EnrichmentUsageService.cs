@@ -51,7 +51,7 @@ public sealed class EnrichmentUsageService(
         {
             Id = UidHelper.GenerateNewId("usage"),
             UserId = job.UserId,
-            UsageType = UsageType.Enrichment,
+            UsageType = TokenUsageType.Enrichment,
             LingoId = job.LingoId,
             EnrichmentJobId = job.Id,
 

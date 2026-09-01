@@ -27,6 +27,56 @@ public class LingoRepository(IMongoDatabase database) :
             .FirstOrDefaultAsync();
     }
 
+    public async Task<long> CountByUserIdAsync(
+        string userId,
+        DateTime? periodStart = null,
+        DateTime? periodEnd = null)
+    {
+        var filter = Builders<LingoEntity>.Filter.Eq(lingo => lingo.UserId, userId);
+        if (periodStart is { } start)
+        {
+            filter &= Builders<LingoEntity>.Filter.Gte(lingo => lingo.Audit.CreatedAt, start);
+        }
+
+        if (periodEnd is { } end)
+        {
+            filter &= Builders<LingoEntity>.Filter.Lt(lingo => lingo.Audit.CreatedAt, end);
+        }
+
+        return await _collection.CountDocumentsAsync(filter);
+    }
+
+    public async Task<long> CountEncountersByUserIdAsync(
+        string userId,
+        DateTime? periodStart = null,
+        DateTime? periodEnd = null)
+    {
+        var filter = Builders<LingoEntity>.Filter.Eq(lingo => lingo.UserId, userId);
+        var encounterFilter = new BsonDocument();
+        if (periodStart is { } start)
+        {
+            encounterFilter.Add("$gte", start);
+        }
+
+        if (periodEnd is { } end)
+        {
+            encounterFilter.Add("$lt", end);
+        }
+
+        var pipeline = _collection.Aggregate()
+            .Match(filter)
+            .Unwind("Encounters");
+        if (encounterFilter.ElementCount > 0)
+        {
+            pipeline = pipeline.Match(
+                new BsonDocumentFilterDefinition<BsonDocument>(
+                    new BsonDocument("Encounters.CapturedAt", encounterFilter)));
+        }
+
+        var result = await pipeline.Count().FirstOrDefaultAsync();
+        return result?.Count ?? 0;
+    }
+
     public async Task<List<LingoEntity>> GetByUserIdAsync(string userId)
     {
         return await _collection

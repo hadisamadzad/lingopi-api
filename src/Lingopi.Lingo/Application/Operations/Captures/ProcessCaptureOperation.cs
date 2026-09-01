@@ -11,6 +11,7 @@ namespace Lingopi.Lingo.Application.Operations.Captures;
 public partial class ProcessCaptureOperation(IRepositoryManager repository, TimeProvider timeProvider,
     ICaptureAnalysisService captureAnalysisService,
     IEmbeddingService embeddingService,
+    ILingoDuplicateCheckService duplicateCheckService,
     ICaptureUsageService captureUsageService,
     ILogger<ProcessCaptureOperation> logger
     ) : IOperation<ProcessCaptureCommand, string>

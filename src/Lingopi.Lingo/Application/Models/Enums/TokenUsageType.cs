@@ -1,8 +1,9 @@
 namespace Lingopi.Lingo.Application.Models.Enums;
 
-public enum UsageType
+public enum TokenUsageType
 {
     CaptureAnalysis = 1,
     Embedding,
-    Enrichment
+    Enrichment,
+    DuplicateCheck
 }

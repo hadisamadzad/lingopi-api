@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Lingopi.Lingo.Application.Interfaces;
@@ -443,6 +444,7 @@ public class ProcessCaptureOperationTests
                 Arg.Any<IReadOnlyList<float>>(),
                 Arg.Any<CancellationToken>())
             .Returns([existing]);
+        repository.Lingos.GetByIdAsync("lingo-1").Returns(existing);
         repository.Lingos.AppendEncounterIfMissingAsync(
                 "lingo-1",
                 Arg.Any<EncounterValue>(),
@@ -519,6 +521,7 @@ public class ProcessCaptureOperationTests
                 Arg.Any<IReadOnlyList<float>>(),
                 Arg.Any<CancellationToken>())
             .Returns([existing]);
+        repository.Lingos.GetByIdAsync("lingo-1").Returns(existing);
         repository.Lingos.AppendEncounterIfMissingAsync(
                 "lingo-1",
                 Arg.Any<EncounterValue>(),
@@ -564,6 +567,7 @@ public class ProcessCaptureOperationTests
                 Arg.Any<IReadOnlyList<float>>(),
                 Arg.Any<CancellationToken>())
             .Returns([existing]);
+        repository.Lingos.GetByIdAsync("lingo-1").Returns(existing);
         repository.Lingos.AppendEncounterIfMissingAsync(
                 "lingo-1",
                 Arg.Any<EncounterValue>(),
@@ -609,6 +613,7 @@ public class ProcessCaptureOperationTests
                 Arg.Any<IReadOnlyList<float>>(),
                 Arg.Any<CancellationToken>())
             .Returns([existing]);
+        repository.Lingos.GetByIdAsync("lingo-1").Returns(existing);
         repository.Lingos.AppendEncounterIfMissingAsync(
                 "lingo-1",
                 Arg.Any<EncounterValue>(),
@@ -799,9 +804,25 @@ public class ProcessCaptureOperationTests
         IRepositoryManager repository,
         ICaptureAnalysisService analysisService,
         IEmbeddingService embeddingService,
-        ICaptureUsageService usage) =>
-        new(repository, new FixedTimeProvider(), analysisService, embeddingService, usage,
+        ICaptureUsageService usage,
+        ILingoDuplicateCheckService? duplicateCheckService = null)
+    {
+        duplicateCheckService ??= Substitute.For<ILingoDuplicateCheckService>();
+        duplicateCheckService.CheckAsync(
+                Arg.Any<CaptureEntity>(),
+                Arg.Any<IReadOnlyList<LingoEntity>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var candidates = callInfo.ArgAt<IReadOnlyList<LingoEntity>>(1);
+                return Task.FromResult(
+                    OperationResult<LingoDuplicateCheckResult>.Success(
+                        new LingoDuplicateCheckResult(candidates.FirstOrDefault()?.Id)));
+            });
+
+        return new(repository, new FixedTimeProvider(), analysisService, embeddingService, duplicateCheckService, usage,
             NullLogger<ProcessCaptureOperation>.Instance);
+    }
 
     private static CaptureEntity CreateCapture(CaptureAnalysisStatus status) =>
         new()

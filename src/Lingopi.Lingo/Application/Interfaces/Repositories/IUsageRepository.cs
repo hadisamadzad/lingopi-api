@@ -8,8 +8,8 @@ public interface IUsageRepository : IRepository<UsageRecordEntity>
 {
     Task<UsageSummary> GetSummaryAsync(
         string userId,
-        DateTime periodStart,
-        DateTime periodEnd);
+        DateTime? periodStart = null,
+        DateTime? periodEnd = null);
 
     Task<bool> RecordAsync(UsageRecordEntity record);
     Task EnsureIndexesAsync(CancellationToken cancellationToken = default);
