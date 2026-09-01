@@ -8,11 +8,12 @@ public interface ILingoRepository : IRepository<LingoEntity>
     Task<LingoEntity?> GetByIdAsync(string lingoId);
     Task<LingoEntity?> GetByCaptureIdAsync(string captureId);
     Task<List<LingoEntity>> GetByUserIdAsync(string userId);
-    Task<List<LingoEntity>> GetByCanonicalExpressionAsync(
+    Task<List<LingoEntity>> GetTopSimilarByEmbeddingAsync(
         string userId,
-        string sourceLocaleCode,
+        string sourceLanguageCode,
         string targetLocaleCode,
-        string canonicalExpression);
+        IReadOnlyList<float> embedding,
+        CancellationToken cancellationToken = default);
     Task<bool> AppendEncounterIfMissingAsync(
         string lingoId,
         EncounterValue encounter,

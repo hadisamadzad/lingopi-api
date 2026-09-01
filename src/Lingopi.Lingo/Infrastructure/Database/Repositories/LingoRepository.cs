@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Lingopi.Core.Persistence.MongoDB;
 using Lingopi.Lingo.Application.Interfaces.Repositories;
 using Lingopi.Lingo.Application.Models.Entities;
@@ -34,22 +33,44 @@ public class LingoRepository(IMongoDatabase database) :
             .ToListAsync();
     }
 
-    public async Task<List<LingoEntity>> GetByCanonicalExpressionAsync(
+    public async Task<List<LingoEntity>> GetTopSimilarByEmbeddingAsync(
         string userId,
-        string sourceLocaleCode,
+        string sourceLanguageCode,
         string targetLocaleCode,
-        string canonicalExpression)
+        IReadOnlyList<float> embedding,
+        CancellationToken cancellationToken = default)
     {
-        var expressionPattern = $"^{Regex.Escape(canonicalExpression.Trim())}$";
-        return await _collection
-            .Find(Builders<LingoEntity>.Filter.And(
+        var eligibleFilter = Builders<LingoEntity>.Filter.And(
+            Builders<LingoEntity>.Filter.Eq(lingo => lingo.UserId, userId),
+            Builders<LingoEntity>.Filter.Eq(lingo => lingo.SourceLanguageCode, sourceLanguageCode),
+            Builders<LingoEntity>.Filter.Eq(lingo => lingo.TargetLocaleCode, targetLocaleCode),
+            Builders<LingoEntity>.Filter.Exists(lingo => lingo.Embedding!.Vector));
+
+        var eligibleCount = await _collection.CountDocumentsAsync(eligibleFilter, cancellationToken: cancellationToken);
+        if (eligibleCount == 0)
+        {
+            return [];
+        }
+
+        var limit = Math.Max(1, (int)Math.Ceiling(eligibleCount * 0.10));
+        var options = new VectorSearchOptions<LingoEntity>
+        {
+            Filter = Builders<LingoEntity>.Filter.And(
                 Builders<LingoEntity>.Filter.Eq(lingo => lingo.UserId, userId),
-                Builders<LingoEntity>.Filter.AnyEq(lingo => lingo.SourceLocaleCodes, sourceLocaleCode),
-                Builders<LingoEntity>.Filter.Eq(lingo => lingo.TargetLocaleCode, targetLocaleCode),
-                Builders<LingoEntity>.Filter.Regex(
-                    lingo => lingo.Expression,
-                    new BsonRegularExpression(expressionPattern, "i"))))
-            .ToListAsync();
+                Builders<LingoEntity>.Filter.Eq(lingo => lingo.SourceLanguageCode, sourceLanguageCode),
+                Builders<LingoEntity>.Filter.Eq(lingo => lingo.TargetLocaleCode, targetLocaleCode)),
+            IndexName = EmbeddingVectorIndexName,
+            NumberOfCandidates = (int)Math.Min(eligibleCount, int.MaxValue)
+        };
+
+        return await _collection
+            .Aggregate()
+            .VectorSearch(
+                lingo => lingo.Embedding!.Vector,
+                new QueryVector(embedding.ToArray()),
+                limit,
+                options)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<bool> AppendEncounterIfMissingAsync(string lingoId, EncounterValue encounter, DateTime updatedAt,
@@ -117,11 +138,20 @@ public class LingoRepository(IMongoDatabase database) :
             .ListAsync(cancellationToken: cancellationToken);
         var indexes = await indexCursor.ToListAsync(cancellationToken);
 
-        if (indexes.Any(index =>
-                index.TryGetValue("name", out var nameValue) &&
-                nameValue.IsString &&
-                nameValue.AsString == EmbeddingVectorIndexName))
+        var existingIndex = indexes.FirstOrDefault(index =>
+            index.TryGetValue("name", out var nameValue) &&
+            nameValue.IsString &&
+            nameValue.AsString == EmbeddingVectorIndexName);
+        if (existingIndex is not null)
         {
+            if (!HasFilterField(existingIndex, nameof(LingoEntity.SourceLanguageCode)))
+            {
+                await _collection.SearchIndexes.UpdateAsync(
+                    EmbeddingVectorIndexName,
+                    CreateEmbeddingVectorIndexDefinition(),
+                    cancellationToken);
+            }
+
             return;
         }
 
@@ -130,8 +160,64 @@ public class LingoRepository(IMongoDatabase database) :
             EmbeddingVectorIndexName,
             VectorSimilarity.Cosine,
             EmbeddingDimensions,
-            [lingo => lingo.UserId]);
+            lingo => lingo.UserId,
+            lingo => lingo.SourceLanguageCode,
+            lingo => lingo.TargetLocaleCode
+            );
 
         await _collection.SearchIndexes.CreateOneAsync(indexModel, cancellationToken);
     }
+
+    private static bool HasFilterField(BsonDocument index, string fieldName)
+    {
+        if (!index.TryGetValue("latestDefinition", out var definitionValue) ||
+            !definitionValue.IsBsonDocument ||
+            !definitionValue.AsBsonDocument.TryGetValue("fields", out var fieldsValue) ||
+            !fieldsValue.IsBsonArray)
+        {
+            return false;
+        }
+
+        return fieldsValue.AsBsonArray.Any(fieldValue =>
+            fieldValue.IsBsonDocument &&
+            fieldValue.AsBsonDocument.TryGetValue("type", out var typeValue) &&
+            typeValue.IsString &&
+            typeValue.AsString == "filter" &&
+            fieldValue.AsBsonDocument.TryGetValue("path", out var pathValue) &&
+            pathValue.IsString &&
+            pathValue.AsString == fieldName);
+    }
+
+    private static BsonDocument CreateEmbeddingVectorIndexDefinition() =>
+        new()
+        {
+            {
+                "fields",
+                new BsonArray
+                {
+                    new BsonDocument
+                    {
+                        { "type", "vector" },
+                        { "path", "Embedding.Vector" },
+                        { "numDimensions", EmbeddingDimensions },
+                        { "similarity", "cosine" }
+                    },
+                    new BsonDocument
+                    {
+                        { "type", "filter" },
+                        { "path", nameof(LingoEntity.UserId) }
+                    },
+                    new BsonDocument
+                    {
+                        { "type", "filter" },
+                        { "path", nameof(LingoEntity.SourceLanguageCode) }
+                    },
+                    new BsonDocument
+                    {
+                        { "type", "filter" },
+                        { "path", nameof(LingoEntity.TargetLocaleCode) }
+                    }
+                }
+            }
+        };
 }

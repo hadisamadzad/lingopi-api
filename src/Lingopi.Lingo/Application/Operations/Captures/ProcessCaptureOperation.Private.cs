@@ -1,5 +1,4 @@
 using Lingopi.Lingo.Application.Factories;
-using Lingopi.Lingo.Application.Helpers;
 using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.Enums;
 
@@ -99,22 +98,22 @@ public partial class ProcessCaptureOperation
         return entity;
     }
 
-    private async Task<CaptureEntity> ResolveAsync(CaptureEntity entity, DateTime now,
+    private async Task<CaptureEntity> ResolveAsync(CaptureEntity captureEntity, DateTime now,
         CancellationToken cancellationToken)
     {
-        // Check for a duplicate
-        var lingoEntity = await repository.Lingos.GetByCaptureIdAsync(entity.Id);
-        lingoEntity ??= await FindDuplicateLingoAsync(entity);
+        // A capture ID match is definitive because it means this capture was already processed.
+        var lingoEntity = await repository.Lingos.GetByCaptureIdAsync(captureEntity.Id);
+        lingoEntity ??= await FindFirstSimilarLingoAsync(captureEntity, cancellationToken);
 
         if (lingoEntity is not null) // Existing Lingo - New Encounter
         {
             var appended = await repository.Lingos.AppendEncounterIfMissingAsync(lingoEntity.Id,
-                LingoEntityFactory.CreateEncounter(entity), now, cancellationToken);
+                LingoEntityFactory.CreateEncounter(captureEntity), now, cancellationToken);
             if (!appended)
             {
-                entity.SetError("lingo_not_found",
-                    $"Lingo '{lingoEntity.Id}' was removed while processing capture '{entity.Id}'.");
-                return entity;
+                captureEntity.SetError("lingo_not_found",
+                    $"Lingo '{lingoEntity.Id}' was removed while processing capture '{captureEntity.Id}'.");
+                return captureEntity;
             }
 
             // NOTE Just in case the lingo is not enriched before and it's enrichment job was stuck in queued
@@ -123,56 +122,48 @@ public partial class ProcessCaptureOperation
                 var jobs = await repository.EnrichmentJobs.GetByLingoIdAsync(lingoEntity.Id);
                 if (!jobs.Any(x => x.Status is JobProcessingStatus.Queued or JobProcessingStatus.Running))
                 {
-                    await repository.EnrichmentJobs.InsertAsync(EnrichmentJobFactory.Create(lingoEntity, entity, now));
+                    await repository.EnrichmentJobs.InsertAsync(EnrichmentJobFactory.Create(lingoEntity, captureEntity, now));
                 }
             }
 
-            entity.CaptureOutcome = CaptureOutcome.NewEncounter;
+            captureEntity.CaptureOutcome = CaptureOutcome.NewEncounter;
         }
         else // New Lingo
         {
-            lingoEntity = LingoEntityFactory.CreateFromCapture(entity, now);
-            lingoEntity.Embedding = entity.Embedding;
+            lingoEntity = LingoEntityFactory.CreateFromCapture(captureEntity, now);
+            lingoEntity.Embedding = captureEntity.Embedding;
 
             await repository.Lingos.InsertAsync(lingoEntity);
-            await repository.EnrichmentJobs.InsertAsync(EnrichmentJobFactory.Create(lingoEntity, entity, now));
+            await repository.EnrichmentJobs.InsertAsync(EnrichmentJobFactory.Create(lingoEntity, captureEntity, now));
 
-            entity.CaptureOutcome = CaptureOutcome.NewLingo;
+            captureEntity.CaptureOutcome = CaptureOutcome.NewLingo;
         }
 
-        entity.LingoId = lingoEntity.Id;
-        entity.Status = CaptureAnalysisStatus.Completed;
-        entity.Audit.AttemptCount += 1;
-        entity.ClearError();
+        captureEntity.LingoId = lingoEntity.Id;
+        captureEntity.Status = CaptureAnalysisStatus.Completed;
+        captureEntity.Audit.AttemptCount += 1;
+        captureEntity.ClearError();
 
-        entity.Audit.NextAttemptAt = null;
-        entity.Audit.CompletedAt = now;
-        entity.Audit.StartedAt = null;
-        entity.Audit.UpdatedAt = now;
+        captureEntity.Audit.NextAttemptAt = null;
+        captureEntity.Audit.CompletedAt = now;
+        captureEntity.Audit.StartedAt = null;
+        captureEntity.Audit.UpdatedAt = now;
 
-        return entity;
+        return captureEntity;
     }
 
-    private async Task<LingoEntity?> FindDuplicateLingoAsync(CaptureEntity capture)
+    private async Task<LingoEntity?> FindFirstSimilarLingoAsync(CaptureEntity capture, CancellationToken cancellationToken)
     {
-        var candidates = (await repository.Lingos.GetByCanonicalExpressionAsync(
-                capture.UserId,
-                capture.SourceLocaleCode!,
-                capture.TargetLocaleCode!,
-                capture.CanonicalExpression!))
-            .Where(lingo =>
-                !string.IsNullOrWhiteSpace(lingo.Expression) &&
-                !string.IsNullOrWhiteSpace(lingo.SenseKey) &&
-                string.Equals(
-                    LingoTextNormalizer.Normalize(lingo.Expression!),
-                    LingoTextNormalizer.Normalize(capture.CanonicalExpression!),
-                    StringComparison.Ordinal) &&
-                string.Equals(
-                    lingo.SenseKey,
-                    capture.SenseKey,
-                    StringComparison.OrdinalIgnoreCase))
-            .ToList();
+        if (capture.Embedding?.Vector is not { Count: > 0 } embedding ||
+            string.IsNullOrWhiteSpace(capture.SourceLanguageCode) ||
+            string.IsNullOrWhiteSpace(capture.TargetLocaleCode))
+        {
+            return null;
+        }
 
-        return candidates.FirstOrDefault();
+        var similarLingos = await repository.Lingos.GetTopSimilarByEmbeddingAsync(capture.UserId,
+                capture.SourceLanguageCode, capture.TargetLocaleCode, embedding, cancellationToken);
+
+        return similarLingos.FirstOrDefault();
     }
 }

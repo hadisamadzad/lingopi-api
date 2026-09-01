@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Lingopi.Lingo.Application.Interfaces;
@@ -177,8 +178,12 @@ public class ProcessCaptureOperationTests
     {
         var repository = Substitute.For<IRepositoryManager>();
         repository.Captures.UpdateAsync(Arg.Any<CaptureEntity>()).Returns(true);
-        repository.Lingos.GetByCanonicalExpressionAsync(
-                "user-1", "en-US", "fa-IR", "make a point")
+        repository.Lingos.GetTopSimilarByEmbeddingAsync(
+                "user-1",
+                "en",
+                "fa-IR",
+                Arg.Any<IReadOnlyList<float>>(),
+                Arg.Any<CancellationToken>())
             .Returns([]);
         var operation = CreateOperation(
             repository,
@@ -207,7 +212,7 @@ public class ProcessCaptureOperationTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenAnalysisAlreadyPersisted_DoesNotCallAnalysisAgain()
+    public async Task ExecuteAsync_WhenVectorSearchReturnsLingo_AppendsEncounter()
     {
         var repository = Substitute.For<IRepositoryManager>();
         repository.Captures.UpdateAsync(Arg.Any<CaptureEntity>()).Returns(true);
@@ -217,12 +222,17 @@ public class ProcessCaptureOperationTests
             UserId = "user-1",
             Expression = "make a point",
             SenseKey = "express_main_idea",
+            SourceLanguageCode = "en",
             SourceLocaleCodes = ["en-US"],
             TargetLocaleCode = "fa-IR",
             Enrichment = new EnrichmentValue { Status = EnrichmentStatus.Ready }
         };
-        repository.Lingos.GetByCanonicalExpressionAsync(
-                "user-1", "en-US", "fa-IR", "make a point")
+        repository.Lingos.GetTopSimilarByEmbeddingAsync(
+                "user-1",
+                "en",
+                "fa-IR",
+                Arg.Any<IReadOnlyList<float>>(),
+                Arg.Any<CancellationToken>())
             .Returns([existing]);
         repository.Lingos.AppendEncounterIfMissingAsync(
                 "lingo-1",
@@ -257,6 +267,48 @@ public class ProcessCaptureOperationTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task ExecuteAsync_WhenCaptureIdAlreadyExists_DoesNotRunVectorSearch()
+    {
+        var repository = Substitute.For<IRepositoryManager>();
+        repository.Captures.UpdateAsync(Arg.Any<CaptureEntity>()).Returns(true);
+        var existing = new LingoEntity
+        {
+            Id = "lingo-1",
+            UserId = "user-1",
+            Enrichment = new EnrichmentValue { Status = EnrichmentStatus.Ready }
+        };
+        repository.Lingos.GetByCaptureIdAsync("capture-1").Returns(existing);
+        repository.Lingos.AppendEncounterIfMissingAsync(
+                "lingo-1",
+                Arg.Any<EncounterValue>(),
+                Arg.Any<DateTime>(),
+                Arg.Any<CancellationToken>())
+            .Returns(true);
+        var operation = CreateOperation(
+            repository,
+            Substitute.For<ICaptureAnalysisService>(),
+            Substitute.For<IEmbeddingService>(),
+            Substitute.For<ICaptureUsageService>());
+        var capture = CreateCapture(CaptureAnalysisStatus.ResolutionRunning);
+        capture.Embedding = new EmbeddingValue { Model = "model", Vector = [1] };
+        repository.Captures.ClaimNextAndUpdateAsync(
+                Arg.Any<CaptureClaimFilter>(),
+                Arg.Any<CancellationToken>())
+            .Returns(capture);
+
+        var result = await operation.ExecuteAsync(new ProcessCaptureCommand());
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(CaptureOutcome.NewEncounter, capture.CaptureOutcome);
+        await repository.Lingos.DidNotReceive().GetTopSimilarByEmbeddingAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<IReadOnlyList<float>>(),
+            Arg.Any<CancellationToken>());
+    }
+
     private static ProcessCaptureOperation CreateOperation(
         IRepositoryManager repository,
         ICaptureAnalysisService analysisService,
@@ -272,6 +324,7 @@ public class ProcessCaptureOperationTests
             UserId = "user-1",
             Expression = "The point I'm trying to make",
             EncounterContext = LingoContext.Workplace,
+            SourceLanguageCode = "en",
             SourceLocaleCode = "en-US",
             TargetLocaleCode = "fa-IR",
             Audit = new CaptureAuditValue
