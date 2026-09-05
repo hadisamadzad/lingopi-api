@@ -1,6 +1,6 @@
 namespace Lingopi.Core.Persistence.Redis;
 
-public class RedisConfig
+public record RedisConfig
 {
     public const string Key = "Redis";
 

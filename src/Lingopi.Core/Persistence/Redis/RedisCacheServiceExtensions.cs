@@ -11,7 +11,10 @@ public static class RedisCacheServiceExtensions
     {
         var options = new ConfigurationOptions();
         foreach (var connection in config.Connections)
+        {
             options.EndPoints.Add(connection);
+        }
+
 
         services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(options));
 

@@ -150,8 +150,8 @@ public sealed class OpenAITranslationService(
                         },
                         "examples": {
                           "type": "array",
-                          "minItems": 0,
-                          "maxItems": 5,
+                          "minItems": 3,
+                          "maxItems": 4,
                           "items": {
                             "type": "object",
                             "properties": {
@@ -184,7 +184,7 @@ public sealed class OpenAITranslationService(
                         },
                         "type": {
                           "type": "string",
-                          "enum": ["word", "phrase", "phrasalVerb", "collocation", "idiom", "saying"]
+                          "enum": ["word", "phrasalVerb", "collocation", "idiom", "saying"]
                         },
                         "registers": {
                           "type": "array",
@@ -272,6 +272,12 @@ public sealed class OpenAITranslationService(
                 !string.IsNullOrWhiteSpace(example.Text) &&
                 !string.IsNullOrWhiteSpace(example.Translation))
             .ToArray() ?? [];
+
+        if (translation.IsOffensive && translation.Examples?.Count > 0)
+        {
+            translation.Examples?.Clear();
+        }
+
         if (!translation.IsOffensive && examples.Length < 3)
         {
             const string errorMessage = "OpenAI returned fewer than three translation examples.";

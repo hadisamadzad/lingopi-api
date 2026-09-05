@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using Lingopi.Core.Helpers;
 using FluentValidation.Results;
+using Lingopi.Core.Extensions;
 using Xunit;
 
 namespace Lingopi.Core.Tests.Helpers;

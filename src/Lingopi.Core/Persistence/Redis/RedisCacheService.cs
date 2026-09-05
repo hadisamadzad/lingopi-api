@@ -11,10 +11,9 @@ public class RedisCacheService : ICacheService
 
     public RedisCacheService(IConnectionMultiplexer multiplexer, string instancePrefix)
     {
-        if (string.IsNullOrWhiteSpace(instancePrefix))
-            throw new ArgumentException("Invalid instance prefix. Provide a valid string as prefix");
+        ArgumentException.ThrowIfNullOrWhiteSpace(instancePrefix);
 
-        Prefix = $"{instancePrefix.Trim().Replace(" ", "")}";
+        Prefix = $"{instancePrefix.ToLower().Trim().Replace(" ", "", StringComparison.Ordinal)}";
         _connectionMultiplexer = multiplexer;
     }
 
@@ -24,7 +23,9 @@ public class RedisCacheService : ICacheService
         var value = await _connectionMultiplexer.GetDatabase().StringGetAsync(finalKey);
 
         if (value.IsNull)
+        {
             return default;
+        }
 
         return JsonSerializer.Deserialize<T>(value.ToString());
     }
