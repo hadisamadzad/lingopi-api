@@ -2,7 +2,7 @@ using Lingopi.Lingo.Api.Models;
 using Lingopi.Lingo.Application.Operations.Lingos;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Lingopi.Lingo.Api.Endpoints;
+namespace Lingopi.Lingo.Api.Endpoints.Lingos;
 
 public class GetLingosByUserIdEndpoint : IEndpoint
 {
