@@ -1,8 +1,5 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.Auth;
 
@@ -11,15 +8,16 @@ public class AuthenticateGoogleUserEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapPost("api/internal/auth/google", async (IOperationService operations,
+        app.MapPost("api/internal/auth/google", async (IOperationMediator operations,
             HttpContext context, [FromBody] AuthenticateGoogleUserRequest request) =>
         {
-            var operationResult = await operations.AuthenticateGoogleUser.ExecuteAsync(
-                new AuthenticateGoogleUserCommand(
-                    InternalAuthSecret: context.Request.Headers["Lingopi-Internal-Auth"].ToString(),
-                    Email: request.Email,
-                    FirstName: request.FirstName,
-                    LastName: request.LastName));
+            var operationResult = await operations.ExecuteAsync(new AuthenticateGoogleUserCommand
+            (
+                InternalAuthSecret: context.Request.Headers["Lingopi-Internal-Auth"].ToString(),
+                Email: request.Email,
+                FirstName: request.FirstName,
+                LastName: request.LastName
+            ));
 
             return operationResult.Status switch
             {

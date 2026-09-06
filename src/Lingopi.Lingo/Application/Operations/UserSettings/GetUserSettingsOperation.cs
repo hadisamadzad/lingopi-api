@@ -1,6 +1,5 @@
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.ReadModels;
-using Minimals.Operations;
 
 namespace Lingopi.Lingo.Application.Operations.UserSettings;
 
@@ -23,7 +22,7 @@ public sealed class GetUserSettingsOperation(IRepositoryManager repository) :
     }
 }
 
-public record GetUserSettingsCommand(string UserId) : IOperationCommand;
+public record GetUserSettingsCommand(string UserId) : IOperationCommand<UserSettingsModel>;
 
 internal static class UserSettingsModelMapper
 {

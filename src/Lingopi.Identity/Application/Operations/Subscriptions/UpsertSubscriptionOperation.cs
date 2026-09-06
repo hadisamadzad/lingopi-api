@@ -6,7 +6,6 @@ using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Configs;
 using Lingopi.Identity.Application.Types.Entities;
 using Lingopi.Identity.Application.Types.Models.Subscriptions;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Subscriptions;
 
@@ -130,4 +129,4 @@ public sealed record UpsertSubscriptionCommand(
     SubscriptionPlan Plan,
     SubscriptionStatus Status,
     DateTime StartedAt,
-    DateTime? ExpiresAt) : IOperationCommand;
+    DateTime? ExpiresAt) : IOperationCommand<SubscriptionModel>;

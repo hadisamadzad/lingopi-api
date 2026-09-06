@@ -1,6 +1,5 @@
 ﻿using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Models.Users;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 
@@ -31,4 +30,4 @@ public class GetUserProfileOperation(
     }
 }
 
-public record GetUserProfileCommand(string UserId) : IOperationCommand;
+public record GetUserProfileCommand(string UserId) : IOperationCommand<UserModel>;

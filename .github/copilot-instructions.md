@@ -25,7 +25,7 @@ Copilot must follow that document when suggesting:
 
 - Use minimal API controllers:
   - Translate HTTP requests to Commands
-  - Call Operations via OperationService
+  - Call Operations via `IOperationMediator`
   - Map OperationStatus to HTTP responses
 - **No business logic** in controllers.
 - All orchestration logic belongs in the **Application** layer.

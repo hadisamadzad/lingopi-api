@@ -1,10 +1,7 @@
-using Lingopi.Core.Interfaces;
 using Lingopi.Identity.Api.Extensions;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
 using Lingopi.Identity.Core.Configuration;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.Auth;
 
@@ -15,11 +12,11 @@ public class LoginEndpoint : IEndpoint
         // Endpoint for logging in
         app.MapGroup(Routes.AuthBaseRoute)
             .WithSummary("Login endpoint")
-            .MapPost("login", async (IOperationService operations,
+            .MapPost("login", async (IOperationMediator operations,
                 [FromBody] LoginRequest request) =>
             {
                 // Operation
-                var operationResult = await operations.Login.ExecuteAsync(new LoginCommand
+                var operationResult = await operations.ExecuteAsync(new LoginCommand
                 (
                     Email: request.Email.Trim(),
                     Password: request.Password.Trim()

@@ -1,8 +1,5 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.PasswordReset;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.PasswordReset;
 
@@ -11,18 +8,16 @@ public class GetPasswordResetEmailEndpoint : IEndpoint
     public void MapEndpoints(WebApplication app)
     {
         app.MapGroup(Routes.AuthBaseRoute)
-            .MapGet("password-reset", async (IOperationService operations,
+            .MapGet("password-reset", async (IOperationMediator operations,
                 [FromQuery] string token) =>
             {
-                var operationResult = await operations.GetPasswordResetEmail
-                    .ExecuteAsync(new GetPasswordResetEmailCommand(token));
+                var operationResult = await operations.ExecuteAsync(
+                    new GetPasswordResetEmailCommand(token));
 
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.Ok(
-                        new GetPasswordResetEmailResponse(
-                            Email: operationResult.Value!
-                        )),
+                        new GetPasswordResetEmailResponse(Email: operationResult.Value!)),
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error),
                     OperationStatus.NotFound => Results.Unauthorized(),
                     OperationStatus.Unauthorized => Results.Unauthorized(),

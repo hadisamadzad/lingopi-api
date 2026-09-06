@@ -1,7 +1,4 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.Auth;
 
@@ -12,12 +9,11 @@ public class GetOwnershipStatusEndpoint : IEndpoint
         // Endpoint for checking if ownership is done
         app.MapGroup(Routes.AuthBaseRoute)
             .WithSummary("Checks whether the service ownership stage is completed")
-            .MapGet("ownership-check", async (IOperationService operations
+            .MapGet("ownership-check", async (IOperationMediator operations
                 ) =>
             {
                 // Operation
-                var operationResult = await operations.GetOwnershipStatus
-                    .ExecuteAsync(new GetOwnershipStatusCommand());
+                var operationResult = await operations.ExecuteAsync(new GetOwnershipStatusCommand());
 
                 // Result
                 return operationResult.Status switch

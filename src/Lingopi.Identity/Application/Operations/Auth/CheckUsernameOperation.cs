@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Lingopi.Core.Extensions;
 using Lingopi.Identity.Application.Interfaces;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 
@@ -27,7 +26,7 @@ public class CheckUsernameOperation(IRepositoryManager repository) :
     }
 }
 
-public record CheckUsernameCommand(string Email) : IOperationCommand;
+public record CheckUsernameCommand(string Email) : IOperationCommand<bool>;
 
 public class CheckUsernameValidator : AbstractValidator<CheckUsernameCommand>
 {

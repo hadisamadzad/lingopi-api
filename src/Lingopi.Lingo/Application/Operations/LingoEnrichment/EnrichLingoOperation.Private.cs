@@ -2,7 +2,6 @@ using Lingopi.Lingo.Application.Helpers;
 using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.Enums;
 using Lingopi.Lingo.Application.Models.Services;
-using Minimals.Operations;
 
 namespace Lingopi.Lingo.Application.Operations.LingoEnrichment;
 
@@ -33,20 +32,6 @@ public partial class EnrichLingoOperation
         lingo.SourceLanguageCode ??= lingo.Encounters
             .Select(encounter => encounter.SourceLanguageCode)
             .FirstOrDefault(languageCode => !string.IsNullOrWhiteSpace(languageCode));
-    }
-
-    private static List<EncounterValue> GetEncounters(LingoEntity lingo)
-    {
-        return lingo.Encounters.Count > 0
-            ? lingo.Encounters
-            :
-            [
-                new EncounterValue
-                {
-                    OriginalText = GetOriginalText(lingo),
-                    CapturedAt = DateTime.MinValue
-                }
-            ];
     }
 
     private async Task<OperationResult<string>> FailForInvalidLingoAsync(
@@ -89,7 +74,14 @@ public partial class EnrichLingoOperation
         lingo.Pattern = translationResult.Pattern;
         lingo.SenseKey = lingo.SenseKey ?? translationResult.SenseKey;
         lingo.SourceLocaleCodes = GetSourceLocaleCodes(lingo);
-        lingo.TargetLocaleCode = LocaleCodeNormalizer.Normalize(job.TargetLocaleCode);
+        var targetLocaleCode = job.TargetLocaleCode;
+        if (string.IsNullOrWhiteSpace(targetLocaleCode))
+        {
+            throw new InvalidOperationException(
+                $"Enrichment job '{job.Id}' is missing the target locale.");
+        }
+
+        lingo.TargetLocaleCode = LocaleCodeNormalizer.Normalize(targetLocaleCode);
         lingo.Type = translationResult.Type ?? lingo.Type;
         lingo.Registers = translationResult.Registers?.ToList() ?? lingo.Registers;
         lingo.Meaning = translationResult.Meaning ?? string.Empty;

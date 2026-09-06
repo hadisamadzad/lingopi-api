@@ -57,7 +57,8 @@ public sealed class UpdateUserThemeOperationTests
     public async Task ExecuteAsync_WhenUserDoesNotExist_ShouldReturnNotFound()
     {
         var repository = Substitute.For<IRepositoryManager>();
-        repository.Users.GetByIdAsync("user-1").Returns(Task.FromResult<UserEntity>(null!));
+        repository.Users.GetByIdAsync("user-1")
+            .Returns(Task.FromResult<UserEntity?>(null));
         var operation = new UpdateUserThemeOperation(repository);
 
         var result = await operation.ExecuteAsync(

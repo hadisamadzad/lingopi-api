@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Lingopi.Core.Interfaces;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Operations.LingoEnrichment;
 using Lingopi.Lingo.Workers;
@@ -19,9 +20,11 @@ public class LingoEnrichmentWorkerTests
     [Fact]
     public async Task ExecuteAsync_ShouldInvokeEnrichmentOperation()
     {
-        var operation = Substitute.For<IOperation<EnrichLingoCommand, string>>();
         var invocation = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        operation.ExecuteAsync(Arg.Any<EnrichLingoCommand>(), Arg.Any<CancellationToken?>())
+        var operations = Substitute.For<IOperationMediator>();
+        operations.ExecuteAsync<string>(
+                Arg.Any<IOperationCommand<string>>(),
+                Arg.Any<CancellationToken?>())
             .Returns(callInfo =>
             {
                 invocation.TrySetResult(true);
@@ -29,9 +32,7 @@ public class LingoEnrichmentWorkerTests
             });
 
         var services = new ServiceCollection();
-        var operationService = Substitute.For<IOperationService>();
-        operationService.EnrichLingo.Returns(operation);
-        services.AddScoped(_ => operationService);
+        services.AddScoped(_ => operations);
         await using var provider = services.BuildServiceProvider();
 
         var worker = new LingoEnrichmentWorker(
@@ -43,20 +44,22 @@ public class LingoEnrichmentWorkerTests
         await invocation.Task.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
         await worker.StopAsync(cancellationToken);
 
-        await operation.Received(1).ExecuteAsync(
-            Arg.Is<EnrichLingoCommand>(command =>
-                command.Job == null),
+        await operations.Received(1).ExecuteAsync<string>(
+            Arg.Is<IOperationCommand<string>>(command =>
+                command.GetType() == typeof(EnrichLingoCommand)),
             Arg.Any<CancellationToken?>());
     }
 
     [Fact]
     public async Task ExecuteAsync_WhenNoOperationIsRepeated_LogsItOnce()
     {
-        var operation = Substitute.For<IOperation<EnrichLingoCommand, string>>();
         var invocationCount = 0;
         var repeatedInvocations = new TaskCompletionSource<bool>(
             TaskCreationOptions.RunContinuationsAsynchronously);
-        operation.ExecuteAsync(Arg.Any<EnrichLingoCommand>(), Arg.Any<CancellationToken?>())
+        var operations = Substitute.For<IOperationMediator>();
+        operations.ExecuteAsync<string>(
+                Arg.Any<IOperationCommand<string>>(),
+                Arg.Any<CancellationToken?>())
             .Returns(_ =>
             {
                 if (Interlocked.Increment(ref invocationCount) >= 3)
@@ -68,9 +71,7 @@ public class LingoEnrichmentWorkerTests
             });
 
         var services = new ServiceCollection();
-        var operationService = Substitute.For<IOperationService>();
-        operationService.EnrichLingo.Returns(operation);
-        services.AddScoped(_ => operationService);
+        services.AddScoped(_ => operations);
         await using var provider = services.BuildServiceProvider();
         var logger = new RecordingLogger();
         var worker = new LingoEnrichmentWorker(provider.GetRequiredService<IServiceScopeFactory>(), logger);

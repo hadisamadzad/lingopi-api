@@ -1,6 +1,5 @@
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.ReadModels;
-using Minimals.Operations;
 
 namespace Lingopi.Lingo.Application.Operations.Lingos;
 
@@ -23,4 +22,4 @@ public class GetLingosByUserIdOperation(IRepositoryManager repository) :
     }
 }
 
-public record GetLingosByUserIdCommand(string UserId) : IOperationCommand;
+public record GetLingosByUserIdCommand(string UserId) : IOperationCommand<List<LingoModel>>;

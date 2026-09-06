@@ -1,9 +1,6 @@
-using Lingopi.Core.Interfaces;
 using Lingopi.Lingo.Api.Models;
-using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Operations.UserUsage;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Lingo.Api.Endpoints;
 
@@ -14,10 +11,10 @@ public sealed class GetUserUsageSummaryEndpoint : IEndpoint
         app.MapGroup(Routes.LingoBaseRoute)
             .WithSummary("Get the current user's usage summary")
             .MapGet("usage", async (
-                [FromServices] IOperationService operations,
+                [FromServices] IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId) =>
             {
-                var operationResult = await operations.GetUserUsageSummary.ExecuteAsync(
+                var operationResult = await operations.ExecuteAsync(
                     new GetUserUsageSummaryCommand(userId));
 
                 return operationResult.Status switch

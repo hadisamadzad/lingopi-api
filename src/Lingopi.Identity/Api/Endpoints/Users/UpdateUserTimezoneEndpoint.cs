@@ -1,8 +1,5 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Users;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.Users;
 
@@ -12,11 +9,11 @@ public sealed class UpdateUserTimezoneEndpoint : IEndpoint
     {
         app.MapGroup(Routes.UserBaseRoute)
             .MapPatch("me/timezone", async (
-                IOperationService operations,
+                IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId,
                 [FromBody] UpdateUserTimezoneRequest request) =>
             {
-                var result = await operations.UpdateUserTimezone.ExecuteAsync(
+                var result = await operations.ExecuteAsync(
                     new UpdateUserTimezoneCommand(userId, request.TimeZoneId));
 
                 return result.Status switch

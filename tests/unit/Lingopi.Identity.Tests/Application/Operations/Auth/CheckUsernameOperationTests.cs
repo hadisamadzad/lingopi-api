@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.Threading;
 using System.Threading.Tasks;
 using Lingopi.Identity.Application.Interfaces;
@@ -40,7 +42,8 @@ public class CheckUsernameOperationTests
     {
         // Arrange
         var command = new CheckUsernameCommand("newuser@example.com");
-        _repository.Users.GetByEmailAsync(command.Email).Returns((UserEntity?)null);
+        _repository.Users.GetByEmailAsync(command.Email)
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         // Act
         var result = await _operation.ExecuteAsync(command, CancellationToken.None);

@@ -64,7 +64,8 @@ public class AuthenticateGoogleUserOperationTests
     [Fact]
     public async Task ExecuteAsync_WhenFirstGoogleUserIsNew_ShouldCreateOwnerAndTokens()
     {
-        _repository.Users.GetByEmailAsync("user@example.com").Returns((UserEntity?)null);
+        _repository.Users.GetByEmailAsync("user@example.com")
+            .Returns(Task.FromResult<UserEntity?>(null));
         _repository.Users.AnyAsync().Returns(false);
 
         UserEntity? createdUser = null;

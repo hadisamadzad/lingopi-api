@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Lingopi.Core.Interfaces;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Operations.Captures;
 using Lingopi.Lingo.Workers;
@@ -19,11 +20,11 @@ public class CaptureAnalysisWorkerTests
     [Fact]
     public async Task ExecuteAsync_InvokesCaptureOperation()
     {
-        var operation = Substitute.For<IOperation<ProcessCaptureCommand, string>>();
         var invoked = new TaskCompletionSource<bool>(
             TaskCreationOptions.RunContinuationsAsynchronously);
-        operation.ExecuteAsync(
-                Arg.Any<ProcessCaptureCommand>(),
+        var operations = Substitute.For<IOperationMediator>();
+        operations.ExecuteAsync<string>(
+                Arg.Any<IOperationCommand<string>>(),
                 Arg.Any<CancellationToken?>())
             .Returns(_ =>
             {
@@ -32,9 +33,7 @@ public class CaptureAnalysisWorkerTests
             });
 
         var services = new ServiceCollection();
-        var operationService = Substitute.For<IOperationService>();
-        operationService.ProcessCapture.Returns(operation);
-        services.AddScoped(_ => operationService);
+        services.AddScoped(_ => operations);
         await using var provider = services.BuildServiceProvider();
         var worker = new CaptureAnalysisWorker(
             provider.GetRequiredService<IServiceScopeFactory>(),
@@ -45,19 +44,21 @@ public class CaptureAnalysisWorkerTests
         await invoked.Task.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
         await worker.StopAsync(cancellationToken);
 
-        await operation.Received(1).ExecuteAsync(
-            Arg.Any<ProcessCaptureCommand>(),
+        await operations.Received(1).ExecuteAsync<string>(
+            Arg.Any<IOperationCommand<string>>(),
             Arg.Any<CancellationToken?>());
     }
 
     [Fact]
     public async Task ExecuteAsync_WhenNoOperationIsRepeated_LogsItOnce()
     {
-        var operation = Substitute.For<IOperation<ProcessCaptureCommand, string>>();
         var invocationCount = 0;
         var repeatedInvocations = new TaskCompletionSource<bool>(
             TaskCreationOptions.RunContinuationsAsynchronously);
-        operation.ExecuteAsync(Arg.Any<ProcessCaptureCommand>(), Arg.Any<CancellationToken?>())
+        var operations = Substitute.For<IOperationMediator>();
+        operations.ExecuteAsync<string>(
+                Arg.Any<IOperationCommand<string>>(),
+                Arg.Any<CancellationToken?>())
             .Returns(_ =>
             {
                 if (Interlocked.Increment(ref invocationCount) >= 3)
@@ -69,9 +70,7 @@ public class CaptureAnalysisWorkerTests
             });
 
         var services = new ServiceCollection();
-        var operationService = Substitute.For<IOperationService>();
-        operationService.ProcessCapture.Returns(operation);
-        services.AddScoped(_ => operationService);
+        services.AddScoped(_ => operations);
         await using var provider = services.BuildServiceProvider();
         var logger = new RecordingLogger();
         var worker = new CaptureAnalysisWorker(

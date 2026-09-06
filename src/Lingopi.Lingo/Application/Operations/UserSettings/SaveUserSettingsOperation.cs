@@ -3,7 +3,6 @@ using Lingopi.Lingo.Application.Helpers;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.ReadModels;
-using Minimals.Operations;
 
 namespace Lingopi.Lingo.Application.Operations.UserSettings;
 
@@ -65,7 +64,7 @@ public sealed class SaveUserSettingsOperation(
 public record SaveUserSettingsCommand(
     string UserId,
     string TargetLocaleCode,
-    IReadOnlyList<string> SourceLocaleCodes) : IOperationCommand;
+    IReadOnlyList<string> SourceLocaleCodes) : IOperationCommand<UserSettingsModel>;
 
 public sealed class SaveUserSettingsCommandValidator :
     AbstractValidator<SaveUserSettingsCommand>

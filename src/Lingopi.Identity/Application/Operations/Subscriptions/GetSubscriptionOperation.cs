@@ -2,7 +2,6 @@ using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Entities;
 using Lingopi.Identity.Application.Types.Models.Subscriptions;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Subscriptions;
 
@@ -82,4 +81,4 @@ public sealed class GetSubscriptionOperation(
             subscription.UpdatedAt);
 }
 
-public sealed record GetSubscriptionCommand(string UserId) : IOperationCommand;
+public sealed record GetSubscriptionCommand(string UserId) : IOperationCommand<SubscriptionModel>;

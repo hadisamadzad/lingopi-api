@@ -1,9 +1,6 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Users;
 using Lingopi.Identity.Application.Types.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.Users;
 
@@ -13,11 +10,11 @@ public sealed class UpdateUserThemeEndpoint : IEndpoint
     {
         app.MapGroup(Routes.UserBaseRoute)
             .MapPatch("me/theme", async (
-                IOperationService operations,
+                IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId,
                 [FromBody] UpdateUserThemeRequest request) =>
             {
-                var result = await operations.UpdateUserTheme.ExecuteAsync(
+                var result = await operations.ExecuteAsync(
                     new UpdateUserThemeCommand(userId, request.Theme));
 
                 return result.Status switch

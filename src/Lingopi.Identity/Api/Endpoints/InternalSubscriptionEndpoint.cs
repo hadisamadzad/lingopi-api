@@ -1,9 +1,6 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Subscriptions;
 using Lingopi.Identity.Application.Types.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints;
 
@@ -14,11 +11,11 @@ public sealed class InternalSubscriptionEndpoint : IEndpoint
         var group = app.MapGroup("api/internal/subscriptions/");
         group
             .MapGet("{userId}/entitlement", async (
-                IOperationService operations,
+                IOperationMediator operations,
                 [FromRoute] string userId,
                 [FromHeader(Name = "Lingopi-Internal-Auth")] string internalAuthSecret) =>
             {
-                var result = await operations.GetEffectiveEntitlement.ExecuteAsync(
+                var result = await operations.ExecuteAsync(
                     new GetEffectiveEntitlementCommand(internalAuthSecret, userId));
 
                 return result.Status switch
@@ -33,12 +30,12 @@ public sealed class InternalSubscriptionEndpoint : IEndpoint
 
         group
             .MapPut("{userId}", async (
-                IOperationService operations,
+                IOperationMediator operations,
                 [FromRoute] string userId,
                 [FromHeader(Name = "Lingopi-Internal-Auth")] string internalAuthSecret,
                 [FromBody] UpsertSubscriptionRequest request) =>
             {
-                var result = await operations.UpsertSubscription.ExecuteAsync(
+                var result = await operations.ExecuteAsync(
                     new UpsertSubscriptionCommand(
                         internalAuthSecret,
                         userId,

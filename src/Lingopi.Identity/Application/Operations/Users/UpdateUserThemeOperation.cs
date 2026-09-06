@@ -1,6 +1,5 @@
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Entities;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Users;
 
@@ -37,4 +36,4 @@ public sealed class UpdateUserThemeOperation(IRepositoryManager repository) :
     }
 }
 
-public sealed record UpdateUserThemeCommand(string UserId, ThemePreference? Theme) : IOperationCommand;
+public sealed record UpdateUserThemeCommand(string UserId, ThemePreference? Theme) : IOperationCommand<NoResult>;

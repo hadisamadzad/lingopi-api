@@ -1,8 +1,5 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.Auth;
 
@@ -13,11 +10,11 @@ public class RegisterEndpoint : IEndpoint
         // Endpoint for registration
         app.MapGroup(Routes.AuthBaseRoute)
             .WithSummary("Registers the owner")
-            .MapPost("register", async (IOperationService operations,
+            .MapPost("register", async (IOperationMediator operations,
                 [FromBody] RegisterRequest request) =>
             {
                 // Operation
-                var operationResult = await operations.Register.ExecuteAsync(new RegisterCommand
+                var operationResult = await operations.ExecuteAsync(new RegisterCommand
                 (
                     Email: request.Email.Trim(),
                     Password: request.Password.Trim()

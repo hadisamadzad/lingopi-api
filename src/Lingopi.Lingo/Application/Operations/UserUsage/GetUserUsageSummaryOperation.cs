@@ -4,7 +4,6 @@ using Lingopi.Lingo.Application.Models.Configs;
 using Lingopi.Lingo.Application.Models.Enums;
 using Lingopi.Lingo.Application.Models.ReadModels;
 using Microsoft.Extensions.Options;
-using Minimals.Operations;
 
 namespace Lingopi.Lingo.Application.Operations.UserUsage;
 
@@ -112,4 +111,4 @@ public sealed class GetUserUsageSummaryOperation(
     }
 }
 
-public sealed record GetUserUsageSummaryCommand(string UserId) : IOperationCommand;
+public sealed record GetUserUsageSummaryCommand(string UserId) : IOperationCommand<UserUsageSummaryModel>;

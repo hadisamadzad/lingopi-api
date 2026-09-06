@@ -76,7 +76,8 @@ public sealed class UpdateUserTimezoneOperationTests
     public async Task ExecuteAsync_WhenUserDoesNotExist_ShouldReturnNotFound()
     {
         var repository = Substitute.For<IRepositoryManager>();
-        repository.Users.GetByIdAsync("user-1").Returns(Task.FromResult<UserEntity>(null!));
+        repository.Users.GetByIdAsync("user-1")
+            .Returns(Task.FromResult<UserEntity?>(null));
         var operation = new UpdateUserTimezoneOperation(repository);
 
         var result = await operation.ExecuteAsync(

@@ -27,7 +27,7 @@ public class UidHelperTests
         var result = UidHelper.GenerateNewId(prefix);
 
         // Assert
-        Assert.StartsWith($"{prefix}-", result);
+        Assert.StartsWith($"{prefix}-", result, StringComparison.Ordinal);
         Assert.Equal($"{prefix}-".Length + 32, result.Length); // 32 hex characters
     }
 

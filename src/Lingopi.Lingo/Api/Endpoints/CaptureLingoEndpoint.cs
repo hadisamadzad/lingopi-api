@@ -1,9 +1,6 @@
-using Lingopi.Core.Interfaces;
 using Lingopi.Lingo.Api.Models;
-using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Operations.Lingos;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Lingo.Api.Endpoints;
 
@@ -13,11 +10,11 @@ public class CaptureLingoEndpoint : IEndpoint
     {
         app.MapGroup(Routes.LingoBaseRoute)
             .WithSummary("Capture a new lingo")
-            .MapPost("", async ([FromServices] IOperationService operations,
+            .MapPost("", async ([FromServices] IOperationMediator operations,
                 [FromBody] CaptureLingoRequest request,
                 [FromHeader(Name = "User-Id")] string userId) =>
             {
-                var operationResult = await operations.CaptureLingo.ExecuteAsync(
+                var operationResult = await operations.ExecuteAsync(
                     new CaptureLingoCommand(
                         UserId: userId,
                         Expression: request.Expression.Trim(),

@@ -1,5 +1,4 @@
-using Lingopi.Lingo.Application.Interfaces;
-using Minimals.Operations;
+using Lingopi.Lingo.Application.Operations.LingoEnrichment;
 
 namespace Lingopi.Lingo.Workers;
 
@@ -39,9 +38,8 @@ public sealed class LingoEnrichmentWorker(IServiceScopeFactory serviceScopeFacto
     private async Task<bool> DoAsync(CancellationToken cancellationToken)
     {
         using var scope = serviceScopeFactory.CreateScope();
-        var operation = scope.ServiceProvider.GetRequiredService<IOperationService>().EnrichLingo;
-
-        var result = await operation.ExecuteAsync(new(), cancellationToken);
+        var operations = scope.ServiceProvider.GetRequiredService<IOperationMediator>();
+        var result = await operations.ExecuteAsync(new EnrichLingoCommand(), cancellationToken);
 
         if (result.Status == OperationStatus.NoOperation)
         {

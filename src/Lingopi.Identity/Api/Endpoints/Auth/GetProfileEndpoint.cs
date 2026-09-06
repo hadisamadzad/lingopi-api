@@ -1,9 +1,6 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
 using Lingopi.Identity.Application.Types.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.Auth;
 
@@ -14,12 +11,12 @@ public class GetProfileEndpoint : IEndpoint
         // Endpoint for getting user profile
         app.MapGroup(Routes.AuthBaseRoute)
             .WithSummary("Gets the current user's profile")
-            .MapGet("profile", async (IOperationService operations,
+            .MapGet("profile", async (IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId) =>
             {
                 // Operation
-                var operationResult = await operations.GetUserProfile
-                    .ExecuteAsync(new GetUserProfileCommand(UserId: userId));
+                var operationResult = await operations.ExecuteAsync(
+                    new GetUserProfileCommand(UserId: userId));
 
                 // Result
                 return operationResult.Status switch

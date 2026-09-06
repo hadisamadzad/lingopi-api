@@ -11,12 +11,13 @@ public static class PasswordResetTokenHelper
     const int EmailIndex = 1;
     const int ExpirationIndex = 2;
 
-    static string Key;
-
-    public static void SetEncryptionKey(string key)
+    static string Key
     {
-        Key = key;
+        get =>
+        field ?? throw new InvalidOperationException("PasswordResetTokenHelper has not been initialized."); set;
     }
+
+    public static void SetEncryptionKey(string key) => Key = key;
 
     public static string GeneratePasswordResetToken(string email, DateTime expiration)
     {

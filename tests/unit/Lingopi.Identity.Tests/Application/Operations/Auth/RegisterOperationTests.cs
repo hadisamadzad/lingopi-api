@@ -86,7 +86,8 @@ public class RegisterOperationTests
         // Arrange
         var command = new RegisterCommand("first@example.com", "StrongPass123!");
         _repository.Users.AnyAsync().Returns(false); // No users exist yet
-        _repository.Users.GetByEmailAsync(command.Email).Returns((UserEntity?)null);
+        _repository.Users.GetByEmailAsync(command.Email)
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         UserEntity? capturedUser = null;
         await _repository.Users.InsertAsync(Arg.Do<UserEntity>(u => capturedUser = u));
@@ -128,7 +129,8 @@ public class RegisterOperationTests
         // Arrange
         var command = new RegisterCommand("second@example.com", "StrongPass123!");
         _repository.Users.AnyAsync().Returns(true); // Users already exist
-        _repository.Users.GetByEmailAsync(command.Email).Returns((UserEntity?)null);
+        _repository.Users.GetByEmailAsync(command.Email)
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         UserEntity? capturedUser = null;
         await _repository.Users.InsertAsync(Arg.Do<UserEntity>(u => capturedUser = u));
@@ -156,7 +158,8 @@ public class RegisterOperationTests
         var plainPassword = "StrongPass123!";
         var command = new RegisterCommand("user@example.com", plainPassword);
         _repository.Users.AnyAsync().Returns(true);
-        _repository.Users.GetByEmailAsync(command.Email).Returns((UserEntity?)null);
+        _repository.Users.GetByEmailAsync(command.Email)
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         UserEntity? capturedUser = null;
         await _repository.Users.InsertAsync(Arg.Do<UserEntity>(u => capturedUser = u));
@@ -177,7 +180,8 @@ public class RegisterOperationTests
         // Arrange
         var command = new RegisterCommand("User@EXAMPLE.COM", "StrongPass123!");
         _repository.Users.AnyAsync().Returns(true);
-        _repository.Users.GetByEmailAsync(Arg.Any<string>()).Returns((UserEntity?)null);
+        _repository.Users.GetByEmailAsync(Arg.Any<string>())
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         UserEntity? capturedUser = null;
         await _repository.Users.InsertAsync(Arg.Do<UserEntity>(u => capturedUser = u));
@@ -198,7 +202,8 @@ public class RegisterOperationTests
         // Arrange
         var command = new RegisterCommand("user@example.com", "StrongPass123!");
         _repository.Users.AnyAsync().Returns(true);
-        _repository.Users.GetByEmailAsync(command.Email).Returns((UserEntity?)null);
+        _repository.Users.GetByEmailAsync(command.Email)
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         // Act
         var result = await _operation.ExecuteAsync(command, CancellationToken.None);

@@ -1,9 +1,6 @@
-using Lingopi.Core.Interfaces;
 using Lingopi.Lingo.Api.Models;
-using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Operations.UserSettings;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Lingo.Api.Endpoints;
 
@@ -14,10 +11,10 @@ public sealed class GetUserSettingsEndpoint : IEndpoint
         app.MapGroup($"{Routes.LingoBaseRoute}settings")
             .WithTags(Routes.LingoEndpointGroupTag)
             .MapGet("", async (
-                [FromServices] IOperationService operations,
+                [FromServices] IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId) =>
             {
-                var operationResult = await operations.GetUserSettings.ExecuteAsync(
+                var operationResult = await operations.ExecuteAsync(
                     new GetUserSettingsCommand(userId));
 
                 return operationResult.Status switch

@@ -1,8 +1,5 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.PasswordReset;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.PasswordReset;
 
@@ -14,10 +11,10 @@ public class SendPasswordResetEmailEndpoint : IEndpoint
     {
         app.MapGroup(Routes.AuthBaseRoute)
             .WithSummary("Send Password Reset Email")
-            .MapPost("password-reset", async (IOperationService operations,
+            .MapPost("password-reset", async (IOperationMediator operations,
             [FromBody] SendPasswordResetEmailRequest request) =>
             {
-                var operationResult = await operations.SendPasswordResetEmail.ExecuteAsync(
+                var operationResult = await operations.ExecuteAsync(
                     new SendPasswordResetEmailCommand(request.Email));
 
                 return operationResult.Status switch

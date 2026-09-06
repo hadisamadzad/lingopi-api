@@ -1,6 +1,5 @@
 ﻿using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Models.Users;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Users;
 
@@ -13,7 +12,9 @@ public class GetUserByIdOperation(IRepositoryManager repository) :
         // Get
         var entity = await repository.Users.GetByIdAsync(command.UserId);
         if (entity is null)
+        {
             return OperationResult<UserModel>.NotFoundFailure("User not found");
+        }
 
         // Mapping
         var model = entity.MapToUserModel();
@@ -22,4 +23,4 @@ public class GetUserByIdOperation(IRepositoryManager repository) :
     }
 }
 
-public record GetUserByIdCommand(string UserId) : IOperationCommand;
+public record GetUserByIdCommand(string UserId) : IOperationCommand<UserModel>;

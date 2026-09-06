@@ -4,7 +4,6 @@ using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Configs;
 using Microsoft.Extensions.Options;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.PasswordReset;
 
@@ -50,7 +49,7 @@ public class ResetPasswordOperation(IRepositoryManager repository,
     }
 }
 
-public record ResetPasswordCommand(string Token, string NewPassword) : IOperationCommand;
+public record ResetPasswordCommand(string Token, string NewPassword) : IOperationCommand<NoResult>;
 
 public class ResetPasswordValidator : AbstractValidator<ResetPasswordCommand>
 {

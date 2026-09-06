@@ -1,7 +1,6 @@
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Entities;
 using Lingopi.Identity.Application.Types.Models.Subscriptions;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Subscriptions;
 
@@ -44,4 +43,5 @@ public sealed class GetSubscriptionHistoryOperation(IRepositoryManager repositor
             history.RecordedAt);
 }
 
-public sealed record GetSubscriptionHistoryCommand(string UserId) : IOperationCommand;
+public sealed record GetSubscriptionHistoryCommand(string UserId) :
+    IOperationCommand<List<SubscriptionHistoryModel>>;

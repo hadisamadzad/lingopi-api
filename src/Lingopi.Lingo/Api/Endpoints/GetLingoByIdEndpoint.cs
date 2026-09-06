@@ -1,9 +1,6 @@
-using Lingopi.Core.Interfaces;
 using Lingopi.Lingo.Api.Models;
-using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Operations.Lingos;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Lingo.Api.Endpoints;
 
@@ -14,11 +11,11 @@ public class GetLingoByIdEndpoint : IEndpoint
         app.MapGroup(Routes.LingoBaseRoute)
             .WithSummary("Get a lingo by ID")
             .MapGet("{lingoId}", async (
-                [FromServices] IOperationService operations,
+                [FromServices] IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId,
                 [FromRoute] string lingoId) =>
             {
-                var operationResult = await operations.GetLingoById.ExecuteAsync(
+                var operationResult = await operations.ExecuteAsync(
                     new GetLingoByIdCommand(userId, lingoId));
 
                 return operationResult.Status switch

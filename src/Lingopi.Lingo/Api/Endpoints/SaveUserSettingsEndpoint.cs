@@ -1,9 +1,6 @@
-using Lingopi.Core.Interfaces;
 using Lingopi.Lingo.Api.Models;
-using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Operations.UserSettings;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Lingo.Api.Endpoints;
 
@@ -14,11 +11,11 @@ public sealed class SaveUserSettingsEndpoint : IEndpoint
         app.MapGroup($"{Routes.LingoBaseRoute}settings")
             .WithTags(Routes.LingoEndpointGroupTag)
             .MapPut("", async (
-                [FromServices] IOperationService operations,
+                [FromServices] IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId,
                 [FromBody] SaveUserSettingsRequest request) =>
             {
-                var operationResult = await operations.SaveUserSettings.ExecuteAsync(
+                var operationResult = await operations.ExecuteAsync(
                     new SaveUserSettingsCommand(
                         userId,
                         request.TargetLocaleCode,

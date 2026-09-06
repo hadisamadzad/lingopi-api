@@ -1,4 +1,3 @@
-using Lingopi.Core.Interfaces;
 using Lingopi.Identity.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 

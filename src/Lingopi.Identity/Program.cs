@@ -2,11 +2,9 @@ using System.Text.Json.Serialization;
 using Lingopi.Core.Extensions;
 using Lingopi.Core.Helpers;
 using Lingopi.Identity.Application.Interfaces;
-using Lingopi.Identity.Application.Operations;
 using Lingopi.Identity.Core.Bootstrap;
 using Lingopi.Identity.Infrastructure.Database;
 using Lingopi.Identity.Infrastructure.Database.Repositories;
-using Minimals.Operations;
 using MongoDB.Driver;
 using Serilog;
 
@@ -39,7 +37,6 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 // Add services to the container
 builder.Services.AddCustomConfigurations(configs);
 builder.Services.AddOperations();
-builder.Services.AddTransient<IOperationService, OperationService>();
 
 builder.Services.AddConfiguredMongoDB(configs);
 builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();

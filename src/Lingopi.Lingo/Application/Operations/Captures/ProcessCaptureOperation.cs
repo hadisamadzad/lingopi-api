@@ -4,7 +4,6 @@ using Lingopi.Lingo.Application.Interfaces.Services;
 using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.Enums;
 using Lingopi.Lingo.Application.Models.Filters;
-using Minimals.Operations;
 
 namespace Lingopi.Lingo.Application.Operations.Captures;
 
@@ -120,4 +119,4 @@ public partial class ProcessCaptureOperation(IRepositoryManager repository, Time
     }
 }
 
-public sealed record ProcessCaptureCommand : IOperationCommand;
+public sealed record ProcessCaptureCommand : IOperationCommand<string>;

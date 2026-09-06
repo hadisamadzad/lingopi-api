@@ -2,7 +2,6 @@ using Lingopi.Core.Helpers;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Entities;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 
@@ -88,7 +87,7 @@ public record AuthenticateGoogleUserCommand(
     string InternalAuthSecret,
     string Email,
     string? FirstName,
-    string? LastName) : IOperationCommand;
+    string? LastName) : IOperationCommand<AuthenticateGoogleUserResult>;
 
 public record AuthenticateGoogleUserResult(
     string AccessToken,

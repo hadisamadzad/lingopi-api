@@ -1,6 +1,5 @@
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 
@@ -21,4 +20,4 @@ public class RevokeRefreshTokenOperation(IRepositoryManager repository) :
     }
 }
 
-public record RevokeRefreshTokenCommand(string? RefreshToken) : IOperationCommand;
+public record RevokeRefreshTokenCommand(string? RefreshToken) : IOperationCommand<NoResult>;

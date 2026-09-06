@@ -5,13 +5,11 @@ using Lingopi.Core.Persistence.MongoDB;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Interfaces.Services;
 using Lingopi.Lingo.Application.Models.Configs;
-using Lingopi.Lingo.Application.Operations;
 using Lingopi.Lingo.Core.Bootstrap;
 using Lingopi.Lingo.Infrastructure.Database;
 using Lingopi.Lingo.Infrastructure.OpenAI;
 using Lingopi.Lingo.Infrastructure.Usage;
 using Lingopi.Lingo.Workers;
-using Minimals.Operations;
 using Serilog;
 
 var env = BootstrapHelper.GetEnvironmentName("Local");
@@ -40,7 +38,6 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 // Add services to the container
 builder.Services.AddCustomConfigurations(configs);
 builder.Services.AddOperations();
-builder.Services.AddTransient<IOperationService, OperationService>();
 builder.Services.AddHttpClient(IdentityServiceOptions.Key, client =>
 {
     var baseUrl = configs[$"{IdentityServiceOptions.Key}:BaseUrl"];

@@ -7,7 +7,6 @@ using Lingopi.Lingo.Application.Models.Enums;
 using Lingopi.Lingo.Application.Models.Filters;
 using Lingopi.Lingo.Application.Models.Services;
 using Lingopi.Lingo.Application.Operations.LingoEnrichment.Validators;
-using Minimals.Operations;
 
 namespace Lingopi.Lingo.Application.Operations.LingoEnrichment;
 
@@ -217,7 +216,7 @@ public partial class EnrichLingoOperation(
 
 }
 
-public sealed record EnrichLingoCommand : IOperationCommand
+public sealed record EnrichLingoCommand : IOperationCommand<string>
 {
     public EnrichLingoCommand()
     {

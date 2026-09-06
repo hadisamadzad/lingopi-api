@@ -6,7 +6,6 @@ using Lingopi.Lingo.Application.Interfaces.Services;
 using Lingopi.Lingo.Application.Models.Entities;
 using Lingopi.Lingo.Application.Models.Enums;
 using Lingopi.Lingo.Application.Operations.Lingos.Validators;
-using Minimals.Operations;
 
 namespace Lingopi.Lingo.Application.Operations.Lingos;
 
@@ -90,4 +89,4 @@ public record CaptureLingoCommand(
     string SourceLocaleCode,
     string SourceLanguageCode,
     LingoContext? EncounterContext = null
-) : IOperationCommand;
+) : IOperationCommand<string>;

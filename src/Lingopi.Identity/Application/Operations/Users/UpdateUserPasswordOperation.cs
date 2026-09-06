@@ -2,7 +2,6 @@
 using Lingopi.Core.Extensions;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Users;
 
@@ -47,7 +46,7 @@ public record UpdateUserPasswordCommand(
     string AdminUserId,
     string UserId,
     string CurrentPassword,
-    string NewPassword) : IOperationCommand;
+    string NewPassword) : IOperationCommand<NoResult>;
 
 public class UpdateUserPasswordValidator : AbstractValidator<UpdateUserPasswordCommand>
 {

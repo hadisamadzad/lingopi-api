@@ -3,7 +3,6 @@ using System.Text;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Entities;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Subscriptions;
 
@@ -93,7 +92,7 @@ public sealed class GetEffectiveEntitlementOperation(
 
 public sealed record GetEffectiveEntitlementCommand(
     string InternalAuthSecret,
-    string UserId) : IOperationCommand;
+    string UserId) : IOperationCommand<EffectiveEntitlementModel>;
 
 public sealed record EffectiveEntitlementModel(
     string UserId,

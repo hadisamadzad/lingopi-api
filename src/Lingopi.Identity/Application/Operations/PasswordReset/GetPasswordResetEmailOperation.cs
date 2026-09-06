@@ -1,6 +1,5 @@
 ﻿using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.PasswordReset;
 
@@ -13,7 +12,9 @@ public class GetPasswordResetEmailOperation(
     {
         var (succeeded, email) = PasswordResetTokenHelper.ReadPasswordResetToken(command.Token);
         if (!succeeded)
-            return OperationResult<string>.ValidationFailure(["Invalid token"]);
+        {
+            return OperationResult<string>.ValidationFailure("Invalid token");
+        }
 
         var user = await repository.Users.GetByEmailAsync(email);
         if (user == null)
@@ -23,13 +24,17 @@ public class GetPasswordResetEmailOperation(
         }
 
         if (user.IsLockedOutOrNotActive())
+        {
             return OperationResult<string>.AuthorizationFailure("User is locked out or not active");
+        }
 
         if (!string.Equals(user.Email, email, StringComparison.OrdinalIgnoreCase))
+        {
             return OperationResult<string>.AuthorizationFailure("Invalid token");
+        }
 
         return OperationResult<string>.Success(user.Email);
     }
 }
 
-public record GetPasswordResetEmailCommand(string Token) : IOperationCommand;
+public record GetPasswordResetEmailCommand(string Token) : IOperationCommand<string>;

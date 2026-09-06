@@ -1,11 +1,8 @@
 namespace Lingopi.Core.BusContracts.Rpc;
 
-public class BusResponse
+public record BusResponse
 {
-    public virtual Error Error { get; set; }
+    public virtual Error? Error { get; set; }
 
-    public virtual bool HasError()
-    {
-        return Error != null;
-    }
+    public virtual bool HasError() => Error != null;
 }

@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Lingopi.Core.Extensions;
 using Lingopi.Identity.Application.Interfaces;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Users;
 
@@ -48,7 +47,7 @@ public record UpdateUserCommand(
     string UserId,
     string FirstName,
     string LastName
-) : IOperationCommand;
+) : IOperationCommand<NoResult>;
 
 public class UpdateUserValidator : AbstractValidator<UpdateUserCommand>
 {

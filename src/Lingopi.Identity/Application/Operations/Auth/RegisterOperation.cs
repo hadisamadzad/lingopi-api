@@ -5,7 +5,6 @@ using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Entities;
 using Lingopi.Identity.Application.Types.Models.Auth;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 
@@ -75,7 +74,7 @@ public class RegisterOperation(IRepositoryManager repository)
     }
 }
 
-public record RegisterCommand(string Email, string Password) : IOperationCommand;
+public record RegisterCommand(string Email, string Password) : IOperationCommand<RegisterResult>;
 
 public class RegisterValidator : AbstractValidator<RegisterCommand>
 {

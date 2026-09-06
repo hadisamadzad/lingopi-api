@@ -1,9 +1,6 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Subscriptions;
 using Lingopi.Identity.Application.Types.Models.Subscriptions;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.Subscription;
 
@@ -13,11 +10,10 @@ public sealed class GetSubscriptionEndpoint : IEndpoint
     {
         var group = app.MapGroup(Routes.SubscriptionBaseRoute);
 
-        group.MapGet("", async (
-                IOperationService operations,
-                [FromHeader(Name = "User-Id")] string userId) =>
+        group.MapGet("", async (IOperationMediator operations,
+            [FromHeader(Name = "User-Id")] string userId) =>
             {
-                var result = await operations.GetSubscription.ExecuteAsync(
+                var result = await operations.ExecuteAsync(
                     new GetSubscriptionCommand(userId));
 
                 return result.Status switch
@@ -38,10 +34,10 @@ public sealed class GetSubscriptionEndpoint : IEndpoint
             .Produces(StatusCodes.Status500InternalServerError);
 
         group.MapGet("history", async (
-                IOperationService operations,
+                IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId) =>
             {
-                var result = await operations.GetSubscriptionHistory.ExecuteAsync(
+                var result = await operations.ExecuteAsync(
                     new GetSubscriptionHistoryCommand(userId));
 
                 return result.Status switch

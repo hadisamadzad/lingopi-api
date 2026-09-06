@@ -1,6 +1,5 @@
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Entities;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Users;
 
@@ -62,4 +61,4 @@ public sealed class UpdateUserTimezoneOperation(IRepositoryManager repository) :
     }
 }
 
-public sealed record UpdateUserTimezoneCommand(string UserId, string? TimeZoneId) : IOperationCommand;
+public sealed record UpdateUserTimezoneCommand(string UserId, string? TimeZoneId) : IOperationCommand<NoResult>;
