@@ -11,13 +11,14 @@ services:
       context: .
       dockerfile: src/Lingopi.Gateway/Dockerfile
     environment:
-      - ASPNETCORE_ENVIRONMENT=$ENV
+      - ASPNETCORE_ENVIRONMENT=${ENV:-Local}
       - APP_VERSION=${APP_VERSION:-unknown}
       - GIT_SHA=${GIT_SHA:-unknown}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
       - redis
+      - identity
 
   identity:
     container_name: lingopi-identity
@@ -29,7 +30,7 @@ services:
       context: .
       dockerfile: src/Lingopi.Identity/Dockerfile
     environment:
-      - ASPNETCORE_ENVIRONMENT=$ENV
+      - ASPNETCORE_ENVIRONMENT=${ENV:-Local}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -45,11 +46,12 @@ services:
       context: .
       dockerfile: src/Lingopi.Lingo/Dockerfile
     environment:
-      - ASPNETCORE_ENVIRONMENT=$ENV
+      - ASPNETCORE_ENVIRONMENT=${ENV:-Local}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
       - redis
+      - identity
 
   redis:
     container_name: lingopi-redis

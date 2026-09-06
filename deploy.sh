@@ -2,15 +2,22 @@
 
 set -eu
 
-# Require an environment argument.
-if [ "$#" -lt 1 ] || [ -z "$1" ]; then
-    echo "Usage: $0 <environment>" >&2
+# Read the environment from either the original positional form or the
+# explicit --ENV form used by local deployment commands.
+if [ "$#" -eq 1 ] && [ -n "$1" ] && [ "$1" != "--ENV" ]; then
+    ENV=$1
+elif [ "$#" -eq 2 ] && [ "$1" = "--ENV" ] && [ -n "$2" ]; then
+    ENV=$2
+else
+    echo "Usage: $0 <environment> | $0 --ENV <environment>" >&2
     exit 1
 fi
 
-ENV=$1
 APP_VERSION=${APP_VERSION:-unknown}
 GIT_SHA=${GIT_SHA:-unknown}
+DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-0}
+COMPOSE_DOCKER_CLI_BUILD=${COMPOSE_DOCKER_CLI_BUILD:-0}
+export DOCKER_BUILDKIT COMPOSE_DOCKER_CLI_BUILD
 
 echo "Starting deployment with environment: $ENV"
 
@@ -49,8 +56,27 @@ echo "Starting containers..."
 ENV="$ENV" APP_VERSION="$APP_VERSION" GIT_SHA="$GIT_SHA" \
   docker compose -p lingopi-api "$@" up -d
 
-# Wait a moment for containers to start
-sleep 5
+wait_for_endpoint() {
+    endpoint=$1
+    attempts=30
+
+    while [ "$attempts" -gt 0 ]; do
+        if curl --fail --silent "$endpoint" >/dev/null 2>&1; then
+            return 0
+        fi
+
+        attempts=$((attempts - 1))
+        sleep 2
+    done
+
+    echo "Service health check failed: $endpoint" >&2
+    ENV="$ENV" docker compose -p lingopi-api "$@" logs --tail=100 gateway identity lingo >&2
+    exit 1
+}
+
+echo "Waiting for services to become healthy..."
+wait_for_endpoint "http://localhost:45000/api/identity/health"
+wait_for_endpoint "http://localhost:45000/api/lingo/health"
 
 # Show running containers
 echo "Running containers:"
