@@ -1,10 +1,10 @@
 using FluentValidation;
+using Lingopi.Core.Extensions;
 using Lingopi.Core.Helpers;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Entities;
 using Lingopi.Identity.Application.Types.Models.Auth;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 
@@ -48,6 +48,21 @@ public class RegisterOperation(IRepositoryManager repository)
 
         await repository.Users.InsertAsync(user);
 
+        // Add free subscription to user
+        var subscription = SubscriptionEntityFactory.CreateFree(user.Id, user.CreatedAt);
+        var subscriptionPersisted = await repository.Subscriptions.UpsertAsync(subscription);
+        if (!subscriptionPersisted)
+        {
+            return OperationResult<RegisterResult>.Failure(
+                $"Failed to create the Free subscription for user '{user.Id}'.");
+        }
+
+        var subscriptionHistory = SubscriptionHistoryEntityFactory.Create(
+            subscription,
+            SubscriptionHistoryEventType.Created,
+            user.CreatedAt);
+        await repository.SubscriptionHistory.InsertAsync(subscriptionHistory);
+
         var result = new RegisterResult
         {
             UserId = user.Id,
@@ -59,7 +74,7 @@ public class RegisterOperation(IRepositoryManager repository)
     }
 }
 
-public record RegisterCommand(string Email, string Password) : IOperationCommand;
+public record RegisterCommand(string Email, string Password) : IOperationCommand<RegisterResult>;
 
 public class RegisterValidator : AbstractValidator<RegisterCommand>
 {

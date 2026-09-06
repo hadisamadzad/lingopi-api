@@ -13,9 +13,11 @@ public class LockManager : ILockManager
     public LockManager(ConfigurationOptions options, string instancePrefix)
     {
         if (string.IsNullOrWhiteSpace(instancePrefix))
+        {
             throw new ArgumentException($"Invalid instance prefix: {instancePrefix}.");
+        }
 
-        KeyPrefix = instancePrefix.Trim().Replace(" ", "");
+        KeyPrefix = instancePrefix.Trim().Replace(" ", "", StringComparison.Ordinal);
         _connectionMultiplexer = ConnectionMultiplexer.Connect(options);
     }
 

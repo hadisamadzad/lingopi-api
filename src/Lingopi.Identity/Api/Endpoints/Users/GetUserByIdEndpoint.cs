@@ -1,9 +1,6 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Users;
 using Lingopi.Identity.Application.Types.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.Users;
 
@@ -13,29 +10,41 @@ public class GetUserByIdEndpoint : IEndpoint
     {
         app.MapGroup(Routes.UserBaseRoute)
             .WithSummary("Get User by ID")
-            .MapGet("{userId}", async (IOperationService operations,
-                [FromHeader] string requestedBy,
+            .MapGet("{userId}", async (IOperationMediator operations,
+                [FromHeader(Name = "User-Id")] string authenticatedUserId,
                 [FromRoute] string userId) =>
             {
                 // Operation
-                var operationResult = await operations.GetUserById.ExecuteAsync(
+                var operationResult = await operations.ExecuteAsync(
                     new GetUserByIdCommand(userId));
+
+                if (operationResult.Status == OperationStatus.Completed)
+                {
+                    var user = operationResult.Value;
+                    if (user is null)
+                    {
+                        return Results.InternalServerError(operationResult.Error);
+                    }
+
+                    return Results.Ok(
+                        new GetUserByIdResponse(
+                            UserId: user.UserId,
+                            Email: user.Email,
+                            Mobile: user.Mobile,
+                            Role: user.Role,
+                            FirstName: user.FirstName,
+                            LastName: user.LastName,
+                            TimeZoneId: user.TimeZoneId,
+                            Theme: user.Theme,
+                            FullName: user.FullName,
+                            CreatedAt: user.CreatedAt,
+                            UpdatedAt: user.UpdatedAt
+                        ));
+                }
 
                 // Result
                 return operationResult.Status switch
                 {
-                    OperationStatus.Completed => Results.Ok(
-                        new GetUserByIdResponse(
-                            UserId: operationResult.Value!.UserId,
-                            Email: operationResult.Value.Email,
-                            Mobile: operationResult.Value.Mobile,
-                            Role: operationResult.Value.Role,
-                            FirstName: operationResult.Value.FirstName,
-                            LastName: operationResult.Value.LastName,
-                            FullName: operationResult.Value.FullName,
-                            CreatedAt: operationResult.Value.CreatedAt,
-                            UpdatedAt: operationResult.Value.UpdatedAt
-                        )),
                     OperationStatus.NotFound => Results.UnprocessableEntity(operationResult.Error),
                     _ => Results.InternalServerError(operationResult.Error),
                 };
@@ -55,6 +64,8 @@ public record GetUserByIdResponse(
     Role Role,
     string? FirstName,
     string? LastName,
+    string? TimeZoneId,
+    ThemePreference? Theme,
     string FullName,
     DateTime CreatedAt,
     DateTime UpdatedAt

@@ -22,6 +22,7 @@ public class RegisterOperationTests
     {
         _repository = Substitute.For<IRepositoryManager>();
         _operation = new RegisterOperation(_repository);
+        _repository.Subscriptions.UpsertAsync(Arg.Any<SubscriptionEntity>()).Returns(true);
     }
 
     [Fact]
@@ -85,7 +86,8 @@ public class RegisterOperationTests
         // Arrange
         var command = new RegisterCommand("first@example.com", "StrongPass123!");
         _repository.Users.AnyAsync().Returns(false); // No users exist yet
-        _repository.Users.GetByEmailAsync(command.Email).Returns((UserEntity?)null);
+        _repository.Users.GetByEmailAsync(command.Email)
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         UserEntity? capturedUser = null;
         await _repository.Users.InsertAsync(Arg.Do<UserEntity>(u => capturedUser = u));
@@ -100,12 +102,25 @@ public class RegisterOperationTests
         Assert.Equal(command.Email.ToLower(), result.Value.Email);
 
         // Verify user was created with correct properties
-        await _repository.Users.Received(1).InsertAsync(Arg.Any<UserEntity>());
         Assert.NotNull(capturedUser);
-        Assert.Equal(Role.Owner, capturedUser.Role);
-        Assert.Equal(UserState.Active, capturedUser.Status);
-        Assert.NotNull(capturedUser.SecurityStamp);
-        Assert.NotNull(capturedUser.ConcurrencyStamp);
+        var createdUser = capturedUser!;
+        await _repository.Users.Received(1).InsertAsync(Arg.Any<UserEntity>());
+        await _repository.Subscriptions.Received(1).UpsertAsync(
+            Arg.Is<SubscriptionEntity>(subscription =>
+                subscription.UserId == createdUser.Id &&
+                subscription.Plan == SubscriptionPlan.Free &&
+                subscription.Status == SubscriptionStatus.Active &&
+                subscription.StartedAt == createdUser.CreatedAt));
+        await _repository.SubscriptionHistory.Received(1).InsertAsync(
+            Arg.Is<SubscriptionHistoryEntity>(history =>
+                history.UserId == createdUser.Id &&
+                history.EventType == SubscriptionHistoryEventType.Created &&
+                history.Plan == SubscriptionPlan.Free &&
+                history.Status == SubscriptionStatus.Active));
+        Assert.Equal(Role.Owner, createdUser.Role);
+        Assert.Equal(UserState.Active, createdUser.Status);
+        Assert.NotNull(createdUser.SecurityStamp);
+        Assert.NotNull(createdUser.ConcurrencyStamp);
     }
 
     [Fact]
@@ -114,7 +129,8 @@ public class RegisterOperationTests
         // Arrange
         var command = new RegisterCommand("second@example.com", "StrongPass123!");
         _repository.Users.AnyAsync().Returns(true); // Users already exist
-        _repository.Users.GetByEmailAsync(command.Email).Returns((UserEntity?)null);
+        _repository.Users.GetByEmailAsync(command.Email)
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         UserEntity? capturedUser = null;
         await _repository.Users.InsertAsync(Arg.Do<UserEntity>(u => capturedUser = u));
@@ -142,7 +158,8 @@ public class RegisterOperationTests
         var plainPassword = "StrongPass123!";
         var command = new RegisterCommand("user@example.com", plainPassword);
         _repository.Users.AnyAsync().Returns(true);
-        _repository.Users.GetByEmailAsync(command.Email).Returns((UserEntity?)null);
+        _repository.Users.GetByEmailAsync(command.Email)
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         UserEntity? capturedUser = null;
         await _repository.Users.InsertAsync(Arg.Do<UserEntity>(u => capturedUser = u));
@@ -163,7 +180,8 @@ public class RegisterOperationTests
         // Arrange
         var command = new RegisterCommand("User@EXAMPLE.COM", "StrongPass123!");
         _repository.Users.AnyAsync().Returns(true);
-        _repository.Users.GetByEmailAsync(Arg.Any<string>()).Returns((UserEntity?)null);
+        _repository.Users.GetByEmailAsync(Arg.Any<string>())
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         UserEntity? capturedUser = null;
         await _repository.Users.InsertAsync(Arg.Do<UserEntity>(u => capturedUser = u));
@@ -184,7 +202,8 @@ public class RegisterOperationTests
         // Arrange
         var command = new RegisterCommand("user@example.com", "StrongPass123!");
         _repository.Users.AnyAsync().Returns(true);
-        _repository.Users.GetByEmailAsync(command.Email).Returns((UserEntity?)null);
+        _repository.Users.GetByEmailAsync(command.Email)
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         // Act
         var result = await _operation.ExecuteAsync(command, CancellationToken.None);

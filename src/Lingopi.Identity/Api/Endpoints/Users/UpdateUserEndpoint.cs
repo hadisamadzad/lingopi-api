@@ -1,8 +1,5 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Users;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.Users;
 
@@ -12,15 +9,15 @@ public class UpdateUserEndpoint : IEndpoint
     {
         app.MapGroup(Routes.UserBaseRoute)
             .WithSummary("Update user details by admins")
-            .MapPatch("{userId}", async (IOperationService operations,
+            .MapPatch("{userId}", async (IOperationMediator operations,
                 [FromRoute] string userId,
-                [FromHeader] string requestedBy,
+                [FromHeader(Name = "User-Id")] string authenticatedUserId,
                 [FromBody] UpdateUserRequest request) =>
             {
                 // Operation
-                var operationResult = await operations.UpdateUser.ExecuteAsync(
+                var operationResult = await operations.ExecuteAsync(
                     new UpdateUserCommand(
-                        requestedBy,
+                        authenticatedUserId,
                         userId,
                         request.FirstName,
                         request.LastName));

@@ -10,7 +10,10 @@ public static class LockManagerInjection
     {
         var options = new ConfigurationOptions();
         foreach (var connection in config.Connections)
+        {
             options.EndPoints.Add(connection);
+        }
+
 
         services.AddSingleton<ILockManager>(_ =>
             new LockManager(options: options, instancePrefix: instancePrefix));

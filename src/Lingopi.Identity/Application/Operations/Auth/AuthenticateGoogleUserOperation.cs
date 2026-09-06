@@ -1,14 +1,11 @@
-using System.Security.Cryptography;
-using System.Text;
 using Lingopi.Core.Helpers;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Entities;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 
-public class AuthenticateGoogleUserOperation(
+public partial class AuthenticateGoogleUserOperation(
     IRepositoryManager repository,
     IConfiguration configuration) :
     IOperation<AuthenticateGoogleUserCommand, AuthenticateGoogleUserResult>
@@ -49,6 +46,21 @@ public class AuthenticateGoogleUserOperation(
                 UpdatedAt = DateTime.UtcNow
             };
             await repository.Users.InsertAsync(user);
+
+            // Create a free subscription for the user
+            var subscription = SubscriptionEntityFactory.CreateFree(user.Id, user.CreatedAt);
+            var subscriptionPersisted = await repository.Subscriptions.UpsertAsync(subscription);
+            if (!subscriptionPersisted)
+            {
+                return OperationResult<AuthenticateGoogleUserResult>.Failure(
+                    $"Failed to create the Free subscription for user '{user.Id}'.");
+            }
+
+            var subscriptionHistory = SubscriptionHistoryEntityFactory.Create(
+                subscription,
+                SubscriptionHistoryEventType.Created,
+                user.CreatedAt);
+            await repository.SubscriptionHistory.InsertAsync(subscriptionHistory);
         }
 
         if (user.IsLockedOutOrNotActive())
@@ -69,26 +81,13 @@ public class AuthenticateGoogleUserOperation(
             TokenHelper.RefreshTokenLifetime));
     }
 
-    private bool IsAuthorized(string providedSecret)
-    {
-        var expectedSecret = configuration["InternalAuthSecret"];
-        if (string.IsNullOrEmpty(expectedSecret))
-        {
-            return false;
-        }
-
-        var expectedBytes = Encoding.UTF8.GetBytes(expectedSecret);
-        var providedBytes = Encoding.UTF8.GetBytes(providedSecret);
-        return expectedBytes.Length == providedBytes.Length &&
-            CryptographicOperations.FixedTimeEquals(expectedBytes, providedBytes);
-    }
 }
 
 public record AuthenticateGoogleUserCommand(
     string InternalAuthSecret,
     string Email,
     string? FirstName,
-    string? LastName) : IOperationCommand;
+    string? LastName) : IOperationCommand<AuthenticateGoogleUserResult>;
 
 public record AuthenticateGoogleUserResult(
     string AccessToken,

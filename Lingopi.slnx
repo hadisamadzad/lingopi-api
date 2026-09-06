@@ -10,6 +10,7 @@
     <Project Path="src/Lingopi.Identity/Lingopi.Identity.csproj" />
     <Project Path="src/Lingopi.Lingo/Lingopi.Lingo.csproj" />
   </Folder>
+  <Folder Name="/tests/" />
   <Folder Name="/tests/unit/">
     <Project Path="tests/unit/Lingopi.Core.Tests/Lingopi.Core.Tests.csproj" />
     <Project Path="tests/unit/Lingopi.Identity.Tests/Lingopi.Identity.Tests.csproj" />

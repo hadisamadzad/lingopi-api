@@ -1,9 +1,6 @@
-using Lingopi.Core.Interfaces;
 using Lingopi.Identity.Api.Extensions;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
 using Lingopi.Identity.Core.Configuration;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.Auth;
 
@@ -14,7 +11,7 @@ public class RefreshAccessTokenEndpoint : IEndpoint
         // Endpoint for getting access token by refresh token
         app.MapGroup(Routes.AuthBaseRoute)
             .WithSummary("Gets a new access token using a refresh token")
-            .MapPost("refresh", async (IOperationService operations,
+            .MapPost("refresh", async (IOperationMediator operations,
                 HttpContext context) =>
             {
                 // Get refresh token from cookie
@@ -28,8 +25,8 @@ public class RefreshAccessTokenEndpoint : IEndpoint
 
                 // Operation
 
-                var operationResult = await operations.GetNewAccessToken
-                    .ExecuteAsync(new RefreshAccessTokenCommand(RefreshToken: refreshToken));
+                var operationResult = await operations.ExecuteAsync(
+                    new RefreshAccessTokenCommand(RefreshToken: refreshToken));
 
                 // Result
                 return operationResult.Status switch

@@ -8,7 +8,11 @@ namespace Lingopi.Identity.Application.Helpers;
 
 public static class TokenHelper
 {
-    private static AuthTokenConfig Config;
+    private static AuthTokenConfig Config
+    {
+        get =>
+        field ?? throw new InvalidOperationException("TokenHelper has not been initialized."); set;
+    }
 
     public static void Initialize(AuthTokenConfig config) => Config = config;
 

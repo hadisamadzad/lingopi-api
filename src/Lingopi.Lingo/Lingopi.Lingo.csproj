@@ -6,7 +6,9 @@
     <Authors>Hadi Samadzad</Authors>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Minimals.Operations" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="OpenAI" />
     <PackageReference Include="Serilog.AspNetCore" />
     <PackageReference Include="Serilog.Enrichers.Environment" />
     <PackageReference Include="Serilog.Settings.Configuration" />

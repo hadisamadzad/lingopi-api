@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,7 +52,8 @@ public class LoginOperationTests
     {
         // Arrange
         var command = new LoginCommand("nonexistent@example.com", "password");
-        _repository.Users.GetByEmailAsync(command.Email).Returns((UserEntity?)null);
+        _repository.Users.GetByEmailAsync(command.Email)
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         // Act
         var result = await _operation.ExecuteAsync(command, CancellationToken.None);

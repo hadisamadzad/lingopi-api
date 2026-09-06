@@ -11,21 +11,29 @@ public static class AllowedCharacters
 
 public static class RandomGenerator
 {
-    readonly static Random randomGenerator = new();
+    private static readonly Random _randomGenerator = new();
 
-    public static string GenerateString(int length, string allowedCharacters, string prefix = null)
+    public static string GenerateString(int length, string allowedCharacters, string? prefix = null)
     {
         var randomChars = new char[length];
         for (var i = 0; i < length; ++i)
-            randomChars[i] = allowedCharacters[randomGenerator.Next(allowedCharacters.Length)];
+        {
+            randomChars[i] = allowedCharacters[_randomGenerator.Next(allowedCharacters.Length)];
+        }
 
         return $"{prefix}{new string(randomChars)}";
     }
 
     public static int GenerateNumber(int max, int min = 0)
     {
-        if (max < min || max < 0 || min < 0)
+        ArgumentOutOfRangeException.ThrowIfNegative(min);
+        ArgumentOutOfRangeException.ThrowIfNegative(max);
+
+        if (max < min)
+        {
             throw new ArgumentOutOfRangeException($"Invalid arguments: min={min} max={max}");
-        return randomGenerator.Next(min, max);
+        }
+
+        return _randomGenerator.Next(min, max);
     }
 }

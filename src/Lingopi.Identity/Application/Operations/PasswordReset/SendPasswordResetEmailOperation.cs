@@ -1,10 +1,9 @@
 ﻿using FluentValidation;
-using Lingopi.Core.Helpers;
+using Lingopi.Core.Extensions;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Configs;
 using Microsoft.Extensions.Options;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.PasswordReset;
 
@@ -59,7 +58,7 @@ public class SendPasswordResetEmailOperation(
     }
 }
 
-public record SendPasswordResetEmailCommand(string Email) : IOperationCommand;
+public record SendPasswordResetEmailCommand(string Email) : IOperationCommand<NoResult>;
 
 public class SendPasswordResetEmailValidator : AbstractValidator<SendPasswordResetEmailCommand>
 {

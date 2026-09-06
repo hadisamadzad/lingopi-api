@@ -1,8 +1,5 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.Auth;
 
@@ -13,11 +10,11 @@ public class CheckUsernameAvailabilityEndpoint : IEndpoint
         // Endpoint for checking username availability
         app.MapGroup(Routes.AuthBaseRoute)
             .WithSummary("Check Username Availability")
-            .MapGet("username-check", async (IOperationService operations,
+            .MapGet("username-check", async (IOperationMediator operations,
                 [FromQuery] string email) =>
             {
                 // Operation
-                var operationResult = await operations.CheckUsername.ExecuteAsync(new CheckUsernameCommand(email));
+                var operationResult = await operations.ExecuteAsync(new CheckUsernameCommand(email));
 
                 // Result
                 return operationResult.Status switch

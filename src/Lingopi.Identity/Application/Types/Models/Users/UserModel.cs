@@ -16,6 +16,8 @@ public record UserModel
 
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
+    public string? TimeZoneId { get; set; }
+    public ThemePreference? Theme { get; set; }
     public string FullName { get; set; } = string.Empty;
     public Role Role { get; set; }
     public UserState Status { get; set; }

@@ -7,46 +7,93 @@ public class LingoEntity : IEntity
 {
     public string Id { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
-    public string Lingo { get; set; } = string.Empty;
-    public LingoType LingoType { get; set; }
-    public string Definition { get; set; } = string.Empty;
-    public string Translation { get; set; } = string.Empty;
-    public WordStyle? Style { get; set; }
-    public List<string> Examples { get; set; } = [];
-    public List<Context> Context { get; set; } = [];
-    public List<string> Tags { get; set; } = [];
-    public LearningGoal? LearningGoal { get; set; }
+
+    public string? Expression { get; set; }
+    public string? SourceLanguageCode { get; set; }
+    public List<string> SourceLocaleCodes { get; set; } = [];
+    public string? TargetLocaleCode { get; set; }
+
+    public LingoType? Type { get; set; }
+    public string? Meaning { get; set; }
+    public string? Pattern { get; set; }
+    public string? SenseKey { get; set; }
+    public string? Translation { get; set; }
+    public List<LingoRegister> Registers { get; set; } = [];
+    public List<LingoDomain> Domains { get; set; } = [];
+    public bool IsOffensive { get; set; }
+    public List<ExampleValue> Examples { get; set; } = [];
+    public List<string> CommonMistakes { get; set; } = [];
     public string? UserNote { get; set; }
-    public required LanguagesValue Languages { get; set; }
-    public ReviewValue Review { get; set; } = new();
-    public SourceValue? Source { get; set; }
+
+    public List<string> Tags { get; set; } = [];
+    public EmbeddingValue? Embedding { get; set; }
+    public EnrichmentValue Enrichment { get; set; } = new();
+    public List<EncounterValue> Encounters { get; set; } = [];
+    public LearningValue Learning { get; set; } = new();
+
     public AuditValue Audit { get; set; } = new();
 }
 
-public record LanguagesValue
+public record EncounterValue
 {
-    public required string SourceLanguageId { get; init; }
-    public required string TargetLanguageId { get; init; }
+    public string? CaptureId { get; set; }
+    public string OriginalText { get; set; } = string.Empty;
+    public string? SourceLanguageCode { get; set; }
+    public string? SourceLocaleCode { get; set; }
+    public LingoContext? Context { get; set; }
+    public DateTime CapturedAt { get; set; }
 }
 
-public record ReviewValue
+public record ExampleValue
 {
-    public DateTime? LastTime { get; set; }
-    public DateTime? NextTime { get; set; }
+    public string Text { get; set; } = string.Empty;
+    public string? Translation { get; set; }
+}
+
+public record EmbeddingValue
+{
+    public List<float> Vector { get; set; } = [];
+    public string Model { get; set; } = string.Empty;
+    public int Dimension { get; set; }
+    public DateTime GeneratedAt { get; set; }
+}
+
+public record LearningValue
+{
+    public LearningGoal? Goal { get; set; }
+    public LearningStatus Status { get; set; } = LearningStatus.NotStarted;
+    public LearningReviewState CurrentReviewState { get; set; } = LearningReviewState.New;
+    public SrsReviewValue Review { get; set; } = new();
+}
+
+public record SrsReviewValue
+{
+    public DateTime? LastReviewedAt { get; set; }
+    public DateTime? NextReviewAt { get; set; }
     public int Repetitions { get; set; }
-    public int SrsLevel { get; set; } = 1;
+    public int Level { get; set; } = 1;
 }
 
-public record SourceValue
+public record EnrichmentValue
 {
-    public SourceMethod Method { get; init; }
-    public string? Model { get; init; }
-    public string? Version { get; init; }
+    public EnrichmentStatus Status { get; set; } = EnrichmentStatus.Queued;
+
+    public string? EnrichmentJobId { get; set; }
+
+    public DateTime? LastEnrichedAt { get; set; }
+    public string? Provider { get; set; }
+    public string? Model { get; set; }
+    public string? PromptVersion { get; set; }
+    public string? ErrorCode { get; set; }
+    public string? ErrorMessage { get; set; }
 }
 
 public record AuditValue
 {
-    public DateTime CreatedAt { get; init; }
-    public DateTime UpdatedAt { get; init; }
-    public int Version { get; init; } = 1;
+    public const int CurrentSchemaVersion = 25;
+
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public int Version { get; set; } = 1;
+    public int SchemaVersion { get; set; } = CurrentSchemaVersion;
 }

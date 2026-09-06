@@ -4,7 +4,7 @@ public record PasswordResetConfig
 {
     public const string Key = "PasswordReset";
 
-    public string LinkFormat { get; set; }
+    public required string LinkFormat { get; set; }
     public int LinkLifetimeInDays { get; set; }
     public int BrevoTemplateId { get; set; }
 }

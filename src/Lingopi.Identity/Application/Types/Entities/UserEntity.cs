@@ -32,6 +32,7 @@ public class UserEntity : IEntity
     public string? LastName { get; set; }
     public Role Role { get; set; }
     public UserState Status { get; set; }
+    public UserSettings Settings { get; set; } = new();
 
     #endregion
 

@@ -67,7 +67,8 @@ public class RefreshAccessTokenOperationTests
         _repository.RefreshTokens.ConsumeAsync(
                 Arg.Any<string>(), Arg.Any<DateTime>(), Arg.Any<string>())
             .Returns(new RefreshTokenEntity { UserId = "missing-user" });
-        _repository.Users.GetByIdAsync("missing-user").Returns((UserEntity?)null);
+        _repository.Users.GetByIdAsync("missing-user")
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         var result = await _operation.ExecuteAsync(
             new RefreshAccessTokenCommand("refresh-token"),

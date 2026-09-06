@@ -13,7 +13,10 @@
       "UpstreamHttpMethod": ["Get"],
       "DownstreamPathTemplate": "/api/{all}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "lingopi-lingo", "Port": 5000 }]
+      "DownstreamHostAndPorts": [{ "Host": "lingopi-lingo", "Port": 5000 }],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "LingopiJwtBearer"
+      }
     },
     {
       "UpstreamPathTemplate": "/api/lingo/{all}",

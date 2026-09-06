@@ -1,8 +1,5 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.PasswordReset;
 using Microsoft.AspNetCore.Mvc;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Api.Endpoints.PasswordReset;
 
@@ -12,10 +9,10 @@ public class ResetPasswordEndpoint : IEndpoint
     {
         app.MapGroup(Routes.AuthBaseRoute)
             .WithSummary("Reset Password by Password Reset Token")
-            .MapPatch("password-reset", async (IOperationService operations,
+            .MapPatch("password-reset", async (IOperationMediator operations,
                 [FromBody] ResetPasswordRequest request) =>
             {
-                var operationResult = await operations.ResetPassword.ExecuteAsync(
+                var operationResult = await operations.ExecuteAsync(
                     new ResetPasswordCommand(request.Token, request.NewPassword));
 
                 return operationResult.Status switch

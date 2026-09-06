@@ -3,10 +3,13 @@ using Lingopi.Core.Extensions;
 using Lingopi.Core.Helpers;
 using Lingopi.Core.Persistence.MongoDB;
 using Lingopi.Lingo.Application.Interfaces;
-using Lingopi.Lingo.Application.Operations;
+using Lingopi.Lingo.Application.Interfaces.Services;
+using Lingopi.Lingo.Application.Models.Configs;
 using Lingopi.Lingo.Core.Bootstrap;
 using Lingopi.Lingo.Infrastructure.Database;
-using Minimals.Operations;
+using Lingopi.Lingo.Infrastructure.OpenAI;
+using Lingopi.Lingo.Infrastructure.Usage;
+using Lingopi.Lingo.Workers;
 using Serilog;
 
 var env = BootstrapHelper.GetEnvironmentName("Local");
@@ -30,14 +33,35 @@ builder.Configuration.AddConfiguration(configs);
 
 // Configure JSON options to serialize enums as strings
 builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 // Add services to the container
 builder.Services.AddCustomConfigurations(configs);
 builder.Services.AddOperations();
-builder.Services.AddTransient<IOperationService, OperationService>();
+builder.Services.AddHttpClient(IdentityServiceOptions.Key, client =>
+{
+    var baseUrl = configs[$"{IdentityServiceOptions.Key}:BaseUrl"];
+    client.BaseAddress = new Uri(baseUrl!, UriKind.Absolute);
+});
+
+builder.Services.AddConfiguredOpenAI(configs);
+builder.Services
+    .AddOptions<LingoEntitlementOptions>()
+    .Bind(configs.GetSection(LingoEntitlementOptions.Key))
+    .Validate(options => options.Plans.Count > 0, "At least one Lingo entitlement plan must be configured.")
+    .ValidateOnStart();
+
+builder.Services.AddScoped<IEnrichmentUsageService, EnrichmentUsageService>();
+builder.Services.AddScoped<IEntitlementService>(serviceProvider =>
+    (EnrichmentUsageService)serviceProvider.GetRequiredService<IEnrichmentUsageService>());
+builder.Services.AddScoped<IIdentityEntitlementClient, IdentityEntitlementClient>();
+builder.Services.AddScoped<ICaptureUsageService, CaptureUsageService>();
+
+// Add hosted services
+builder.Services.AddSingleton(TimeProvider.System);
+
+builder.Services.AddHostedService<CaptureAnalysisWorker>();
+builder.Services.AddHostedService<LingoEnrichmentWorker>();
 
 // Database
 builder.Services.AddConfiguredMongoDB(configs);
@@ -62,17 +86,30 @@ if (app is null)
     return;
 }
 
+// Index creations
+await using (var initializationScope = app.Services.CreateAsyncScope())
+{
+    var repositories = initializationScope.ServiceProvider.GetRequiredService<IRepositoryManager>();
+    await repositories.Captures.EnsureIndexesAsync();
+    await repositories.Lingos.EnsureIndexesAsync();
+    await repositories.EnrichmentJobs.EnsureIndexesAsync();
+    await repositories.UserSettings.EnsureIndexesAsync();
+    await repositories.Usage.EnsureIndexesAsync();
+}
+
 // Add middleware
 app.MapHealthChecks("/api/health");
 
 // Add endpoints
 app.MapEndpoints();
 
+// Swagger
 if (!app.Environment.IsProduction())
 {
     app.UseConfiguredSwagger();
 }
 
+// Run
 try
 { await app.RunAsync(); }
 catch (Exception ex) { Log.Fatal(ex, "Application failed to start."); }

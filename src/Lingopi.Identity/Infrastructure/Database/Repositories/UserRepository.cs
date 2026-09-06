@@ -13,12 +13,12 @@ public class UserRepository(IMongoDatabase database, string collectionName) :
         return await _collection.Find(x => true).AnyAsync();
     }
 
-    public async Task<UserEntity> GetByIdAsync(string id)
+    public async Task<UserEntity?> GetByIdAsync(string id)
     {
         return await _collection.Find(x => x.Id == id).SingleOrDefaultAsync();
     }
 
-    public async Task<UserEntity> GetByEmailAsync(string email)
+    public async Task<UserEntity?> GetByEmailAsync(string email)
     {
         email = email.ToLower();
         return await _collection.Find(x => x.Email.ToLower() == email).SingleOrDefaultAsync();

@@ -3,6 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Minimals.Operations" />
     <ProjectReference Include="../../../src/Lingopi.Core/Lingopi.Core.csproj" />
   </ItemGroup>
 </Project>

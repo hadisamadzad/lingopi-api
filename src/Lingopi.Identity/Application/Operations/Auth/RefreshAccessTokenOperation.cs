@@ -1,6 +1,5 @@
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 
@@ -44,7 +43,7 @@ public class RefreshAccessTokenOperation(IRepositoryManager repository) :
     }
 }
 
-public record RefreshAccessTokenCommand(string RefreshToken) : IOperationCommand;
+public record RefreshAccessTokenCommand(string RefreshToken) : IOperationCommand<RefreshAccessTokenResult>;
 public record RefreshAccessTokenResult(
     string AccessToken,
     string RefreshToken,

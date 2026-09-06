@@ -19,12 +19,13 @@ Copilot must follow that document when suggesting:
 - Use Operation-based **Clean Architecture** strictly.
 - Do NOT introduce new libraries or NuGet packages unless explicitly requested.
 - Prefer clarity and explicitness over cleverness.
+- Do not use `.Bind(...)`, `.Validate(...)`, or `.ValidateOnStart()` when registering configuration options unless explicitly requested. Read configuration values directly using the existing configuration conventions.
 
 ## Architecture Rules
 
 - Use minimal API controllers:
   - Translate HTTP requests to Commands
-  - Call Operations via OperationService
+  - Call Operations via `IOperationMediator`
   - Map OperationStatus to HTTP responses
 - **No business logic** in controllers.
 - All orchestration logic belongs in the **Application** layer.
@@ -93,6 +94,8 @@ Use suffixes correctly:
 - `ReadModel` → application/domain models
 - `Request` → API input
 - `Response` → API output
+- `InputMessage` → Bus messaging input
+- `OutputMessage` → Bus messaging output
 - `Command` → input to operations
 - `Result` → output from services
 - `Setting` → environment-loaded configuration
@@ -110,6 +113,8 @@ Apart from Entities, all other types are preferably immutable flat records.
 - Repositories must not contain business logic.
 - Filters must be passed explicitly via Filter DTOs.
 - MongoDB entities must remain persistence-focused.
+- MongoDB indexes are created in the codebase and ensured by the repository layer to the DB.
+- EnsureIndexesAsync method is required in repositories with one empty line distance with actual methods.
 
 ## Azure Integrations
 
@@ -137,6 +142,15 @@ Apart from Entities, all other types are preferably immutable flat records.
 - Prefer immutable records where possible.
 - Methods should be small and focused.
 - Be explicit rather than implicit.
+- Do not assign business defaults to enum properties in their declarations. For example, do not write `public SubscriptionPlan Plan { get; set; } = SubscriptionPlan.Free;`; assign enum values explicitly in the operation or factory that creates the entity.
+- Do not place function or repository calls directly in `if` conditions. Assign the result to a clearly named local variable first, then evaluate that variable:
+  ```csharp
+  var user = await repository.Users.GetByIdAsync(command.UserId);
+  if (user is null)
+  {
+      // ...
+  }
+  ```
 
 ## Forbidden
 

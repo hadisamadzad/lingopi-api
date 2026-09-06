@@ -1,9 +1,8 @@
 using FluentValidation;
-using Lingopi.Core.Helpers;
+using Lingopi.Core.Extensions;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Models.Auth;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 
@@ -67,7 +66,7 @@ public class LoginOperation(IRepositoryManager repository) :
 
 public record LoginCommand(
     string Email,
-    string Password) : IOperationCommand;
+    string Password) : IOperationCommand<LoginResult>;
 
 public class LoginValidator : AbstractValidator<LoginCommand>
 {

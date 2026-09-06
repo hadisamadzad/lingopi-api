@@ -2,10 +2,10 @@ using System.Text.Json.Serialization;
 using Lingopi.Core.Extensions;
 using Lingopi.Core.Helpers;
 using Lingopi.Identity.Application.Interfaces;
-using Lingopi.Identity.Application.Operations;
 using Lingopi.Identity.Core.Bootstrap;
 using Lingopi.Identity.Infrastructure.Database;
-using Minimals.Operations;
+using Lingopi.Identity.Infrastructure.Database.Repositories;
+using MongoDB.Driver;
 using Serilog;
 
 var env = BootstrapHelper.GetEnvironmentName("Local");
@@ -37,10 +37,10 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 // Add services to the container
 builder.Services.AddCustomConfigurations(configs);
 builder.Services.AddOperations();
-builder.Services.AddTransient<IOperationService, OperationService>();
 
 builder.Services.AddConfiguredMongoDB(configs);
 builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
+builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddConfiguredRedisCache(configs);
 
@@ -53,13 +53,21 @@ WebApplication app = default!;
 try
 {
     app = builder.Build();
+    await RefreshTokenRepository.EnsureIndexesAsync(
+        app.Services.GetRequiredService<IMongoDatabase>());
+    await app.Services.GetRequiredService<IRepositoryManager>().Subscriptions.EnsureIndexesAsync();
+    await app.Services.GetRequiredService<IRepositoryManager>().SubscriptionHistory.EnsureIndexesAsync();
     Log.Information("Application started on: {0} ({1})", configs["Urls"], env);
 }
 catch (Exception ex)
 {
     Log.Fatal(ex, $"Application failed to build.");
+    app = null!;
 }
-if (app is null) return;
+if (app is null)
+{
+    return;
+}
 
 // Add middleware
 app.MapHealthChecks("/api/health");
@@ -68,7 +76,9 @@ app.MapHealthChecks("/api/health");
 app.MapEndpoints();
 
 if (!app.Environment.IsProduction())
+{
     app.UseConfiguredSwagger();
+}
 
 try
 { await app.RunAsync(); }

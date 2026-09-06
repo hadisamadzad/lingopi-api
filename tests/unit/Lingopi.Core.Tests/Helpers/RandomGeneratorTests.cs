@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using Lingopi.Core.Helpers;
 using Xunit;
@@ -18,7 +20,7 @@ public class RandomGeneratorTests
 
         // Assert
         Assert.Equal(length + (prefix?.Length ?? 0), result.Length);
-        Assert.StartsWith(prefix ?? string.Empty, result);
+        Assert.StartsWith(prefix ?? string.Empty, result, StringComparison.Ordinal);
     }
 
     [Theory]

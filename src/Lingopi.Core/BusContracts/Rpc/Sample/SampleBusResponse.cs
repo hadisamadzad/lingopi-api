@@ -1,8 +1,8 @@
 namespace Lingopi.Core.BusContracts.Rpc.Sample;
 
-public class SampleBusResponse : BusResponse
+public record SampleBusResponse : BusResponse
 {
-    public string Text { get; set; }
+    public required string Text { get; set; }
 
     /// <summary>
     /// Specific Possible Errors For This Response

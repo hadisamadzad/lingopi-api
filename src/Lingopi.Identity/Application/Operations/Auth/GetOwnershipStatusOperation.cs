@@ -1,5 +1,4 @@
 ﻿using Lingopi.Identity.Application.Interfaces;
-using Minimals.Operations;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
 
@@ -15,4 +14,4 @@ public class GetOwnershipStatusOperation(IRepositoryManager repository)
     }
 }
 
-public record GetOwnershipStatusCommand() : IOperationCommand;
+public record GetOwnershipStatusCommand() : IOperationCommand<bool>;

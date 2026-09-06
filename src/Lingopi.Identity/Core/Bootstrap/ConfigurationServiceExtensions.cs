@@ -9,12 +9,17 @@ public static class ConfigurationServiceExtensions
         IConfiguration configs)
     {
         // Token helper static config
-        var jwtConfig = configs.GetSection(AuthTokenConfig.Key).Get<AuthTokenConfig>();
+        var jwtConfig = configs.GetSection(AuthTokenConfig.Key).Get<AuthTokenConfig>()
+            ?? throw new InvalidOperationException("JWT configuration is missing or invalid.");
+
         TokenHelper.Initialize(jwtConfig);
 
         // User helper static lockout config
-        UserHelper.LockoutConfig = configs.GetSection(LockoutConfig.Key).Get<LockoutConfig>();
-        PasswordResetTokenHelper.SetEncryptionKey(configs["PasswordReset:EncryptionKey"]);
+        UserHelper.LockoutConfig = configs.GetSection(LockoutConfig.Key).Get<LockoutConfig>()
+            ?? throw new InvalidOperationException("Lockout configuration is missing or invalid.");
+        var encryptionKey = configs["PasswordReset:EncryptionKey"]
+            ?? throw new InvalidOperationException("Password reset encryption key is missing.");
+        PasswordResetTokenHelper.SetEncryptionKey(encryptionKey);
 
         services.Configure<ActivationConfig>(configs.GetSection(ActivationConfig.Key));
         return services;

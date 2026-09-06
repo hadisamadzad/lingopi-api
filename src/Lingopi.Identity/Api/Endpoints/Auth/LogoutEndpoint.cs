@@ -1,5 +1,3 @@
-using Lingopi.Core.Interfaces;
-using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Operations.Auth;
 using Lingopi.Identity.Core.Configuration;
 
@@ -12,11 +10,10 @@ public class LogoutEndpoint : IEndpoint
         // Endpoint for logging out
         app.MapGroup(Routes.AuthBaseRoute)
             .WithSummary("Logout endpoint")
-            .MapPost("logout", async (IOperationService operations, HttpContext context) =>
+            .MapPost("logout", async (IOperationMediator operations, HttpContext context) =>
             {
                 var refreshToken = context.Request.Cookies["refreshToken"];
-                await operations.RevokeRefreshToken.ExecuteAsync(
-                    new RevokeRefreshTokenCommand(refreshToken));
+                await operations.ExecuteAsync(new RevokeRefreshTokenCommand(refreshToken));
 
                 context.Response.Cookies.Delete(
                     "refreshToken",

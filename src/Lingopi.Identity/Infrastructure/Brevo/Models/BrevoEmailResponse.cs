@@ -1,6 +1,3 @@
 namespace Lingopi.Identity.Infrastructure.Brevo.Models;
 
-public class BrevoEmailResponse
-{
-    public string MessageId { get; set; }
-}
+public record BrevoEmailResponse(string MessageId);
