@@ -1,7 +1,7 @@
 using Lingopi.Identity.Application.Operations.Auth;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Lingopi.Identity.Api.Endpoints.Auth;
+namespace Lingopi.Identity.Api.Endpoints.Internals;
 
 /// <summary>Internal endpoint called by the Gateway after Google has verified the user.</summary>
 public class AuthenticateGoogleUserEndpoint : IEndpoint
