@@ -2,7 +2,7 @@ using Lingopi.Lingo.Api.Models;
 using Lingopi.Lingo.Application.Operations.UserSettings;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Lingopi.Lingo.Api.Endpoints;
+namespace Lingopi.Lingo.Api.Endpoints.UserSettings;
 
 public sealed class SaveUserSettingsEndpoint : IEndpoint
 {
