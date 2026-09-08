@@ -9,14 +9,27 @@
       "DownstreamHostAndPorts": [{ "Host": "lingopi-lingo", "Port": 5000 }]
     },
     {
+      "UpstreamPathTemplate": "/api/lingo/languages",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/api/lingos/languages",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "lingopi-lingo", "Port": 5000 }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/lingo/admin/{all}",
+      "UpstreamHttpMethod": ["Get", "Post", "Put", "Patch", "Delete"],
+      "DownstreamPathTemplate": "/api/lingos/admin/{all}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "lingopi-lingo", "Port": 5000 }],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "LingopiJwtBearer" }
+    },
+    {
       "UpstreamPathTemplate": "/api/lingo/{all}",
       "UpstreamHttpMethod": ["Get"],
       "DownstreamPathTemplate": "/api/{all}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [{ "Host": "lingopi-lingo", "Port": 5000 }],
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "LingopiJwtBearer"
-      }
+      "AuthenticationOptions": { "AuthenticationProviderKey": "LingopiJwtBearer" }
     },
     {
       "UpstreamPathTemplate": "/api/lingo/{all}",
@@ -24,9 +37,7 @@
       "DownstreamPathTemplate": "/api/{all}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [{ "Host": "lingopi-lingo", "Port": 5000 }],
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "LingopiJwtBearer"
-      }
+      "AuthenticationOptions": { "AuthenticationProviderKey": "LingopiJwtBearer" }
     }
   ]
 }

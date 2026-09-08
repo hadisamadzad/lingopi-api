@@ -1,4 +1,3 @@
-using Lingopi.Core.Interfaces;
 using Lingopi.Lingo.Application.Models.Entities;
 
 namespace Lingopi.Lingo.Application.Interfaces.Repositories;
@@ -6,6 +5,11 @@ namespace Lingopi.Lingo.Application.Interfaces.Repositories;
 public interface ILanguageRepository : IRepository<LanguageEntity>
 {
     Task<LanguageEntity?> GetByIdAsync(string langId);
+    Task<List<LanguageEntity>> GetAllAsync();
     Task<List<LanguageEntity>> GetActiveLanguagesAsync();
     Task<bool> ExistsByCodeAsync(string code);
+    Task<bool> ExistsByCodeAsync(string code, string excludedId);
+    Task<bool> ExistsByLocaleCodeAsync(string localeCode, string? excludedLanguageId = null);
+    Task<bool> IsActiveLocaleAsync(string localeCode);
+    Task EnsureIndexesAsync(CancellationToken cancellationToken = default);
 }

@@ -41,6 +41,27 @@ public sealed class SaveUserSettingsOperation(
                 "At least one source locale code is required.");
         }
 
+        var activeLanguages = await repository.Languages.GetActiveLanguagesAsync();
+        if (activeLanguages.Count > 0)
+        {
+            var targetLocaleIsActive = await repository.Languages.IsActiveLocaleAsync(targetLocaleCode);
+            if (!targetLocaleIsActive)
+            {
+                return OperationResult<UserSettingsModel>.ValidationFailure(
+                    $"Target locale '{targetLocaleCode}' is not active in the language catalog.");
+            }
+
+            foreach (var sourceLocaleCode in sourceLocaleCodes)
+            {
+                var sourceLocaleIsActive = await repository.Languages.IsActiveLocaleAsync(sourceLocaleCode);
+                if (!sourceLocaleIsActive)
+                {
+                    return OperationResult<UserSettingsModel>.ValidationFailure(
+                        $"Source locale '{sourceLocaleCode}' is not active in the language catalog.");
+                }
+            }
+        }
+
         // Persist the user settings
         var existing = await repository.UserSettings.GetByUserIdAsync(command.UserId);
         var now = DateTime.UtcNow;

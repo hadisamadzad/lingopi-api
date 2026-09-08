@@ -95,6 +95,7 @@ await using (var initializationScope = app.Services.CreateAsyncScope())
     await repositories.EnrichmentJobs.EnsureIndexesAsync();
     await repositories.UserSettings.EnsureIndexesAsync();
     await repositories.Usage.EnsureIndexesAsync();
+    await repositories.Languages.EnsureIndexesAsync();
 }
 
 // Add middleware

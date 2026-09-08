@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Claims;
+using System.Text;
 using Lingopi.Gateway.Core.Configs;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.IdentityModel.Tokens;
@@ -33,6 +34,7 @@ public static class AuthenticationInjection
                 RequireExpirationTime = true,
                 ValidateLifetime = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config.SecretKey)),
+                RoleClaimType = ClaimTypes.Role,
                 ClockSkew = TimeSpan.Zero
             })
             .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>

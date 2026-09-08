@@ -7,9 +7,7 @@
       "DownstreamPathTemplate": "/api/auth/profile",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [{ "Host": "lingopi-identity", "Port": 5000 }],
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "LingopiJwtBearer"
-      }
+      "AuthenticationOptions": { "AuthenticationProviderKey": "LingopiJwtBearer" }
     },
     {
       "UpstreamPathTemplate": "/api/identity/auth/{all}",
@@ -17,6 +15,14 @@
       "DownstreamPathTemplate": "/api/auth/{all}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [{ "Host": "lingopi-identity", "Port": 5000 }]
+    },
+    {
+      "UpstreamPathTemplate": "/api/identity/admin/{all}",
+      "UpstreamHttpMethod": ["Get", "Post", "Put", "Patch", "Delete"],
+      "DownstreamPathTemplate": "/api/admin/{all}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "lingopi-identity", "Port": 5000 }],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "LingopiJwtBearer" }
     },
     {
       "UpstreamPathTemplate": "/api/identity/health",
@@ -31,9 +37,7 @@
       "DownstreamPathTemplate": "/api/{all}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [{ "Host": "lingopi-identity", "Port": 5000 }],
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "LingopiJwtBearer"
-      }
+      "AuthenticationOptions": { "AuthenticationProviderKey": "LingopiJwtBearer" }
     }
   ]
 }

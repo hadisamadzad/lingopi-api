@@ -3,6 +3,7 @@ using Lingopi.Core.Extensions;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Configs;
+using Lingopi.Identity.Application.Types.Entities;
 using Microsoft.Extensions.Options;
 
 namespace Lingopi.Identity.Application.Operations.PasswordReset;

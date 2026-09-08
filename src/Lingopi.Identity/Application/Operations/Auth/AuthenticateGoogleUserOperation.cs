@@ -40,8 +40,8 @@ public partial class AuthenticateGoogleUserOperation(
                 PasswordHash = PasswordHelper.Hash(Guid.NewGuid().ToString("N")),
                 Status = UserState.Active,
                 Role = isFirstUser ? Role.Owner : Role.User,
-                SecurityStamp = UserHelper.CreateUserStamp(),
-                ConcurrencyStamp = UserHelper.CreateUserStamp(),
+                SecurityStamp = Guid.NewGuid().ToString("N"),
+                ConcurrencyStamp = Guid.NewGuid().ToString("N"),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

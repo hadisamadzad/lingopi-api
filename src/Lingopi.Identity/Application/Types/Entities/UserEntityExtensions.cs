@@ -1,0 +1,44 @@
+using Lingopi.Identity.Application.Types.Configs;
+using Lingopi.Identity.Application.Helpers;
+
+namespace Lingopi.Identity.Application.Types.Entities;
+
+public static class UserEntityExtensions
+{
+    public static LockoutConfig LockoutConfig { get; set; } = new LockoutConfig();
+
+    public static string GetFullName(this UserEntity user) =>
+        $"{user.FirstName} {user.LastName}".Trim();
+
+    public static void Activate(this UserEntity user) => user.Status = UserState.Active;
+
+    public static bool IsLockedOutOrNotActive(this UserEntity user) =>
+        user.Status != UserState.Active || user.IsLockedOut();
+
+    public static bool IsLockedOut(this UserEntity user) => user.LockoutEndTime > DateTime.UtcNow;
+
+    public static void TryToLockout(this UserEntity user)
+    {
+        user.FailedLoginCount++;
+        if (user.FailedLoginCount >= LockoutConfig.FailedLoginLimit)
+        {
+            user.LockoutEndTime = DateTime.UtcNow.Add(LockoutConfig.Duration);
+        }
+
+    }
+
+    public static void ResetLockoutHistory(this UserEntity user)
+    {
+        user.FailedLoginCount = 0;
+        user.LockoutEndTime = null;
+    }
+
+    public static string CreateJwtAccessToken(this UserEntity user) =>
+        TokenHelper.CreateJwtAccessToken(user.Id, user.Email, user.Role);
+
+    public static bool HasAdminRole(this UserEntity user)
+    {
+        Role[] adminRoles = [Role.Owner, Role.Admin];
+        return adminRoles.Contains(user.Role);
+    }
+}

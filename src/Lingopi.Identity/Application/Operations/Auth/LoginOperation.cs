@@ -2,6 +2,7 @@ using FluentValidation;
 using Lingopi.Core.Extensions;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
+using Lingopi.Identity.Application.Types.Entities;
 using Lingopi.Identity.Application.Types.Models.Auth;
 
 namespace Lingopi.Identity.Application.Operations.Auth;

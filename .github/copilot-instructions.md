@@ -41,7 +41,8 @@ Copilot must follow that document when suggesting:
   - Accept a Command which are defined as immutable records
   - Validate input via custom Validator in a folder named `Validators`
   - Use injected repositories and services via interfaces
-  - Return Operation results via `OperationResult<T>`
+  - Return operation results via `OperationResult<T>`, where `T` is a ReadModel, Result, primitive type, or another application-layer output type
+  - Never return persistence Entity classes directly
 
 ### Naming Conventions (Strict)
 
@@ -65,6 +66,15 @@ Operations must:
 
 - Never throw exceptions for flow control
 - Use OperationResult to report all outcomes
+- Never return an `Entity` class, including as the generic type inside `OperationResult<T>`.
+- Define one corresponding `ReadModel` for each `Entity` that an operation exposes.
+- Map repository `Entity` instances to the appropriate `ReadModel` before returning them from an operation.
+- Use a focused `Result` class or record when an operation returns a composed output that is not a single entity read model.
+- Return primitive types or other immutable application-layer types when they are sufficient for the use case.
+- Keep exactly one operation class per file.
+- Define the operation's Command record in the same file, after the operation class.
+- Keep operation orchestration shallow: repository and service calls should be made at a maximum depth of one.
+- Do not implement major business logic in nested depth-two-or-greater operation flows; extract it into a focused operation, helper, validator, or domain component.
 
 ## OperationResult Rules
 
@@ -142,6 +152,8 @@ Apart from Entities, all other types are preferably immutable flat records.
 - Prefer immutable records where possible.
 - Methods should be small and focused.
 - Be explicit rather than implicit.
+- When mapping a `List<T>` to another list, prefer `List.ConvertAll(...)` over
+  `List.Select(...).ToList()`.
 - Do not assign business defaults to enum properties in their declarations. For example, do not write `public SubscriptionPlan Plan { get; set; } = SubscriptionPlan.Free;`; assign enum values explicitly in the operation or factory that creates the entity.
 - Do not place function or repository calls directly in `if` conditions. Assign the result to a clearly named local variable first, then evaluate that variable:
   ```csharp

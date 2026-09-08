@@ -106,6 +106,22 @@ app.Use(async (context, next) =>
 app.UseCors(Constants.CorsPolicyName);
 app.UseHealthChecks("/api/health");
 app.UseAuthentication();
+app.Use(async (context, next) =>
+{
+    var isAdminRoute =
+        context.Request.Path.StartsWithSegments("/api/lingo/admin", StringComparison.OrdinalIgnoreCase) ||
+        context.Request.Path.StartsWithSegments("/api/identity/admin", StringComparison.OrdinalIgnoreCase);
+    var isOwnerOrAdmin = context.User.IsInRole("Owner") || context.User.IsInRole("Admin");
+    if (isAdminRoute && !isOwnerOrAdmin)
+    {
+        context.Response.StatusCode = context.User.Identity?.IsAuthenticated == true
+            ? StatusCodes.Status403Forbidden
+            : StatusCodes.Status401Unauthorized;
+        return;
+    }
+
+    await next(context);
+});
 app.MapEndpoints();
 
 app.UseConfiguredOcelot();

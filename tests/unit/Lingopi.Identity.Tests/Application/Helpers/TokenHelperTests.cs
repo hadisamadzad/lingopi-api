@@ -1,7 +1,11 @@
 using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
 using Lingopi.Core.Helpers;
 using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Types.Configs;
+using Lingopi.Identity.Application.Types.Entities;
 using NSubstitute;
 using Xunit;
 
@@ -39,6 +43,18 @@ public class TokenHelperTests
         // Assert
         Assert.NotNull(token);
         Assert.True(isValid);
+    }
+
+    [Fact]
+    public void TestCreateJwtAccessToken_ShouldIncludeOnlyTheUserRoleAuthorizationClaim()
+    {
+        var token = TokenHelper.CreateJwtAccessToken("userId123", "fake-email", Role.Admin);
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+        var roleClaim = jwt.Claims.Single(claim =>
+            claim.Type == "role" || claim.Type == ClaimTypes.Role);
+
+        Assert.Equal("Admin", roleClaim.Value);
+        Assert.DoesNotContain(jwt.Claims, claim => claim.Type == "admin");
     }
 
     [Fact]

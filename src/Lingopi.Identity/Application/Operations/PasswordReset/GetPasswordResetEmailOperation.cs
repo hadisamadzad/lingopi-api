@@ -1,5 +1,6 @@
 ﻿using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Interfaces;
+using Lingopi.Identity.Application.Types.Entities;
 
 namespace Lingopi.Identity.Application.Operations.PasswordReset;
 

@@ -1,5 +1,6 @@
 ﻿using Lingopi.Identity.Application.Helpers;
 using Lingopi.Identity.Application.Types.Configs;
+using Lingopi.Identity.Application.Types.Entities;
 
 namespace Lingopi.Identity.Core.Bootstrap;
 
@@ -15,7 +16,7 @@ public static class ConfigurationServiceExtensions
         TokenHelper.Initialize(jwtConfig);
 
         // User helper static lockout config
-        UserHelper.LockoutConfig = configs.GetSection(LockoutConfig.Key).Get<LockoutConfig>()
+        UserEntityExtensions.LockoutConfig = configs.GetSection(LockoutConfig.Key).Get<LockoutConfig>()
             ?? throw new InvalidOperationException("Lockout configuration is missing or invalid.");
         var encryptionKey = configs["PasswordReset:EncryptionKey"]
             ?? throw new InvalidOperationException("Password reset encryption key is missing.");

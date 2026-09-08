@@ -2,6 +2,9 @@ namespace Lingopi.Identity.Api;
 
 public static class Routes
 {
+    public const string AdminBaseRoute = "api/admin/";
+    public const string AdminEndpointGroupTag = "Admin";
+
     public const string AuthBaseRoute = "api/auth/";
     public const string AuthEndpointGroupTag = "Auth";
 

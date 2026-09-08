@@ -40,8 +40,8 @@ public class RegisterOperation(IRepositoryManager repository)
             PasswordHash = PasswordHelper.Hash(command.Password),
             Status = UserState.Active, // TODO isFirstUser ? UserState.Active : UserState.Inactive,
             Role = userRole,
-            SecurityStamp = UserHelper.CreateUserStamp(),
-            ConcurrencyStamp = UserHelper.CreateUserStamp(),
+            SecurityStamp = Guid.NewGuid().ToString("N"),
+            ConcurrencyStamp = Guid.NewGuid().ToString("N"),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };

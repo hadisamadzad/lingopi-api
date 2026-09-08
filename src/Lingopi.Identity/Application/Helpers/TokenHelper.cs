@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using Lingopi.Identity.Application.Types.Configs;
+using Lingopi.Identity.Application.Types.Entities;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Lingopi.Identity.Application.Helpers;
@@ -16,15 +17,18 @@ public static class TokenHelper
 
     public static void Initialize(AuthTokenConfig config) => Config = config;
 
+    public static string CreateJwtAccessToken(string userId, string email, Role role) =>
+        CreateJwt(Config.AccessTokenSecretKey, Config.AccessTokenLifetime, userId, email, role);
+
     public static string CreateJwtAccessToken(string userId, string email) =>
-        CreateJwt(Config.AccessTokenSecretKey, Config.AccessTokenLifetime, userId, email);
+        CreateJwtAccessToken(userId, email, Role.User);
 
     public static TimeSpan RefreshTokenLifetime => Config.RefreshTokenLifetime;
 
     public static bool IsValidJwtAccessToken(string token) =>
         ValidateJwt(token, Config.AccessTokenSecretKey);
 
-    private static string CreateJwt(string key, TimeSpan lifetime, string userId, string email)
+    private static string CreateJwt(string key, TimeSpan lifetime, string userId, string email, Role role)
     {
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -32,7 +36,8 @@ public static class TokenHelper
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, userId),
-            new(JwtRegisteredClaimNames.UniqueName, email.ToLower())
+            new(JwtRegisteredClaimNames.UniqueName, email.ToLower()),
+            new(ClaimTypes.Role, role.ToString())
         };
 
         var token = new JwtSecurityToken(

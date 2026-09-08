@@ -22,6 +22,8 @@ public class SaveLingoUserSettingsOperationTests
             .Returns((UserSettingsEntity)null!);
         repository.UserSettings.UpsertAsync(Arg.Any<UserSettingsEntity>())
             .Returns(true);
+        repository.Languages.IsActiveLocaleAsync(Arg.Any<string>())
+            .Returns(true);
 
         var operation = new SaveUserSettingsOperation(repository);
 

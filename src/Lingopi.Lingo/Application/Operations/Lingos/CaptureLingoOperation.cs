@@ -50,6 +50,19 @@ public class CaptureLingoOperation(
         var sourceLocaleCode = LocaleCodeNormalizer.Normalize(command.SourceLocaleCode);
         var targetLocaleCode = userSettings.TargetLocaleCode;
 
+        // Check if the source locale is active in the language catalog
+        var activeLanguages = await repository.Languages.GetActiveLanguagesAsync() ?? [];
+        var sourceLocaleIsActive = activeLanguages.Count == 0;
+        if (!sourceLocaleIsActive)
+        {
+            sourceLocaleIsActive = await repository.Languages.IsActiveLocaleAsync(sourceLocaleCode);
+        }
+        if (!sourceLocaleIsActive)
+        {
+            return OperationResult<string>.ValidationFailure(
+                $"Source locale '{sourceLocaleCode}' is not active in the language catalog.");
+        }
+
         if (sourceLocaleCode is null ||
             !userSettings.SourceLocaleCodes.Any(x =>
                 string.Equals(x, sourceLocaleCode, StringComparison.OrdinalIgnoreCase)))
