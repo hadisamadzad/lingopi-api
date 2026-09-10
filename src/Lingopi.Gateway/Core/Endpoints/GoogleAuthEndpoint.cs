@@ -8,8 +8,7 @@ public sealed class GoogleAuthEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup("api/auth/")
-            .MapGet("google", () => Results.Challenge(
+        app.MapGet("api/auth/google", () => Results.Challenge(
                 new AuthenticationProperties { RedirectUri = "/api/auth/google/callback" },
                 [GoogleDefaults.AuthenticationScheme]));
     }

@@ -8,9 +8,7 @@ public sealed class GetUserUsageSummaryEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.LingoBaseRoute)
-            .WithSummary("Get the current user's usage summary")
-            .MapGet("usage", async (
+        app.MapGet("api/lingos/usage", async (
                 [FromServices] IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId) =>
             {
@@ -27,7 +25,8 @@ public sealed class GetUserUsageSummaryEndpoint : IEndpoint
                             "An unexpected error occurred while retrieving the user's usage summary.")
                 };
             })
-            .WithTags(Routes.LingoEndpointGroupTag)
+            .WithTags("Lingos")
+            .WithSummary("Get the current user's usage summary")
             .WithName("GetUserUsageSummary")
             .WithDescription(
                 "Returns account information and total plus previous-calendar-month usage metrics for the user.")

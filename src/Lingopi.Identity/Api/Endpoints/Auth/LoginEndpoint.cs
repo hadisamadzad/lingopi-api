@@ -10,9 +10,7 @@ public class LoginEndpoint : IEndpoint
     public void MapEndpoints(WebApplication app)
     {
         // Endpoint for logging in
-        app.MapGroup(Routes.AuthBaseRoute)
-            .WithSummary("Login endpoint")
-            .MapPost("login", async (IOperationMediator operations,
+        app.MapPost("api/auth/login", async (IOperationMediator operations,
                 [FromBody] LoginRequest request) =>
             {
                 // Operation
@@ -43,7 +41,8 @@ public class LoginEndpoint : IEndpoint
                     _ => Results.InternalServerError(operationResult.Error),
                 };
             })
-            .WithTags(Routes.AuthEndpointGroupTag)
+            .WithTags("Auth")
+            .WithSummary("Login endpoint")
             .WithDescription("Authenticates a user and returns access and refresh tokens.")
             .Produces<LoginResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)

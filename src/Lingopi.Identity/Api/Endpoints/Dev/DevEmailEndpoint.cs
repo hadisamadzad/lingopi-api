@@ -6,8 +6,7 @@ public sealed class DevEmailEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.DevBaseRoute)
-            .MapGet("email", async (
+        app.MapGet("api/dev/email", async (
             IEmailService emailService) =>
             {
                 var parameters = new Dictionary<string, string>
@@ -20,6 +19,6 @@ public sealed class DevEmailEndpoint : IEndpoint
 
                 return Results.Ok("Email sent");
             })
-            .WithTags(Routes.DevEndpointGroupTag);
+            .WithTags("Dev");
     }
 }

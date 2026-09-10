@@ -8,9 +8,7 @@ public sealed class SaveUserSettingsEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup($"{Routes.LingoBaseRoute}settings")
-            .WithTags(Routes.LingoEndpointGroupTag)
-            .MapPut("", async (
+        app.MapPut("api/lingos/settings", async (
                 [FromServices] IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId,
                 [FromBody] SaveUserSettingsRequest request) =>
@@ -35,6 +33,7 @@ public sealed class SaveUserSettingsEndpoint : IEndpoint
                             "An unexpected error occurred while saving user settings.")
                 };
             })
+            .WithTags("Lingos")
             .WithSummary("Save user settings")
             .WithName("SaveUserSettings")
             .WithDescription("Save the target locale and source locales for a user")

@@ -8,8 +8,7 @@ public sealed class UpsertSubscriptionEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup("api/internal/subscriptions/")
-            .MapPut("{userId}", async (
+        app.MapPut("api/internal/subscriptions/{userId}", async (
                 IOperationMediator operations,
                 [FromRoute] string userId,
                 [FromHeader(Name = "Lingopi-Internal-Auth")] string internalAuthSecret,

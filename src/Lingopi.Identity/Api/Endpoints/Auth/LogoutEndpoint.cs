@@ -8,9 +8,7 @@ public class LogoutEndpoint : IEndpoint
     public void MapEndpoints(WebApplication app)
     {
         // Endpoint for logging out
-        app.MapGroup(Routes.AuthBaseRoute)
-            .WithSummary("Logout endpoint")
-            .MapPost("logout", async (IOperationMediator operations, HttpContext context) =>
+        app.MapPost("api/auth/logout", async (IOperationMediator operations, HttpContext context) =>
             {
                 var refreshToken = context.Request.Cookies["refreshToken"];
                 await operations.ExecuteAsync(new RevokeRefreshTokenCommand(refreshToken));
@@ -23,7 +21,8 @@ public class LogoutEndpoint : IEndpoint
                 // Return 204 No Content - logout successful, no response body needed
                 return Results.NoContent();
             })
-            .WithTags(Routes.AuthEndpointGroupTag)
+            .WithTags("Auth")
+            .WithSummary("Logout endpoint")
             .WithDescription("Logs out the user by clearing the refresh token cookie.")
             .Produces(StatusCodes.Status204NoContent);
     }

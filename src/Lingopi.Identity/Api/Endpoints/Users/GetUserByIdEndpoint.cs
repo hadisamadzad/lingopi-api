@@ -8,9 +8,7 @@ public class GetUserByIdEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.AdminBaseRoute)
-            .WithSummary("Get User by ID")
-            .MapGet("{userId}", async (IOperationMediator operations,
+        app.MapGet("api/admin/users/{userId}", async (IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string authenticatedUserId,
                 [FromRoute] string userId) =>
             {
@@ -49,7 +47,8 @@ public class GetUserByIdEndpoint : IEndpoint
                     _ => Results.InternalServerError(operationResult.Error),
                 };
             })
-            .WithTags(Routes.AdminEndpointGroupTag)
+            .WithTags("Admin")
+            .WithSummary("Get User by ID")
             .WithDescription("Retrieves a user's details by their unique identifier.")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status422UnprocessableEntity)

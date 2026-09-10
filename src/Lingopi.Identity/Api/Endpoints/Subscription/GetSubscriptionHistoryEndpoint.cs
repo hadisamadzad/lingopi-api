@@ -8,8 +8,7 @@ public sealed class GetSubscriptionHistoryEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.SubscriptionBaseRoute)
-            .MapGet("history", async (
+        app.MapGet("api/subscription/history", async (
                 IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId) =>
             {
@@ -24,7 +23,7 @@ public sealed class GetSubscriptionHistoryEndpoint : IEndpoint
                     _ => Results.InternalServerError(result.Error)
                 };
             })
-            .WithTags(Routes.SubscriptionEndpointGroupTag)
+            .WithTags("Subscription")
             .WithSummary("Get the current user's subscription history")
             .WithDescription("Returns immutable subscription state snapshots for the authenticated user.")
             .WithName("GetSubscriptionHistory")

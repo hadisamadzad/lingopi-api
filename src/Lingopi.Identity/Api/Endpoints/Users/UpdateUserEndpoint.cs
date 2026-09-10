@@ -7,9 +7,7 @@ public class UpdateUserEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.AdminBaseRoute)
-            .WithSummary("Update user details by admins")
-            .MapPatch("{userId}", async (IOperationMediator operations,
+        app.MapPatch("api/admin/{userId}", async (IOperationMediator operations,
                 [FromRoute] string userId,
                 [FromHeader(Name = "User-Id")] string authenticatedUserId,
                 [FromBody] UpdateUserRequest request) =>
@@ -32,7 +30,8 @@ public class UpdateUserEndpoint : IEndpoint
                     _ => Results.InternalServerError(operationResult.Error),
                 };
             })
-            .WithTags(Routes.AdminEndpointGroupTag)
+            .WithTags("Admin")
+            .WithSummary("Update user details by admins")
             .WithDescription("Updates a user's details such as first name and last name. This endpoint is intended for use by administrators.")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)

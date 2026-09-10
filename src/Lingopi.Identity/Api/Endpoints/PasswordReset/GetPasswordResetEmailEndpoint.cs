@@ -7,8 +7,7 @@ public class GetPasswordResetEmailEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.AuthBaseRoute)
-            .MapGet("password-reset", async (IOperationMediator operations,
+        app.MapGet("api/auth/password-reset", async (IOperationMediator operations,
                 [FromQuery] string token) =>
             {
                 var operationResult = await operations.ExecuteAsync(
@@ -24,7 +23,7 @@ public class GetPasswordResetEmailEndpoint : IEndpoint
                     _ => Results.InternalServerError(operationResult.Error),
                 };
             })
-            .WithTags(Routes.PasswordResetEndpointGroupTag)
+            .WithTags("PasswordReset")
             .WithSummary("Get Password Reset Email by Token")
             .WithDescription("Retrieves the email associated with a valid password reset token.")
             .Produces(StatusCodes.Status200OK)

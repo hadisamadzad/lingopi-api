@@ -7,9 +7,7 @@ public class UpdateUserPasswordEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.UserBaseRoute)
-            .WithSummary("Update User Password")
-            .MapPatch("{userId}/password", async (IOperationMediator operations,
+        app.MapPatch("api/users/{userId}/password", async (IOperationMediator operations,
                 [FromRoute] string userId,
                 [FromHeader(Name = "User-Id")] string authenticatedUserId,
                 [FromBody] UpdateUserPasswordRequest request) =>
@@ -32,7 +30,8 @@ public class UpdateUserPasswordEndpoint : IEndpoint
                     _ => Results.InternalServerError(operationResult.Error),
                 };
             })
-            .WithTags(Routes.UserEndpointGroupTag)
+            .WithTags("Users")
+            .WithSummary("Update User Password")
             .WithDescription("Update a user's password. Requires the current password and the new password.")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)

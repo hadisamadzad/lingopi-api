@@ -8,7 +8,7 @@ public sealed class GetActiveLanguagesEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGet($"{Routes.LingoBaseRoute}languages", async (
+        app.MapGet("api/lingos/languages", async (
                 [FromServices] IOperationMediator operations) =>
             {
                 var operationResult = await operations.ExecuteAsync(
@@ -21,7 +21,7 @@ public sealed class GetActiveLanguagesEndpoint : IEndpoint
                         title: operationResult.Error?.Messages?.FirstOrDefault() ??
                             "An unexpected error occurred while retrieving languages.");
             })
-            .WithTags(Routes.LingoEndpointGroupTag)
+            .WithTags("Lingos")
             .WithName("GetActiveLanguages")
             .WithSummary("Get active languages and locales")
             .AllowAnonymous()

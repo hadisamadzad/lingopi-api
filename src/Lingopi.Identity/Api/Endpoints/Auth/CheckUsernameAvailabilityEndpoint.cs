@@ -8,9 +8,7 @@ public class CheckUsernameAvailabilityEndpoint : IEndpoint
     public void MapEndpoints(WebApplication app)
     {
         // Endpoint for checking username availability
-        app.MapGroup(Routes.AuthBaseRoute)
-            .WithSummary("Check Username Availability")
-            .MapGet("username-check", async (IOperationMediator operations,
+        app.MapGet("api/auth/username-check", async (IOperationMediator operations,
                 [FromQuery] string email) =>
             {
                 // Operation
@@ -27,7 +25,8 @@ public class CheckUsernameAvailabilityEndpoint : IEndpoint
                     _ => Results.InternalServerError(operationResult.Error),
                 };
             })
-            .WithTags(Routes.AuthEndpointGroupTag)
+            .WithTags("Auth")
+            .WithSummary("Check Username Availability")
             .WithDescription("Checks if a username (email) is available.")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)

@@ -9,9 +9,7 @@ public class SendPasswordResetEmailEndpoint : IEndpoint
 
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.AuthBaseRoute)
-            .WithSummary("Send Password Reset Email")
-            .MapPost("password-reset", async (IOperationMediator operations,
+        app.MapPost("api/auth/password-reset", async (IOperationMediator operations,
             [FromBody] SendPasswordResetEmailRequest request) =>
             {
                 var operationResult = await operations.ExecuteAsync(
@@ -26,7 +24,8 @@ public class SendPasswordResetEmailEndpoint : IEndpoint
                     _ => Results.InternalServerError(operationResult.Error),
                 };
             })
-            .WithTags(Routes.PasswordResetEndpointGroupTag)
+            .WithTags("PasswordReset")
+            .WithSummary("Send Password Reset Email")
             .WithDescription("Sends a password reset email including special token to the user's email address.")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)

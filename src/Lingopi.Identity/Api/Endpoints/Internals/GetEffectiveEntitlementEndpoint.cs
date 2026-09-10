@@ -7,8 +7,7 @@ public sealed class GetEffectiveEntitlementEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup("api/internal/subscriptions/")
-            .MapGet("{userId}/entitlement", async (
+        app.MapGet("api/internal/subscriptions/{userId}/entitlement", async (
                 IOperationMediator operations,
                 [FromRoute] string userId,
                 [FromHeader(Name = "Lingopi-Internal-Auth")] string internalAuthSecret) =>

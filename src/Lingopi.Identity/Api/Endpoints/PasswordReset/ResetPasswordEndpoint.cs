@@ -7,9 +7,7 @@ public class ResetPasswordEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.AuthBaseRoute)
-            .WithSummary("Reset Password by Password Reset Token")
-            .MapPatch("password-reset", async (IOperationMediator operations,
+        app.MapPatch("api/auth/password-reset", async (IOperationMediator operations,
                 [FromBody] ResetPasswordRequest request) =>
             {
                 var operationResult = await operations.ExecuteAsync(
@@ -24,7 +22,8 @@ public class ResetPasswordEndpoint : IEndpoint
                     _ => Results.InternalServerError(operationResult.Error),
                 };
             })
-            .WithTags(Routes.PasswordResetEndpointGroupTag)
+            .WithTags("PasswordReset")
+            .WithSummary("Reset Password by Password Reset Token")
             .WithDescription("Resets the user's password using a valid password reset token.")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)

@@ -8,9 +8,7 @@ public class GetLingoByIdEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.LingoBaseRoute)
-            .WithSummary("Get a lingo by ID")
-            .MapGet("{lingoId}", async (
+        app.MapGet("api/lingos/{lingoId}", async (
                 [FromServices] IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId,
                 [FromRoute] string lingoId) =>
@@ -29,7 +27,8 @@ public class GetLingoByIdEndpoint : IEndpoint
                             "An unexpected error occurred while retrieving the lingo.")
                 };
             })
-            .WithTags(Routes.LingoEndpointGroupTag)
+            .WithTags("Lingos")
+            .WithSummary("Get a lingo by ID")
             .WithName("GetLingoById")
             .WithDescription("Get a specific lingo item by its unique ID")
             .Produces<LingoResponse>(StatusCodes.Status200OK)

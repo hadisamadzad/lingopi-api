@@ -9,9 +9,7 @@ public class GetProfileEndpoint : IEndpoint
     public void MapEndpoints(WebApplication app)
     {
         // Endpoint for getting user profile
-        app.MapGroup(Routes.AuthBaseRoute)
-            .WithSummary("Gets the current user's profile")
-            .MapGet("profile", async (IOperationMediator operations,
+        app.MapGet("api/auth/profile", async (IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId) =>
             {
                 // Operation
@@ -42,7 +40,8 @@ public class GetProfileEndpoint : IEndpoint
                     _ => Results.InternalServerError(operationResult.Error),
                 };
             })
-            .WithTags(Routes.AuthEndpointGroupTag)
+            .WithTags("Auth")
+            .WithSummary("Gets the current user's profile")
             .WithDescription("Returns the profile information for the authenticated user.")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)

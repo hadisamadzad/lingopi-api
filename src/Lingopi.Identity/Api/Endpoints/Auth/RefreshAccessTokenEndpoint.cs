@@ -9,9 +9,7 @@ public class RefreshAccessTokenEndpoint : IEndpoint
     public void MapEndpoints(WebApplication app)
     {
         // Endpoint for getting access token by refresh token
-        app.MapGroup(Routes.AuthBaseRoute)
-            .WithSummary("Gets a new access token using a refresh token")
-            .MapPost("refresh", async (IOperationMediator operations,
+        app.MapPost("api/auth/refresh", async (IOperationMediator operations,
                 HttpContext context) =>
             {
                 // Get refresh token from cookie
@@ -44,7 +42,8 @@ public class RefreshAccessTokenEndpoint : IEndpoint
                     _ => Results.InternalServerError(operationResult.Error),
                 };
             })
-            .WithTags(Routes.AuthEndpointGroupTag)
+            .WithTags("Auth")
+            .WithSummary("Gets a new access token using a refresh token")
             .WithDescription("Returns a new access token if the current refresh token is valid.")
             .Produces<RefreshAccessTokenResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)

@@ -8,9 +8,7 @@ public class RegisterEndpoint : IEndpoint
     public void MapEndpoints(WebApplication app)
     {
         // Endpoint for registration
-        app.MapGroup(Routes.AuthBaseRoute)
-            .WithSummary("Registers the owner")
-            .MapPost("register", async (IOperationMediator operations,
+        app.MapPost("api/auth/register", async (IOperationMediator operations,
                 [FromBody] RegisterRequest request) =>
             {
                 // Operation
@@ -32,7 +30,8 @@ public class RegisterEndpoint : IEndpoint
                     _ => Results.InternalServerError(operationResult.Error),
                 };
             })
-            .WithTags(Routes.AuthEndpointGroupTag)
+            .WithTags("Auth")
+            .WithSummary("Registers the owner")
             .WithDescription("Registers the first user as the owner.")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)

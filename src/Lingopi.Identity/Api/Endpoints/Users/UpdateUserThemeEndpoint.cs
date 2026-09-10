@@ -8,8 +8,7 @@ public sealed class UpdateUserThemeEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.UserBaseRoute)
-            .MapPatch("me/theme", async (
+        app.MapPatch("api/users/me/theme", async (
                 IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId,
                 [FromBody] UpdateUserThemeRequest request) =>
@@ -25,7 +24,7 @@ public sealed class UpdateUserThemeEndpoint : IEndpoint
                     _ => Results.InternalServerError(result.Error)
                 };
             })
-            .WithTags(Routes.UserEndpointGroupTag)
+            .WithTags("Users")
             .WithSummary("Update the current user's theme")
             .WithDescription("Stores the user's theme preference. Set the value to null to use the client's system theme.")
             .WithName("UpdateUserTheme")

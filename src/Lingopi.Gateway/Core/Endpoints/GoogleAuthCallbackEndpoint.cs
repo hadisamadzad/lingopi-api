@@ -10,8 +10,7 @@ public sealed class GoogleAuthCallbackEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup("api/auth/")
-            .MapGet("google/callback", async (
+        app.MapGet("api/auth/google/callback", async (
                 HttpContext context,
                 IHttpClientFactory clients,
                 IConfiguration configuration,

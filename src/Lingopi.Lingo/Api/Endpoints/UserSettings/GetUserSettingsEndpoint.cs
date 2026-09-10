@@ -8,9 +8,7 @@ public sealed class GetUserSettingsEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup($"{Routes.LingoBaseRoute}settings")
-            .WithTags(Routes.LingoEndpointGroupTag)
-            .MapGet("", async (
+        app.MapGet("api/lingos/settings", async (
                 [FromServices] IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId) =>
             {
@@ -31,6 +29,7 @@ public sealed class GetUserSettingsEndpoint : IEndpoint
                             "An unexpected error occurred while retrieving user settings.")
                 };
             })
+            .WithTags("Lingos")
             .WithSummary("Get user settings")
             .WithName("GetUserSettings")
             .WithDescription("Get the default locales and configured locale pairs for a user")

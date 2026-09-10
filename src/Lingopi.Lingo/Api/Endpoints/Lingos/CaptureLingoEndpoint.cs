@@ -8,9 +8,7 @@ public class CaptureLingoEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.LingoBaseRoute)
-            .WithSummary("Capture a new lingo")
-            .MapPost("", async ([FromServices] IOperationMediator operations,
+        app.MapPost("api/lingos/", async ([FromServices] IOperationMediator operations,
                 [FromBody] CaptureLingoRequest request,
                 [FromHeader(Name = "User-Id")] string userId) =>
             {
@@ -35,7 +33,8 @@ public class CaptureLingoEndpoint : IEndpoint
                             "An unexpected error occurred while capturing the lingo."),
                 };
             })
-            .WithTags(Routes.LingoEndpointGroupTag)
+            .WithTags("Lingos")
+            .WithSummary("Capture a new lingo")
             .WithName("CaptureLingo")
             .WithDescription("Capture the user's original lingo text and queue it for later enrichment")
             .Produces<CaptureLingoResponse>(StatusCodes.Status201Created)

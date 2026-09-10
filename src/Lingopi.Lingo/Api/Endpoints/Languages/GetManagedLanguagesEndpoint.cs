@@ -1,5 +1,5 @@
-using Lingopi.Lingo.Api.Models;
 using Lingopi.Lingo.Api.Authorization;
+using Lingopi.Lingo.Api.Models;
 using Lingopi.Lingo.Application.Operations.Languages;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,7 +9,7 @@ public sealed class GetManagedLanguagesEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGet($"{Routes.LingoBaseRoute}admin/languages", async (
+        app.MapGet("api/admin/lingos/languages", async (
                 [FromServices] IOperationMediator operations,
                 [FromHeader(Name = "User-Role")] string role) =>
             {
@@ -29,7 +29,7 @@ public sealed class GetManagedLanguagesEndpoint : IEndpoint
                         title: operationResult.Error?.Messages?.FirstOrDefault() ??
                             "An unexpected error occurred while retrieving languages.");
             })
-            .WithTags(Routes.LingoEndpointGroupTag)
+            .WithTags("Lingos")
             .WithName("GetManagedLanguages")
             .WithSummary("Get all languages and locales for management")
             .Produces<IEnumerable<LanguageResponse>>(StatusCodes.Status200OK)

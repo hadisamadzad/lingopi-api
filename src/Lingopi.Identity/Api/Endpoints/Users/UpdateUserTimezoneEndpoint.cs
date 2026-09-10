@@ -7,8 +7,7 @@ public sealed class UpdateUserTimezoneEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.UserBaseRoute)
-            .MapPatch("me/timezone", async (
+        app.MapPatch("api/users/me/timezone", async (
                 IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId,
                 [FromBody] UpdateUserTimezoneRequest request) =>
@@ -24,7 +23,7 @@ public sealed class UpdateUserTimezoneEndpoint : IEndpoint
                     _ => Results.InternalServerError(result.Error)
                 };
             })
-            .WithTags(Routes.UserEndpointGroupTag)
+            .WithTags("Users")
             .WithSummary("Update the current user's timezone")
             .WithDescription("Stores a valid IANA timezone identifier for local scheduling and notifications.")
             .WithName("UpdateUserTimezone")

@@ -8,8 +8,7 @@ public sealed class GetSubscriptionEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGroup(Routes.SubscriptionBaseRoute)
-            .MapGet("", async (IOperationMediator operations,
+        app.MapGet("api/subscription/", async (IOperationMediator operations,
                 [FromHeader(Name = "User-Id")] string userId) =>
             {
                 var result = await operations.ExecuteAsync(
@@ -23,7 +22,7 @@ public sealed class GetSubscriptionEndpoint : IEndpoint
                     _ => Results.InternalServerError(result.Error)
                 };
             })
-            .WithTags(Routes.SubscriptionEndpointGroupTag)
+            .WithTags("Subscription")
             .WithSummary("Get the current user's subscription")
             .WithDescription("Returns the current subscription and plan for the authenticated user.")
             .WithName("GetSubscription")
