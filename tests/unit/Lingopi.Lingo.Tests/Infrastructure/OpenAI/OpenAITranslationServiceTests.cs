@@ -26,7 +26,7 @@ public class OpenAITranslationServiceTests
     [Fact]
     public async Task TranslateAsync_WhenOpenAIReturnsStructuredTranslation_ShouldReturnTranslationAndUsage()
     {
-        var model = OpenAIModels.Gpt56Luna;
+        var model = OpenAIModels.Gpt6Luna;
         var chatClient = Substitute.For<ChatClient>(
             model,
             new ApiKeyCredential("test-key"));
@@ -111,7 +111,7 @@ public class OpenAITranslationServiceTests
     [Fact]
     public async Task TranslateAsync_WhenOpenAIReturnsInvalidJson_ShouldReturnFailure()
     {
-        var model = OpenAIModels.Gpt5Nano;
+        var model = OpenAIModels.Gpt6Luna;
         var chatClient = Substitute.For<ChatClient>(
             model,
             new ApiKeyCredential("test-key"));
@@ -139,7 +139,7 @@ public class OpenAITranslationServiceTests
     [Fact]
     public async Task TranslateAsync_WhenTranslationIsOffensive_ShouldReturnNoExamples()
     {
-        var model = OpenAIModels.Gpt5Nano;
+        var model = OpenAIModels.Gpt6Luna;
         var chatClient = Substitute.For<ChatClient>(
             model,
             new ApiKeyCredential("test-key"));
@@ -172,14 +172,14 @@ public class OpenAITranslationServiceTests
     }
 
     [Fact]
-    public async Task CaptureAnalysisAsync_ShouldAlwaysUseGpt5Nano()
+    public async Task CaptureAnalysisAsync_ShouldAlwaysUseGpt6Luna()
     {
         var chatClient = Substitute.For<ChatClient>(
-            OpenAIModels.Gpt5Nano,
+            OpenAIModels.Gpt6Luna,
             new ApiKeyCredential("test-key"));
         var openAiClient = Substitute.For<OpenAIClient>(
             new ApiKeyCredential("test-key"));
-        openAiClient.GetChatClient(OpenAIModels.Gpt5Nano).Returns(chatClient);
+        openAiClient.GetChatClient(OpenAIModels.Gpt6Luna).Returns(chatClient);
         IEnumerable<ChatMessage> receivedMessages = null!;
         chatClient.CompleteChatAsync(
                 Arg.Do<IEnumerable<ChatMessage>>(messages => receivedMessages = messages),
@@ -190,7 +190,7 @@ public class OpenAITranslationServiceTests
                     CreateCompletion(
                         "{\"canonicalExpression\":\"make a point\",\"meaning\":\"express or emphasize an idea or argument\",\"senseKey\":\"express_main_idea\",\"sourceLanguageCode\":\"en\",\"expressionType\":\"phrase\"}",
                         "req-duplicate",
-                        OpenAIModels.Gpt5Nano,
+                        OpenAIModels.Gpt6Luna,
                         inputTokens: 10,
                         outputTokens: 5,
                         totalTokens: 15),
@@ -212,15 +212,15 @@ public class OpenAITranslationServiceTests
         Assert.Equal("express or emphasize an idea or argument", result.Value.Meaning);
         Assert.Equal("express_main_idea", result.Value.SenseKey);
         Assert.Equal("req-duplicate", result.Value.TrackingId);
-        Assert.Equal(OpenAIModels.Gpt5Nano, result.Value.Model);
+        Assert.Equal(OpenAIModels.Gpt6Luna, result.Value.Model);
         Assert.Equal(10, result.Value.InputTokens);
         Assert.Equal(5, result.Value.OutputTokens);
         Assert.DoesNotContain(
             "Workplace",
             receivedMessages.ToArray()[1].Content[0].Text,
             StringComparison.Ordinal);
-        openAiClient.Received(1).GetChatClient(OpenAIModels.Gpt5Nano);
-        openAiClient.DidNotReceive().GetChatClient(OpenAIModels.Gpt56Luna);
+        openAiClient.Received(1).GetChatClient(OpenAIModels.Gpt6Luna);
+        openAiClient.DidNotReceive().GetChatClient(OpenAIModels.Gpt6Sol);
     }
 
     private static OpenAITranslationService CreateService(

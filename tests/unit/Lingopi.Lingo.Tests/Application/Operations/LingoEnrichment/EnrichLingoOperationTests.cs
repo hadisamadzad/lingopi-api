@@ -219,7 +219,7 @@ public class EnrichLingoOperationTests
             .Returns(OperationResult<TranslationResult>.Success(new TranslationResult(
                 Translation: "یخ را شکستن",
                 RequestId: "req-123",
-                Model: "gpt-5.6-luna",
+                Model: "gpt-6-luna",
                 PromptVersion: "translation-v1",
                 InputTokens: 10,
                 OutputTokens: 5,
@@ -257,7 +257,7 @@ public class EnrichLingoOperationTests
         Assert.Equal(job.Id, lingo.Enrichment.EnrichmentJobId);
         Assert.Equal(_fixedNow.UtcDateTime, lingo.Enrichment.LastEnrichedAt);
         Assert.Equal("openai", lingo.Enrichment.Provider);
-        Assert.Equal("gpt-5.6-luna", lingo.Enrichment.Model);
+        Assert.Equal("gpt-6-luna", lingo.Enrichment.Model);
         Assert.Equal("translation-v1", lingo.Enrichment.PromptVersion);
         Assert.Equal("the point I'm trying to make", lingo.Expression);
         Assert.Equal(
@@ -734,7 +734,7 @@ public class EnrichLingoOperationTests
             .Returns(OperationResult<TranslationResult>.Success(new TranslationResult(
                 Translation: "با تو ارتباط می‌گیرم",
                 RequestId: "req-merge",
-                Model: "gpt-5.6-luna",
+                Model: "gpt-6-luna",
                 PromptVersion: "translation-v1",
                 InputTokens: 10,
                 OutputTokens: 5,
@@ -771,7 +771,7 @@ public class EnrichLingoOperationTests
             .Returns(OperationResult<TranslationResult>.Success(new TranslationResult(
                 Translation: "با تو ارتباط می‌گیرم",
                 RequestId: "req-separate",
-                Model: "gpt-5.6-luna",
+                Model: "gpt-6-luna",
                 PromptVersion: "translation-v1",
                 InputTokens: 10,
                 OutputTokens: 5,

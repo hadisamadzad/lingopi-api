@@ -40,7 +40,7 @@ public sealed class OpenAILingoDuplicateCheckService(
                 new LingoDuplicateCheckResult(null));
         }
 
-        var modelSettings = modelSettingsProvider.Get(OpenAIModels.Gpt5Nano);
+        var modelSettings = modelSettingsProvider.Get(OpenAIModels.Gpt6Luna);
         var chatClient = openAIClient.GetChatClient(modelSettings.ModelId);
         var messages = new ChatMessage[]
         {

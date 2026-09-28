@@ -32,7 +32,7 @@ public class CaptureUsageServiceTests
             SenseKey: "express_main_idea",
             ExpressionType: "phrase",
             TrackingId: "req-1",
-            Model: "gpt-5-nano",
+            Model: "gpt-6-luna",
             PromptVersion: "capture-analysis-v1",
             InputTokens: 10,
             OutputTokens: 5,
@@ -50,7 +50,7 @@ public class CaptureUsageServiceTests
                 record.UserId == "user-1" &&
                 record.EntityId == "capture-1" &&
                 record.UsageType == TokenUsageType.CaptureAnalysis &&
-                record.Model == "gpt-5-nano" &&
+                record.Model == "gpt-6-luna" &&
                 record.InputTokens == 10 &&
                 record.OutputTokens == 5 &&
                 record.EstimatedCost == 0.001m));

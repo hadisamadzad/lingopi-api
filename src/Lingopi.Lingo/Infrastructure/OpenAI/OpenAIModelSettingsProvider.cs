@@ -17,16 +17,15 @@ public sealed class OpenAIModelSettingsProvider : IOpenAIModelSettingsProvider
             ? config.Models
             :
             [
-                new OpenAIModelSettings(OpenAIModels.Gpt56Luna),
-                new OpenAIModelSettings(OpenAIModels.Gpt56Terra),
-                new OpenAIModelSettings(OpenAIModels.Gpt5Nano),
+                new OpenAIModelSettings(OpenAIModels.Gpt6Luna),
+                new OpenAIModelSettings(OpenAIModels.Gpt6Sol),
                 new OpenAIModelSettings(
                     OpenAIModels.TextEmbedding3Small,
                     InputCostPerMillionTokens: 0.02m)
             ];
 
         _settings = CreateDictionary(settings);
-        _defaultModel = config?.DefaultModel ?? OpenAIModels.Gpt56Luna;
+        _defaultModel = config?.DefaultModel ?? OpenAIModels.Gpt6Luna;
     }
 
     public OpenAIModelSettings Get(string? model)

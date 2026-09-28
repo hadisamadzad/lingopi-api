@@ -15,8 +15,8 @@ public class OpenAIModelSettingsProviderTests
 
         var settings = provider.Get(null);
 
-        Assert.Equal(OpenAIModels.Gpt56Luna, settings.ModelId);
-        Assert.Equal(4, provider.GetAll().Count);
+        Assert.Equal(OpenAIModels.Gpt6Luna, settings.ModelId);
+        Assert.Equal(3, provider.GetAll().Count);
     }
 
     [Fact]
@@ -26,7 +26,7 @@ public class OpenAIModelSettingsProviderTests
 
         provider.Replace(
             [
-                new OpenAIModelSettings(OpenAIModels.Gpt56Luna, 1m, 2m),
+                new OpenAIModelSettings(OpenAIModels.Gpt6Luna, 1m, 2m),
                 new OpenAIModelSettings("custom-model", 3m, 4m)
             ],
             "custom-model");
@@ -36,7 +36,7 @@ public class OpenAIModelSettingsProviderTests
         Assert.Equal("custom-model", settings.ModelId);
         Assert.Equal(3m, settings.InputCostPerMillionTokens);
         Assert.Equal(4m, settings.OutputCostPerMillionTokens);
-        Assert.Throws<ArgumentException>(() => provider.Get(OpenAIModels.Gpt5Nano));
+        Assert.Throws<ArgumentException>(() => provider.Get("gpt-5-nano"));
     }
 
     [Fact]
