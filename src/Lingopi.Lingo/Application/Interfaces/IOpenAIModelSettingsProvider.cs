@@ -4,9 +4,9 @@ namespace Lingopi.Lingo.Application.Interfaces;
 
 public interface IOpenAIModelSettingsProvider
 {
-    OpenAIModelSettings Get(string? model);
+    OpenAIModelSettings Get(string? modelRole);
 
     IReadOnlyCollection<OpenAIModelSettings> GetAll();
 
-    void Replace(IEnumerable<OpenAIModelSettings> settings, string defaultModel);
+    void Replace(IEnumerable<OpenAIModelSettings> settings, string defaultModelRole);
 }

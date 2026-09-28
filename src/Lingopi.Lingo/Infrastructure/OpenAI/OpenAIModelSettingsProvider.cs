@@ -8,35 +8,28 @@ public sealed class OpenAIModelSettingsProvider : IOpenAIModelSettingsProvider
 {
     private readonly object _sync = new();
     private Dictionary<string, OpenAIModelSettings> _settings;
-    private string _defaultModel;
+    private string _defaultModelRole;
 
-    public OpenAIModelSettingsProvider(IOptions<OpenAIConfig>? options = null)
+    public OpenAIModelSettingsProvider(IOptions<OpenAIConfig> options)
     {
-        var config = options?.Value;
-        var settings = config?.Models is { Count: > 0 }
-            ? config.Models
-            :
-            [
-                new OpenAIModelSettings(OpenAIModels.Gpt6Luna),
-                new OpenAIModelSettings(OpenAIModels.Gpt6Sol),
-                new OpenAIModelSettings(
-                    OpenAIModels.TextEmbedding3Small,
-                    InputCostPerMillionTokens: 0.02m)
-            ];
+        ArgumentNullException.ThrowIfNull(options);
 
-        _settings = CreateDictionary(settings);
-        _defaultModel = config?.DefaultModel ?? OpenAIModels.Gpt6Luna;
+        var config = options.Value;
+        _settings = CreateDictionary(config.Models);
+        _defaultModelRole = GetConfiguredDefaultRole(_settings, config.DefaultModelRole);
     }
 
-    public OpenAIModelSettings Get(string? model)
+    public OpenAIModelSettings Get(string? modelRole)
     {
         lock (_sync)
         {
-            var modelToUse = string.IsNullOrWhiteSpace(model) ? _defaultModel : model.Trim();
+            var roleToUse = string.IsNullOrWhiteSpace(modelRole) ? _defaultModelRole : modelRole.Trim();
 
-            return _settings.TryGetValue(modelToUse, out var settings)
+            return _settings.TryGetValue(roleToUse, out var settings)
                 ? settings
-                : throw new ArgumentException($"OpenAI model '{modelToUse}' is not configured.", nameof(model));
+                : throw new ArgumentException(
+                    $"OpenAI model role '{roleToUse}' is not configured.",
+                    nameof(modelRole));
         }
     }
 
@@ -50,24 +43,36 @@ public sealed class OpenAIModelSettingsProvider : IOpenAIModelSettingsProvider
 
     public void Replace(
         IEnumerable<OpenAIModelSettings> settings,
-        string defaultModel)
+        string defaultModelRole)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        ArgumentException.ThrowIfNullOrWhiteSpace(defaultModel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(defaultModelRole);
 
         var replacement = CreateDictionary(settings);
-        if (!replacement.ContainsKey(defaultModel.Trim()))
-        {
-            throw new ArgumentException(
-                $"The default OpenAI model '{defaultModel}' is not configured.",
-                nameof(defaultModel));
-        }
+        var configuredDefaultRole = GetConfiguredDefaultRole(replacement, defaultModelRole);
 
         lock (_sync)
         {
             _settings = replacement;
-            _defaultModel = defaultModel.Trim();
+            _defaultModelRole = configuredDefaultRole;
         }
+    }
+
+    private static string GetConfiguredDefaultRole(
+        IReadOnlyDictionary<string, OpenAIModelSettings> settings,
+        string defaultModelRole)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(defaultModelRole);
+
+        var normalizedRole = defaultModelRole.Trim();
+        if (!settings.ContainsKey(normalizedRole))
+        {
+            throw new ArgumentException(
+                $"Default OpenAI model role '{defaultModelRole}' is not configured.",
+                nameof(defaultModelRole));
+        }
+
+        return normalizedRole;
     }
 
     private static Dictionary<string, OpenAIModelSettings> CreateDictionary(
@@ -77,11 +82,18 @@ public sealed class OpenAIModelSettingsProvider : IOpenAIModelSettingsProvider
 
         foreach (var setting in settings)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(setting.Role);
             ArgumentException.ThrowIfNullOrWhiteSpace(setting.ModelId);
-            if (!result.TryAdd(setting.ModelId.Trim(), setting with { ModelId = setting.ModelId.Trim() }))
+            if (!result.TryAdd(
+                    setting.Role.Trim(),
+                    setting with
+                    {
+                        Role = setting.Role.Trim(),
+                        ModelId = setting.ModelId.Trim()
+                    }))
             {
                 throw new ArgumentException(
-                    $"OpenAI model '{setting.ModelId}' is configured more than once.",
+                    $"OpenAI model role '{setting.Role}' is configured more than once.",
                     nameof(settings));
             }
         }

@@ -32,7 +32,7 @@ public class CaptureUsageServiceTests
             SenseKey: "express_main_idea",
             ExpressionType: "phrase",
             TrackingId: "req-1",
-            Model: "gpt-6-luna",
+            Model: "economy-model",
             PromptVersion: "capture-analysis-v1",
             InputTokens: 10,
             OutputTokens: 5,
@@ -50,7 +50,7 @@ public class CaptureUsageServiceTests
                 record.UserId == "user-1" &&
                 record.EntityId == "capture-1" &&
                 record.UsageType == TokenUsageType.CaptureAnalysis &&
-                record.Model == "gpt-6-luna" &&
+                record.Model == "economy-model" &&
                 record.InputTokens == 10 &&
                 record.OutputTokens == 5 &&
                 record.EstimatedCost == 0.001m));
@@ -71,7 +71,7 @@ public class CaptureUsageServiceTests
         };
         var embedding = new EmbeddingGenerationResult(
             [1, 2],
-            Model: "text-embedding-3-small",
+            Model: "embedding-model",
             InputTokens: 8,
             EstimatedCost: 0.00000016m);
 
@@ -88,7 +88,7 @@ public class CaptureUsageServiceTests
                 record.EntityId == "capture-1" &&
                 record.UsageType == TokenUsageType.Embedding &&
                 record.TrackingId == null &&
-                record.Model == "text-embedding-3-small" &&
+                record.Model == "embedding-model" &&
                 record.InputTokens == 8 &&
                 record.OutputTokens == 0 &&
                 record.EstimatedCost == 0.00000016m));

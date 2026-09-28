@@ -31,7 +31,7 @@ public sealed class OpenAICaptureAnalysisService(
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceLocaleCode);
         ArgumentException.ThrowIfNullOrWhiteSpace(targetLocaleCode);
 
-        var aiModelSettings = modelSettingsProvider.Get(OpenAIModels.Gpt6Luna);
+        var aiModelSettings = modelSettingsProvider.Get(OpenAIModelRoles.Economy);
         var chatClient = openAIClient.GetChatClient(aiModelSettings.ModelId);
 
         // Prepare chat messages for OpenAI client

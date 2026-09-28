@@ -84,7 +84,7 @@ public class GetLingosByUserIdOperationTests
                     EnrichmentJobId = "lingo-job-1",
                     LastEnrichedAt = updatedAt,
                     Provider = "openai",
-                    Model = "gpt-4.1-mini",
+                    Model = "previous-model",
                     PromptVersion = "v1"
                 },
                 Audit = new AuditValue
@@ -117,7 +117,7 @@ public class GetLingosByUserIdOperationTests
         Assert.Equal(EnrichmentStatus.Ready, result.Value[0].Enrichment.Status);
         Assert.Equal("lingo-job-1", result.Value[0].Enrichment.EnrichmentJobId);
         Assert.Equal("openai", result.Value[0].Enrichment.Provider);
-        Assert.Equal("gpt-4.1-mini", result.Value[0].Enrichment.Model);
+        Assert.Equal("previous-model", result.Value[0].Enrichment.Model);
         Assert.Equal("v1", result.Value[0].Enrichment.PromptVersion);
         Assert.Equal(2, result.Value[0].Audit.DocumentRevision);
         Assert.Equal(AuditValue.CurrentSchemaVersion, result.Value[0].Audit.SchemaVersion);

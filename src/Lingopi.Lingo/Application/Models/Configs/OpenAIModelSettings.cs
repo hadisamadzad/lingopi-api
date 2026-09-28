@@ -1,13 +1,14 @@
 namespace Lingopi.Lingo.Application.Models.Configs;
 
-public static class OpenAIModels
+public static class OpenAIModelRoles
 {
-    public const string Gpt6Sol = "gpt-6-sol";
-    public const string Gpt6Luna = "gpt-6-luna";
-    public const string TextEmbedding3Small = "text-embedding-3-small";
+    public const string Economy = "Economy";
+    public const string Premium = "Premium";
+    public const string Embedding = "Embedding";
 }
 
 public sealed record OpenAIModelSettings(
+    string Role,
     string ModelId,
     decimal? InputCostPerMillionTokens = null,
     decimal? OutputCostPerMillionTokens = null);

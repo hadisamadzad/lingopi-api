@@ -219,7 +219,7 @@ public class EnrichLingoOperationTests
             .Returns(OperationResult<TranslationResult>.Success(new TranslationResult(
                 Translation: "یخ را شکستن",
                 RequestId: "req-123",
-                Model: "gpt-6-luna",
+                Model: "economy-model",
                 PromptVersion: "translation-v1",
                 InputTokens: 10,
                 OutputTokens: 5,
@@ -257,7 +257,7 @@ public class EnrichLingoOperationTests
         Assert.Equal(job.Id, lingo.Enrichment.EnrichmentJobId);
         Assert.Equal(_fixedNow.UtcDateTime, lingo.Enrichment.LastEnrichedAt);
         Assert.Equal("openai", lingo.Enrichment.Provider);
-        Assert.Equal("gpt-6-luna", lingo.Enrichment.Model);
+        Assert.Equal("economy-model", lingo.Enrichment.Model);
         Assert.Equal("translation-v1", lingo.Enrichment.PromptVersion);
         Assert.Equal("the point I'm trying to make", lingo.Expression);
         Assert.Equal(
@@ -284,7 +284,7 @@ public class EnrichLingoOperationTests
                 request.Text == "The point I'm trying to make is that we need to leave earlier." &&
                 request.SourceLocaleCode == "en-US" &&
                 request.TargetLocaleCode == "fa-IR" &&
-                request.Model == null),
+                request.ModelRole == null),
             Arg.Any<CancellationToken>());
         await _repository.Lingos.Received(2).UpdateAsync(lingo);
         await _repository.EnrichmentJobs.Received(1).UpdateAsync(job);
@@ -734,7 +734,7 @@ public class EnrichLingoOperationTests
             .Returns(OperationResult<TranslationResult>.Success(new TranslationResult(
                 Translation: "با تو ارتباط می‌گیرم",
                 RequestId: "req-merge",
-                Model: "gpt-6-luna",
+                Model: "economy-model",
                 PromptVersion: "translation-v1",
                 InputTokens: 10,
                 OutputTokens: 5,
@@ -771,7 +771,7 @@ public class EnrichLingoOperationTests
             .Returns(OperationResult<TranslationResult>.Success(new TranslationResult(
                 Translation: "با تو ارتباط می‌گیرم",
                 RequestId: "req-separate",
-                Model: "gpt-6-luna",
+                Model: "economy-model",
                 PromptVersion: "translation-v1",
                 InputTokens: 10,
                 OutputTokens: 5,

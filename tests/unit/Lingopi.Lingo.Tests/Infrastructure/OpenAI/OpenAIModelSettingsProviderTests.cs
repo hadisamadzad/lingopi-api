@@ -11,32 +11,42 @@ public class OpenAIModelSettingsProviderTests
     [Fact]
     public void Get_WhenModelIsNotSpecified_ShouldUseConfiguredDefault()
     {
-        var provider = new OpenAIModelSettingsProvider();
+        var provider = CreateProvider();
 
         var settings = provider.Get(null);
 
-        Assert.Equal(OpenAIModels.Gpt6Luna, settings.ModelId);
+        Assert.Equal("economy-model", settings.ModelId);
         Assert.Equal(3, provider.GetAll().Count);
+    }
+
+    [Fact]
+    public void Get_WhenRoleIsConfigured_ShouldReturnItsModelSettings()
+    {
+        var provider = CreateProvider();
+
+        var settings = provider.Get(OpenAIModelRoles.Premium);
+
+        Assert.Equal("premium-model", settings.ModelId);
     }
 
     [Fact]
     public void Replace_ShouldAllowRuntimeModelSettingsChanges()
     {
-        var provider = new OpenAIModelSettingsProvider();
+        var provider = CreateProvider();
 
         provider.Replace(
             [
-                new OpenAIModelSettings(OpenAIModels.Gpt6Luna, 1m, 2m),
-                new OpenAIModelSettings("custom-model", 3m, 4m)
+                new OpenAIModelSettings(OpenAIModelRoles.Economy, "economy-model", 1m, 2m),
+                new OpenAIModelSettings("Custom", "custom-model", 3m, 4m)
             ],
-            "custom-model");
+            "Custom");
 
         var settings = provider.Get(null);
 
         Assert.Equal("custom-model", settings.ModelId);
         Assert.Equal(3m, settings.InputCostPerMillionTokens);
         Assert.Equal(4m, settings.OutputCostPerMillionTokens);
-        Assert.Throws<ArgumentException>(() => provider.Get("gpt-5-nano"));
+        Assert.Throws<ArgumentException>(() => provider.Get("Unconfigured"));
     }
 
     [Fact]
@@ -45,17 +55,32 @@ public class OpenAIModelSettingsProviderTests
         var provider = new OpenAIModelSettingsProvider(
             Options.Create(new OpenAIConfig
             {
-                DefaultModel = "custom-model",
+                DefaultModelRole = OpenAIModelRoles.Economy,
                 Models =
                 [
-                    new OpenAIModelSettings("custom-model", 1m, 2m)
+                    new OpenAIModelSettings(OpenAIModelRoles.Economy, "economy-model", 1m, 2m)
                 ]
             }));
 
         var settings = provider.Get(null);
 
-        Assert.Equal("custom-model", settings.ModelId);
+        Assert.Equal("economy-model", settings.ModelId);
         Assert.Equal(1m, settings.InputCostPerMillionTokens);
         Assert.Equal(2m, settings.OutputCostPerMillionTokens);
+    }
+
+    private static OpenAIModelSettingsProvider CreateProvider()
+    {
+        return new OpenAIModelSettingsProvider(
+            Options.Create(new OpenAIConfig
+            {
+                DefaultModelRole = OpenAIModelRoles.Economy,
+                Models =
+                [
+                    new OpenAIModelSettings(OpenAIModelRoles.Economy, "economy-model", 0.10m, 0.50m),
+                    new OpenAIModelSettings(OpenAIModelRoles.Premium, "premium-model", 2m, 10m),
+                    new OpenAIModelSettings(OpenAIModelRoles.Embedding, "embedding-model", 0.02m)
+                ]
+            }));
     }
 }

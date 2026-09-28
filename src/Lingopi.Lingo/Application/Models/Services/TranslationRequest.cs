@@ -6,7 +6,7 @@ public sealed record TranslationRequest(
     string Text,
     string SourceLocaleCode,
     string TargetLocaleCode,
-    string? Model = null,
+    string? ModelRole = null,
     LingoContext? Context = null);
 
 public sealed record TranslationResult(

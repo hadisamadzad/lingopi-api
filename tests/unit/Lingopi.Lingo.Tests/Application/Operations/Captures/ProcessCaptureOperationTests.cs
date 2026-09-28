@@ -244,7 +244,7 @@ public class ProcessCaptureOperationTests
         embedding.GenerateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(OperationResult<EmbeddingGenerationResult>.Success(new EmbeddingGenerationResult(
                 [1, 2],
-                Model: "text-embedding-3-small",
+                Model: "embedding-model",
                 InputTokens: 4,
                 EstimatedCost: 0.00000008m)));
         var usage = Substitute.For<ICaptureUsageService>();

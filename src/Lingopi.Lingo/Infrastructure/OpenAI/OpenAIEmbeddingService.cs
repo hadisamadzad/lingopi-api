@@ -16,7 +16,7 @@ public sealed class OpenAIEmbeddingService(OpenAIClient openAIClient,
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(text);
 
-        var modelSettings = modelSettingsProvider.Get(OpenAIModels.TextEmbedding3Small);
+        var modelSettings = modelSettingsProvider.Get(OpenAIModelRoles.Embedding);
         var response = await openAIClient
             .GetEmbeddingClient(modelSettings.ModelId)
             .GenerateEmbeddingsAsync([text], null, cancellationToken);

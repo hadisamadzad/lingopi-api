@@ -31,7 +31,7 @@ public sealed class GetUserUsageSummaryOperationTests
                 InputTokens: 100,
                 OutputTokens: 40,
                 EstimatedCost: 1.25m,
-                UsageByModel: [new ModelUsageSummary("gpt-6-luna", 100, 40, 1.25m)]));
+                UsageByModel: [new ModelUsageSummary("economy-model", 100, 40, 1.25m)]));
         repository.Captures.CountByUserIdAsync(
                 "user-1",
                 new DateTime(2026, 08, 15, 0, 0, 0, DateTimeKind.Utc),

@@ -7,7 +7,6 @@ using Lingopi.Lingo.Application.Models.Configs;
 using Lingopi.Lingo.Application.Models.Enums;
 using Lingopi.Lingo.Application.Models.Services;
 using Microsoft.Extensions.Options;
-using Minimals.Operations;
 using OpenAI;
 using OpenAI.Chat;
 
@@ -33,7 +32,7 @@ public sealed class OpenAITranslationService(
         ArgumentException.ThrowIfNullOrWhiteSpace(request.SourceLocaleCode);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.TargetLocaleCode);
 
-        var modelSettings = modelSettingsProvider.Get(request.Model);
+        var modelSettings = modelSettingsProvider.Get(request.ModelRole);
         var chatClient = openAiClient.GetChatClient(modelSettings.ModelId);
         logger.LogInformation("Sending OpenAI translation request using model {ModelId}.", modelSettings.ModelId);
 

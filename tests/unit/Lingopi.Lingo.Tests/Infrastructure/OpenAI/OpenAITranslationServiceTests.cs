@@ -26,7 +26,7 @@ public class OpenAITranslationServiceTests
     [Fact]
     public async Task TranslateAsync_WhenOpenAIReturnsStructuredTranslation_ShouldReturnTranslationAndUsage()
     {
-        var model = OpenAIModels.Gpt6Luna;
+        const string model = "economy-model";
         var chatClient = Substitute.For<ChatClient>(
             model,
             new ApiKeyCredential("test-key"));
@@ -49,14 +49,11 @@ public class OpenAITranslationServiceTests
                         outputTokens: 20,
                         totalTokens: 120),
                     Substitute.For<PipelineResponse>())));
-        var modelSettings = new OpenAIModelSettingsProvider();
-        modelSettings.Replace(
-            [new OpenAIModelSettings(model, 1m, 2m)],
-            model);
+        var modelSettings = CreateModelSettingsProvider(model);
         var service = CreateService(openAiClient, modelSettings);
 
         var result = await service.TranslateAsync(
-            new TranslationRequest("break the ice", "en-US", "fa-IR", model),
+            new TranslationRequest("break the ice", "en-US", "fa-IR", OpenAIModelRoles.Economy),
             TestContext.Current.CancellationToken);
 
         Assert.True(result.Succeeded);
@@ -111,7 +108,7 @@ public class OpenAITranslationServiceTests
     [Fact]
     public async Task TranslateAsync_WhenOpenAIReturnsInvalidJson_ShouldReturnFailure()
     {
-        var model = OpenAIModels.Gpt6Luna;
+        const string model = "economy-model";
         var chatClient = Substitute.For<ChatClient>(
             model,
             new ApiKeyCredential("test-key"));
@@ -126,10 +123,10 @@ public class OpenAITranslationServiceTests
                 ClientResult.FromValue(
                     CreateCompletion("not-json", "req-123", model),
                     Substitute.For<PipelineResponse>())));
-        var service = CreateService(openAiClient, new OpenAIModelSettingsProvider());
+        var service = CreateService(openAiClient, CreateModelSettingsProvider(model));
 
         var result = await service.TranslateAsync(
-            new TranslationRequest("hello", "en-US", "fa-IR", model),
+            new TranslationRequest("hello", "en-US", "fa-IR", OpenAIModelRoles.Economy),
             TestContext.Current.CancellationToken);
         Assert.False(result.Succeeded);
         Assert.False(result.Succeeded);
@@ -139,7 +136,7 @@ public class OpenAITranslationServiceTests
     [Fact]
     public async Task TranslateAsync_WhenTranslationIsOffensive_ShouldReturnNoExamples()
     {
-        var model = OpenAIModels.Gpt6Luna;
+        const string model = "economy-model";
         var chatClient = Substitute.For<ChatClient>(
             model,
             new ApiKeyCredential("test-key"));
@@ -160,10 +157,10 @@ public class OpenAITranslationServiceTests
                         outputTokens: 5,
                         totalTokens: 15),
                     Substitute.For<PipelineResponse>())));
-        var service = CreateService(openAiClient, new OpenAIModelSettingsProvider());
+        var service = CreateService(openAiClient, CreateModelSettingsProvider(model));
 
         var result = await service.TranslateAsync(
-            new TranslationRequest("bad expression", "en-US", "fa-IR", model),
+            new TranslationRequest("bad expression", "en-US", "fa-IR", OpenAIModelRoles.Economy),
             TestContext.Current.CancellationToken);
 
         Assert.True(result.Succeeded, result.Error?.Messages[0]);
@@ -172,14 +169,15 @@ public class OpenAITranslationServiceTests
     }
 
     [Fact]
-    public async Task CaptureAnalysisAsync_ShouldAlwaysUseGpt6Luna()
+    public async Task CaptureAnalysisAsync_ShouldUseConfiguredEconomyRole()
     {
+        const string model = "economy-model";
         var chatClient = Substitute.For<ChatClient>(
-            OpenAIModels.Gpt6Luna,
+            model,
             new ApiKeyCredential("test-key"));
         var openAiClient = Substitute.For<OpenAIClient>(
             new ApiKeyCredential("test-key"));
-        openAiClient.GetChatClient(OpenAIModels.Gpt6Luna).Returns(chatClient);
+        openAiClient.GetChatClient(model).Returns(chatClient);
         IEnumerable<ChatMessage> receivedMessages = null!;
         chatClient.CompleteChatAsync(
                 Arg.Do<IEnumerable<ChatMessage>>(messages => receivedMessages = messages),
@@ -190,7 +188,7 @@ public class OpenAITranslationServiceTests
                     CreateCompletion(
                         "{\"canonicalExpression\":\"make a point\",\"meaning\":\"express or emphasize an idea or argument\",\"senseKey\":\"express_main_idea\",\"sourceLanguageCode\":\"en\",\"expressionType\":\"phrase\"}",
                         "req-duplicate",
-                        OpenAIModels.Gpt6Luna,
+                        model,
                         inputTokens: 10,
                         outputTokens: 5,
                         totalTokens: 15),
@@ -198,7 +196,7 @@ public class OpenAITranslationServiceTests
 
         var service = new OpenAICaptureAnalysisService(
             openAiClient,
-            new OpenAIModelSettingsProvider(),
+            CreateModelSettingsProvider(model),
             NullLogger<OpenAICaptureAnalysisService>.Instance);
 
         var result = await service.AnalyzeCaptureAsync(
@@ -212,15 +210,30 @@ public class OpenAITranslationServiceTests
         Assert.Equal("express or emphasize an idea or argument", result.Value.Meaning);
         Assert.Equal("express_main_idea", result.Value.SenseKey);
         Assert.Equal("req-duplicate", result.Value.TrackingId);
-        Assert.Equal(OpenAIModels.Gpt6Luna, result.Value.Model);
+        Assert.Equal(model, result.Value.Model);
         Assert.Equal(10, result.Value.InputTokens);
         Assert.Equal(5, result.Value.OutputTokens);
         Assert.DoesNotContain(
             "Workplace",
             receivedMessages.ToArray()[1].Content[0].Text,
             StringComparison.Ordinal);
-        openAiClient.Received(1).GetChatClient(OpenAIModels.Gpt6Luna);
-        openAiClient.DidNotReceive().GetChatClient(OpenAIModels.Gpt6Sol);
+        openAiClient.Received(1).GetChatClient(model);
+        openAiClient.DidNotReceive().GetChatClient("premium-model");
+    }
+
+    private static OpenAIModelSettingsProvider CreateModelSettingsProvider(string economyModelId)
+    {
+        return new OpenAIModelSettingsProvider(
+            Options.Create(new OpenAIConfig
+            {
+                DefaultModelRole = OpenAIModelRoles.Economy,
+                Models =
+                [
+                    new OpenAIModelSettings(OpenAIModelRoles.Economy, economyModelId, 1m, 2m),
+                    new OpenAIModelSettings(OpenAIModelRoles.Premium, "premium-model", 3m, 4m),
+                    new OpenAIModelSettings(OpenAIModelRoles.Embedding, "embedding-model", 0.02m)
+                ]
+            }));
     }
 
     private static OpenAITranslationService CreateService(

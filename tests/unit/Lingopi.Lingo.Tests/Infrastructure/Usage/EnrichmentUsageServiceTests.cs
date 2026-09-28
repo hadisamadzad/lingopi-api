@@ -85,7 +85,7 @@ public class EnrichmentUsageServiceTests
             new TranslationResult(
                 Translation: "translation",
                 RequestId: "request-1",
-                Model: "gpt-6-luna",
+                Model: "economy-model",
                 PromptVersion: "translation-v1",
                 InputTokens: 100,
                 OutputTokens: 20,
