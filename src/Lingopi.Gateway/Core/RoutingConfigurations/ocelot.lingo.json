@@ -18,7 +18,7 @@
     {
       "UpstreamPathTemplate": "/api/lingo/admin/{all}",
       "UpstreamHttpMethod": ["Get", "Post", "Put", "Patch", "Delete"],
-      "DownstreamPathTemplate": "/api/lingos/admin/{all}",
+      "DownstreamPathTemplate": "/api/admin/{all}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [{ "Host": "lingopi-lingo", "Port": 5000 }],
       "AuthenticationOptions": { "AuthenticationProviderKey": "LingopiJwtBearer" }

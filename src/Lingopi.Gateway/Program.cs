@@ -5,6 +5,7 @@ using Lingopi.Core.Helpers;
 using Lingopi.Gateway.Core;
 using Lingopi.Gateway.Core.DependencyInjection;
 using Lingopi.Gateway.Core.Middleware;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.HttpOverrides;
 using Ocelot.Configuration.File;
 using Ocelot.DependencyInjection;
@@ -111,12 +112,22 @@ app.Use(async (context, next) =>
     var isAdminRoute =
         context.Request.Path.StartsWithSegments("/api/lingo/admin", StringComparison.OrdinalIgnoreCase) ||
         context.Request.Path.StartsWithSegments("/api/identity/admin", StringComparison.OrdinalIgnoreCase);
+    if (isAdminRoute)
+    {
+        var authenticationResult = await context.AuthenticateAsync(Constants.JwtBearerScheme);
+        if (!authenticationResult.Succeeded || authenticationResult.Principal is null)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return;
+        }
+
+        context.User = authenticationResult.Principal;
+    }
+
     var isOwnerOrAdmin = context.User.IsInRole("Owner") || context.User.IsInRole("Admin");
     if (isAdminRoute && !isOwnerOrAdmin)
     {
-        context.Response.StatusCode = context.User.Identity?.IsAuthenticated == true
-            ? StatusCodes.Status403Forbidden
-            : StatusCodes.Status401Unauthorized;
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
         return;
     }
 
