@@ -15,7 +15,8 @@ public sealed class GetActiveLanguagesEndpoint : IEndpoint
                     new GetActiveLanguagesCommand());
 
                 return operationResult.Status == OperationStatus.Completed
-                    ? Results.Ok(operationResult.Value!.Select(language => language.ToResponse()))
+                    ? Results.Ok(
+                        operationResult.Value!.Select(language => language.ToActiveLocaleResponse()))
                     : Results.Problem(
                         statusCode: StatusCodes.Status500InternalServerError,
                         title: operationResult.Error?.Messages?.FirstOrDefault() ??
@@ -23,8 +24,8 @@ public sealed class GetActiveLanguagesEndpoint : IEndpoint
             })
             .WithTags("Lingos")
             .WithName("GetActiveLanguages")
-            .WithSummary("Get active languages and locales")
+            .WithSummary("Get active locales")
             .AllowAnonymous()
-            .Produces<IEnumerable<LanguageResponse>>(StatusCodes.Status200OK);
+            .Produces<IEnumerable<ActiveLocaleResponse>>(StatusCodes.Status200OK);
     }
 }

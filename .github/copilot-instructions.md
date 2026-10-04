@@ -39,6 +39,9 @@ Copilot must follow that document when suggesting:
 - Each operation must:
   - Have one responsibility
   - Accept a Command which are defined as immutable records
+  - Define its own Command record; do not reuse or merge Command records across operations
+  - When exposed through an API, have its own Request record; do not reuse or merge Request records across operations, even when their fields overlap
+  - Keep each Request limited to fields that operation accepts; update requests must not include immutable fields
   - Validate input via custom Validator in a folder named `Validators`
   - Use injected repositories and services via interfaces
   - Return operation results via `OperationResult<T>`, where `T` is a ReadModel, Result, primitive type, or another application-layer output type

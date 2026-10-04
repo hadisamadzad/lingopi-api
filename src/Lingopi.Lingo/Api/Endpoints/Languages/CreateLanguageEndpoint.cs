@@ -12,7 +12,7 @@ public sealed class CreateLanguageEndpoint : IEndpoint
         app.MapPost("api/admin/lingos/languages", async (
                 [FromServices] IOperationMediator operations,
                 [FromHeader(Name = "User-Role")] string role,
-                [FromBody] UpsertLanguageRequest request) =>
+                [FromBody] CreateLanguageRequest request) =>
             {
                 var isOwnerOrAdmin = AdminRoleAuthorization.IsOwnerOrAdmin(role);
                 if (!isOwnerOrAdmin)
@@ -21,33 +21,27 @@ public sealed class CreateLanguageEndpoint : IEndpoint
                 }
 
                 var operationResult = await operations.ExecuteAsync(
-                    new UpsertLanguageCommand(
-                        null,
-                        request.Code,
+                    new CreateLanguageCommand(
+                        request.LanguageCode,
+                        request.RegionCode,
                         request.Name,
                         request.NativeName,
-                        request.IsActive,
-                        request.Locales.Select(locale => new LocaleRequest(
-                            locale.Code,
-                            locale.Region,
-                            locale.Name,
-                            locale.NativeName,
-                            locale.IsRightToLeft,
-                            locale.IsActive)).ToList()));
+                        request.IsRightToLeft,
+                        request.IsActive));
 
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.Created(
                         $"/api/admin/lingos/languages/{operationResult.Value!.Id}",
-                        operationResult.Value.ToResponse()),
+                        new CreateLanguageResponse(operationResult.Value!.Id)),
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error?.Messages),
                     _ => Results.UnprocessableEntity(operationResult.Error?.Messages)
                 };
             })
             .WithTags("Lingos")
             .WithName("CreateLanguage")
-            .WithSummary("Create a language with locales")
-            .Produces<LanguageResponse>(StatusCodes.Status201Created)
+            .WithSummary("Create a locale")
+            .Produces<CreateLanguageResponse>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status422UnprocessableEntity);

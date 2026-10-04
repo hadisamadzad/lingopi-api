@@ -7,9 +7,7 @@ public interface ILanguageRepository : IRepository<LanguageEntity>
     Task<LanguageEntity?> GetByIdAsync(string langId);
     Task<List<LanguageEntity>> GetAllAsync();
     Task<List<LanguageEntity>> GetActiveLanguagesAsync();
-    Task<bool> ExistsByCodeAsync(string code);
-    Task<bool> ExistsByCodeAsync(string code, string excludedId);
-    Task<bool> ExistsByLocaleCodeAsync(string localeCode, string? excludedLanguageId = null);
+    Task<bool> ExistsByLocaleCodeAsync(string localeCode, string? excludedId = null);
     Task<bool> IsActiveLocaleAsync(string localeCode);
     Task EnsureIndexesAsync(CancellationToken cancellationToken = default);
 }

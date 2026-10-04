@@ -4,58 +4,63 @@ namespace Lingopi.Lingo.Api.Models;
 
 public record LanguageResponse(
     string Id,
-    string Code,
+    string LocaleCode,
+    string LanguageCode,
+    string RegionCode,
     string Name,
     string NativeName,
+    bool IsRightToLeft,
     bool IsActive,
-    List<LocaleResponse> Locales);
+    DateTime CreatedAt,
+    DateTime UpdatedAt,
+    DateTime? LastActivatedAt);
 
-public record LocaleResponse(
-    string Code,
-    string Region,
+public record ActiveLocaleResponse(
+    string LocaleCode,
+    string Name,
+    string NativeName);
+
+public record CreateLanguageResponse(string Id);
+
+public record CreateLanguageRequest(
+    string LanguageCode,
+    string RegionCode,
     string Name,
     string NativeName,
     bool IsRightToLeft,
     bool IsActive);
 
-public record UpsertLanguageRequest(
-    string Code,
-    string Name,
-    string NativeName,
-    bool IsActive,
-    List<LocaleRequestModel> Locales);
-
-public record LocaleRequestModel(
-    string Code,
-    string Region,
+public record UpdateLanguageRequest(
     string Name,
     string NativeName,
     bool IsRightToLeft,
     bool IsActive);
 
-public record SetLanguageActivationRequest(bool IsActive);
+public record UpdateLanguageActivationRequest(bool IsActive);
 
 public static class LanguageResponseMapper
 {
+    public static ActiveLocaleResponse ToActiveLocaleResponse(this LanguageReadModel model)
+    {
+        return new ActiveLocaleResponse(
+            model.LocaleCode,
+            model.Name,
+            model.NativeName);
+    }
+
     public static LanguageResponse ToResponse(this LanguageReadModel model)
     {
         return new LanguageResponse(
             model.Id,
-            model.Code,
-            model.Name,
-            model.NativeName,
-            model.IsActive,
-            model.Locales.Select(locale => locale.ToResponse()).ToList());
-    }
-
-    private static LocaleResponse ToResponse(this LocaleReadModel model)
-    {
-        return new LocaleResponse(
-            model.Code,
-            model.Region,
+            model.LocaleCode,
+            model.LanguageCode,
+            model.RegionCode,
             model.Name,
             model.NativeName,
             model.IsRightToLeft,
-            model.IsActive);
+            model.IsActive,
+            model.CreatedAt,
+            model.UpdatedAt,
+            model.LastActivatedAt);
     }
 }

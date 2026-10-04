@@ -3,11 +3,11 @@ using Lingopi.Lingo.Application.Models.ReadModels;
 
 namespace Lingopi.Lingo.Application.Operations.Languages;
 
-public sealed class SetLanguageActivationOperation(IRepositoryManager repository) :
-    IOperation<SetLanguageActivationCommand, LanguageReadModel>
+public sealed class UpdateLanguageActivationOperation(IRepositoryManager repository) :
+    IOperation<UpdateLanguageActivationCommand, LanguageReadModel>
 {
     public async Task<OperationResult<LanguageReadModel>> ExecuteAsync(
-        SetLanguageActivationCommand command, CancellationToken? cancellation = null)
+        UpdateLanguageActivationCommand command, CancellationToken? cancellation = null)
     {
         var entity = await repository.Languages.GetByIdAsync(command.Id);
         if (entity is null)
@@ -16,7 +16,14 @@ public sealed class SetLanguageActivationOperation(IRepositoryManager repository
                 $"Language '{command.Id}' was not found.");
         }
 
+        var now = DateTime.UtcNow;
+        var isActivating = command.IsActive && !entity.IsActive;
         entity.IsActive = command.IsActive;
+        entity.UpdatedAt = now;
+        if (isActivating)
+        {
+            entity.LastActivatedAt = now;
+        }
 
         var updated = await repository.Languages.UpdateAsync(entity);
         if (!updated)
@@ -28,4 +35,4 @@ public sealed class SetLanguageActivationOperation(IRepositoryManager repository
     }
 }
 
-public record SetLanguageActivationCommand(string Id, bool IsActive) : IOperationCommand<LanguageReadModel>;
+public record UpdateLanguageActivationCommand(string Id, bool IsActive) : IOperationCommand<LanguageReadModel>;

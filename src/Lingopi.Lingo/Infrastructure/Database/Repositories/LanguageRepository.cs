@@ -1,4 +1,5 @@
 using Lingopi.Core.Persistence.MongoDB;
+using Lingopi.Lingo.Application.Helpers;
 using Lingopi.Lingo.Application.Interfaces.Repositories;
 using Lingopi.Lingo.Application.Models.Entities;
 using MongoDB.Driver;
@@ -25,31 +26,16 @@ public class LanguageRepository(IMongoDatabase database)
         return await _collection.Find(filter).ToListAsync();
     }
 
-    public async Task<bool> ExistsByCodeAsync(string code)
+    public async Task<bool> ExistsByLocaleCodeAsync(string localeCode, string? excludedId = null)
     {
-        var filter = Builders<LanguageEntity>.Filter.Eq(x => x.Code, code);
-        return await _collection.Find(filter).AnyAsync();
-    }
+        var filter = Builders<LanguageEntity>.Filter.Eq(x => x.LocaleCode, localeCode);
 
-    public async Task<bool> ExistsByCodeAsync(string code, string excludedId)
-    {
-        var filter = Builders<LanguageEntity>.Filter.And(
-            Builders<LanguageEntity>.Filter.Eq(x => x.Code, code),
-            Builders<LanguageEntity>.Filter.Ne(x => x.Id, excludedId));
-        return await _collection.Find(filter).AnyAsync();
-    }
-
-    public async Task<bool> ExistsByLocaleCodeAsync(string localeCode, string? excludedLanguageId = null)
-    {
-        var filter = Builders<LanguageEntity>.Filter.ElemMatch(
-            x => x.Locales,
-            locale => locale.Code == localeCode);
-
-        if (!string.IsNullOrWhiteSpace(excludedLanguageId))
+        var hasExcludedId = !string.IsNullOrWhiteSpace(excludedId);
+        if (hasExcludedId)
         {
             filter = Builders<LanguageEntity>.Filter.And(
                 filter,
-                Builders<LanguageEntity>.Filter.Ne(x => x.Id, excludedLanguageId));
+                Builders<LanguageEntity>.Filter.Ne(x => x.Id, excludedId));
         }
 
         return await _collection.Find(filter).AnyAsync();
@@ -57,23 +43,40 @@ public class LanguageRepository(IMongoDatabase database)
 
     public async Task<bool> IsActiveLocaleAsync(string localeCode)
     {
-        var languages = await GetActiveLanguagesAsync();
-        return languages.Count == 0 || languages.Any(language =>
-            language.Locales.Any(locale =>
-                locale.IsActive &&
-                string.Equals(locale.Code, localeCode, StringComparison.OrdinalIgnoreCase)));
+        var activeLocales = await GetActiveLanguagesAsync();
+        if (activeLocales.Count == 0)
+        {
+            return true;
+        }
+
+        var normalizedLocaleCode = LocaleCodeNormalizer.NormalizeCanonical(localeCode);
+        return activeLocales.Any(locale =>
+            string.Equals(locale.LocaleCode, normalizedLocaleCode, StringComparison.OrdinalIgnoreCase));
     }
 
     public async Task EnsureIndexesAsync(CancellationToken cancellationToken = default)
     {
-        await _collection.Indexes.CreateManyAsync(
-        [
+        var indexCursor = await _collection.Indexes.ListAsync(cancellationToken);
+        var existingIndexes = await indexCursor.ToListAsync(cancellationToken);
+        foreach (var index in existingIndexes)
+        {
+            var indexName = index["name"].AsString;
+            var isObsoleteIndex = indexName is
+                "language_code" or "language_locale_code" or "language_code_region";
+            if (isObsoleteIndex)
+            {
+                await _collection.Indexes.DropOneAsync(indexName, cancellationToken);
+            }
+        }
+
+        await _collection.Indexes.CreateOneAsync(
             new CreateIndexModel<LanguageEntity>(
-                Builders<LanguageEntity>.IndexKeys.Ascending(x => x.Code),
-                new CreateIndexOptions { Name = "language_code", Unique = true }),
-            new CreateIndexModel<LanguageEntity>(
-                Builders<LanguageEntity>.IndexKeys.Ascending("locales.code"),
-                new CreateIndexOptions { Name = "language_locale_code" })
-        ], cancellationToken);
+                Builders<LanguageEntity>.IndexKeys.Ascending(language => language.LocaleCode),
+                new CreateIndexOptions
+                {
+                    Name = "locale_code",
+                    Unique = true
+                }),
+            cancellationToken: cancellationToken);
     }
 }

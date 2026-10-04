@@ -97,6 +97,14 @@ curl http://localhost:45000/api/identity/health
 curl http://localhost:45000/api/lingo/health
 ```
 
+### Language catalog
+
+The Lingo language catalog stores one document per locale in `lingopi.lingo.languages`, using
+the `LocaleCode`, `LanguageCode`, `RegionCode`, `CreatedAt`, `UpdatedAt`, and `LastActivatedAt`
+fields. The unique locale code `en-GB` has the ID `locale-en-gb`. The new schema does not migrate
+the previous grouped language documents, and updates do not rewrite existing MongoDB IDs. Clear
+and reseed that collection before starting the updated Lingo service.
+
 ### Payments
 
 Identity owns subscription and payment lifecycle. Payment processing is currently bypassed:

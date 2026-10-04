@@ -24,6 +24,8 @@ public class SaveLingoUserSettingsOperationTests
             .Returns(true);
         repository.Languages.IsActiveLocaleAsync(Arg.Any<string>())
             .Returns(true);
+        repository.Languages.GetActiveLanguagesAsync()
+            .Returns(new List<LanguageEntity>());
 
         var operation = new SaveUserSettingsOperation(repository);
 

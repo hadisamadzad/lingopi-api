@@ -13,7 +13,7 @@ public sealed class UpdateLanguageEndpoint : IEndpoint
                 [FromServices] IOperationMediator operations,
                 [FromHeader(Name = "User-Role")] string role,
                 string id,
-                [FromBody] UpsertLanguageRequest request) =>
+                [FromBody] UpdateLanguageRequest request) =>
             {
                 var isOwnerOrAdmin = AdminRoleAuthorization.IsOwnerOrAdmin(role);
                 if (!isOwnerOrAdmin)
@@ -22,23 +22,16 @@ public sealed class UpdateLanguageEndpoint : IEndpoint
                 }
 
                 var operationResult = await operations.ExecuteAsync(
-                    new UpsertLanguageCommand(
+                    new UpdateLanguageCommand(
                         id,
-                        request.Code,
                         request.Name,
                         request.NativeName,
-                        request.IsActive,
-                        request.Locales.Select(locale => new LocaleRequest(
-                            locale.Code,
-                            locale.Region,
-                            locale.Name,
-                            locale.NativeName,
-                            locale.IsRightToLeft,
-                            locale.IsActive)).ToList()));
+                        request.IsRightToLeft,
+                        request.IsActive));
 
                 return operationResult.Status switch
                 {
-                    OperationStatus.Completed => Results.Ok(operationResult.Value!.ToResponse()),
+                    OperationStatus.Completed => Results.NoContent(),
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error?.Messages),
                     OperationStatus.NotFound => Results.NotFound(operationResult.Error?.Messages),
                     _ => Results.UnprocessableEntity(operationResult.Error?.Messages)
@@ -46,8 +39,8 @@ public sealed class UpdateLanguageEndpoint : IEndpoint
             })
             .WithTags("Lingos")
             .WithName("UpdateLanguage")
-            .WithSummary("Update a language and its locales")
-            .Produces<LanguageResponse>(StatusCodes.Status200OK)
+            .WithSummary("Update a locale")
+            .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)

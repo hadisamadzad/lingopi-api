@@ -4,19 +4,16 @@ namespace Lingopi.Lingo.Application.Models.ReadModels;
 
 public record LanguageReadModel(
     string Id,
-    string Code,
-    string Name,
-    string NativeName,
-    bool IsActive,
-    List<LocaleReadModel> Locales);
-
-public record LocaleReadModel(
-    string Code,
-    string Region,
+    string LocaleCode,
+    string LanguageCode,
+    string RegionCode,
     string Name,
     string NativeName,
     bool IsRightToLeft,
-    bool IsActive);
+    bool IsActive,
+    DateTime CreatedAt,
+    DateTime UpdatedAt,
+    DateTime? LastActivatedAt);
 
 public static class LanguageReadModelMapper
 {
@@ -24,16 +21,15 @@ public static class LanguageReadModelMapper
     {
         return new LanguageReadModel(
             entity.Id,
-            entity.Code,
+            entity.LocaleCode,
+            entity.LanguageCode,
+            entity.RegionCode,
             entity.Name,
             entity.NativeName,
+            entity.IsRightToLeft,
             entity.IsActive,
-            entity.Locales.ConvertAll(locale => new LocaleReadModel(
-                locale.Code,
-                locale.Region,
-                locale.Name,
-                locale.NativeName,
-                locale.IsRightToLeft,
-                locale.IsActive)));
+            entity.CreatedAt,
+            entity.UpdatedAt,
+            entity.LastActivatedAt);
     }
 }

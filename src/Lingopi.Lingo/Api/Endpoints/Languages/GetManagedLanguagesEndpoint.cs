@@ -31,7 +31,7 @@ public sealed class GetManagedLanguagesEndpoint : IEndpoint
             })
             .WithTags("Lingos")
             .WithName("GetManagedLanguages")
-            .WithSummary("Get all languages and locales for management")
+            .WithSummary("Get all locales for management")
             .Produces<IEnumerable<LanguageResponse>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status403Forbidden);
     }

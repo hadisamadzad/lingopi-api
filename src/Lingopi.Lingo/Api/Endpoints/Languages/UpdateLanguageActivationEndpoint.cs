@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Lingopi.Lingo.Api.Endpoints.Languages;
 
-public sealed class SetLanguageActivationEndpoint : IEndpoint
+public sealed class UpdateLanguageActivationEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
@@ -13,7 +13,7 @@ public sealed class SetLanguageActivationEndpoint : IEndpoint
                 [FromServices] IOperationMediator operations,
                 [FromHeader(Name = "User-Role")] string role,
                 string id,
-                [FromBody] SetLanguageActivationRequest request) =>
+                [FromBody] UpdateLanguageActivationRequest request) =>
             {
                 var isOwnerOrAdmin = AdminRoleAuthorization.IsOwnerOrAdmin(role);
                 if (!isOwnerOrAdmin)
@@ -22,19 +22,19 @@ public sealed class SetLanguageActivationEndpoint : IEndpoint
                 }
 
                 var operationResult = await operations.ExecuteAsync(
-                    new SetLanguageActivationCommand(id, request.IsActive));
+                    new UpdateLanguageActivationCommand(id, request.IsActive));
 
                 return operationResult.Status switch
                 {
-                    OperationStatus.Completed => Results.Ok(operationResult.Value!.ToResponse()),
+                    OperationStatus.Completed => Results.NoContent(),
                     OperationStatus.NotFound => Results.NotFound(operationResult.Error?.Messages),
                     _ => Results.UnprocessableEntity(operationResult.Error?.Messages)
                 };
             })
             .WithTags("Lingos")
-            .WithName("SetLanguageActivation")
+            .WithName("UpdateLanguageActivation")
             .WithSummary("Activate or deactivate a language")
-            .Produces<LanguageResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status422UnprocessableEntity);
