@@ -1,17 +1,25 @@
+using Lingopi.Lingo.Api.Authorization;
 using Lingopi.Lingo.Api.Models;
 using Lingopi.Lingo.Application.Operations.UserUsage;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lingopi.Lingo.Api.Endpoints.Usage;
 
-public sealed class GetUserUsageSummaryEndpoint : IEndpoint
+public sealed class GetAdminUserUsageSummaryEndpoint : IEndpoint
 {
     public void MapEndpoints(WebApplication app)
     {
-        app.MapGet("api/lingos/usage", async (
+        app.MapGet("api/admin/users/{userId}/usage", async (
                 [FromServices] IOperationMediator operations,
-                [FromHeader(Name = "User-Id")] string userId) =>
+                [FromHeader(Name = "User-Role")] string role,
+                [FromRoute] string userId) =>
             {
+                var isOwnerOrAdmin = AdminRoleAuthorization.IsOwnerOrAdmin(role);
+                if (!isOwnerOrAdmin)
+                {
+                    return Results.Forbid();
+                }
+
                 var operationResult = await operations.ExecuteAsync(
                     new GetUserUsageSummaryCommand(UserId: userId));
                 var summary = operationResult.Value!;
@@ -63,19 +71,23 @@ public sealed class GetUserUsageSummaryEndpoint : IEndpoint
                                         OutputTokens: usage.OutputTokens,
                                         EstimatedCost: usage.EstimatedCost))]))),
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error),
+                    OperationStatus.NotFound =>
+                        Results.UnprocessableEntity(operationResult.Error),
+                    OperationStatus.Unauthorized => Results.Forbid(),
                     _ => Results.Problem(
                         statusCode: StatusCodes.Status500InternalServerError,
                         title: operationResult.Error?.Messages?.FirstOrDefault() ??
-                            "An unexpected error occurred while retrieving the user's usage summary.")
+                            "An unexpected error occurred while retrieving user usage.")
                 };
             })
-            .WithTags("Lingos")
-            .WithSummary("Get the current user's usage summary")
-            .WithName("GetUserUsageSummary")
+            .WithTags("Admin")
+            .WithName("GetAdminUserUsageSummary")
+            .WithSummary("Get a user's usage summary for administration")
             .WithDescription(
-                "Returns account information and total plus previous-calendar-month usage metrics for the user.")
+                "Returns account information and total plus recent-month usage metrics for the user.")
             .Produces<UserUsageSummaryResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status500InternalServerError);
     }
 }
