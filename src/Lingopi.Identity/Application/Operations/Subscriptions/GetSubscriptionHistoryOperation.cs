@@ -1,5 +1,5 @@
+using Lingopi.Identity.Application.Extensions.Mappers;
 using Lingopi.Identity.Application.Interfaces;
-using Lingopi.Identity.Application.Types.Entities;
 using Lingopi.Identity.Application.Types.Models.Subscriptions;
 
 namespace Lingopi.Identity.Application.Operations.Subscriptions;
@@ -17,30 +17,16 @@ public sealed class GetSubscriptionHistoryOperation(IRepositoryManager repositor
             return OperationResult<List<SubscriptionHistoryModel>>.ValidationFailure("UserId is required.");
         }
 
-        var user = await repository.Users.GetByIdAsync(command.UserId);
-        if (user is null)
+        var entity = await repository.Users.GetByIdAsync(command.UserId);
+        if (entity is null)
         {
             return OperationResult<List<SubscriptionHistoryModel>>.NotFoundFailure("User not found.");
         }
 
-        var history = await repository.SubscriptionHistory.GetByUserIdAsync(command.UserId);
-        var models = history.Select(Map).ToList();
+        var entities = await repository.SubscriptionHistory.GetByUserIdAsync(command.UserId);
+        var models = entities.ConvertAll(entity => entity.ToModel());
         return OperationResult<List<SubscriptionHistoryModel>>.Success(models);
     }
-
-    private static SubscriptionHistoryModel Map(SubscriptionHistoryEntity history) =>
-        new(
-            history.Id,
-            history.SubscriptionId,
-            history.UserId,
-            history.EventType,
-            history.Plan,
-            history.Status,
-            history.StartedAt,
-            history.ExpiresAt,
-            history.SubscriptionCreatedAt,
-            history.SubscriptionUpdatedAt,
-            history.RecordedAt);
 }
 
 public sealed record GetSubscriptionHistoryCommand(string UserId) :

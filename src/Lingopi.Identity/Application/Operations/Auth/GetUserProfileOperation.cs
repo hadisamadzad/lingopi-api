@@ -1,4 +1,5 @@
-﻿using Lingopi.Identity.Application.Interfaces;
+﻿using Lingopi.Identity.Application.Extensions.Mappers;
+using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Models.Users;
 
 namespace Lingopi.Identity.Application.Operations.Auth;
@@ -17,16 +18,16 @@ public class GetUserProfileOperation(
         }
 
         // Get
-        var user = await repository.Users.GetByIdAsync(command.UserId);
-        if (user is null)
+        var entity = await repository.Users.GetByIdAsync(command.UserId);
+        if (entity is null)
         {
             return OperationResult<UserModel>.NotFoundFailure("User not found");
         }
 
         // Mapping
-        var response = user.MapToUserModel();
+        var model = entity.ToModel();
 
-        return OperationResult<UserModel>.Success(response);
+        return OperationResult<UserModel>.Success(model);
     }
 }
 

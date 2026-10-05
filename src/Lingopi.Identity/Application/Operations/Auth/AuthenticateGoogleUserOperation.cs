@@ -26,11 +26,11 @@ public partial class AuthenticateGoogleUserOperation(
         }
 
         var email = command.Email.Trim().ToLowerInvariant();
-        var user = await repository.Users.GetByEmailAsync(email);
-        if (user is null)
+        var entity = await repository.Users.GetByEmailAsync(email);
+        if (entity is null)
         {
             var isFirstUser = !await repository.Users.AnyAsync();
-            user = new UserEntity
+            entity = new UserEntity
             {
                 Id = UidHelper.GenerateNewId("user"),
                 Email = email,
@@ -45,38 +45,38 @@ public partial class AuthenticateGoogleUserOperation(
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
-            await repository.Users.InsertAsync(user);
+            await repository.Users.InsertAsync(entity);
 
             // Create a free subscription for the user
-            var subscription = SubscriptionEntityFactory.CreateFree(user.Id, user.CreatedAt);
+            var subscription = SubscriptionEntityFactory.CreateFree(entity.Id, entity.CreatedAt);
             var subscriptionPersisted = await repository.Subscriptions.UpsertAsync(subscription);
             if (!subscriptionPersisted)
             {
                 return OperationResult<AuthenticateGoogleUserResult>.Failure(
-                    $"Failed to create the Free subscription for user '{user.Id}'.");
+                    $"Failed to create the Free subscription for user '{entity.Id}'.");
             }
 
             var subscriptionHistory = SubscriptionHistoryEntityFactory.Create(
                 subscription,
                 SubscriptionHistoryEventType.Created,
-                user.CreatedAt);
+                entity.CreatedAt);
             await repository.SubscriptionHistory.InsertAsync(subscriptionHistory);
         }
 
-        if (user.IsLockedOutOrNotActive())
+        if (entity.IsLockedOutOrNotActive())
         {
             return OperationResult<AuthenticateGoogleUserResult>.AuthorizationFailure(
                 "User is locked out or not active");
         }
 
-        user.LastLoginDate = DateTime.UtcNow;
-        await repository.Users.UpdateAsync(user);
+        entity.LastLoginDate = DateTime.UtcNow;
+        await repository.Users.UpdateAsync(entity);
 
-        var (Token, Entity) = RefreshTokenHelper.Create(user.Id, TokenHelper.RefreshTokenLifetime);
+        var (Token, Entity) = RefreshTokenHelper.Create(entity.Id, TokenHelper.RefreshTokenLifetime);
         await repository.RefreshTokens.InsertAsync(Entity);
 
         return OperationResult<AuthenticateGoogleUserResult>.Success(new(
-            user.CreateJwtAccessToken(),
+            entity.CreateJwtAccessToken(),
             Token,
             TokenHelper.RefreshTokenLifetime));
     }

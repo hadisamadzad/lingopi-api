@@ -40,19 +40,19 @@ public class CaptureLingoOperation(
         }
 
         // Load user settings to determine the default locales
-        var userSettings = await repository.UserSettings.GetByUserIdAsync(command.UserId);
-        if (userSettings is null)
+        var entity = await repository.UserSettings.GetByUserIdAsync(command.UserId);
+        if (entity is null)
         {
             return OperationResult<string>.ValidationFailure(
                 $"Lingo settings for user '{command.UserId}' must be configured before capture.");
         }
 
         var sourceLocaleCode = LocaleCodeNormalizer.Normalize(command.SourceLocaleCode);
-        var targetLocaleCode = userSettings.TargetLocaleCode;
+        var targetLocaleCode = entity.TargetLocaleCode;
 
         // Check if the source locale is active in the language catalog
-        var activeLanguages = await repository.Languages.GetActiveLanguagesAsync() ?? [];
-        var sourceLocaleIsActive = activeLanguages.Count == 0;
+        var entities = await repository.Languages.GetActiveLanguagesAsync() ?? [];
+        var sourceLocaleIsActive = entities.Count == 0;
         if (!sourceLocaleIsActive)
         {
             sourceLocaleIsActive = await repository.Languages.IsActiveLocaleAsync(sourceLocaleCode);
@@ -64,7 +64,7 @@ public class CaptureLingoOperation(
         }
 
         if (sourceLocaleCode is null ||
-            !userSettings.SourceLocaleCodes.Any(x =>
+            !entity.SourceLocaleCodes.Any(x =>
                 string.Equals(x, sourceLocaleCode, StringComparison.OrdinalIgnoreCase)))
         {
             return OperationResult<string>.ValidationFailure(

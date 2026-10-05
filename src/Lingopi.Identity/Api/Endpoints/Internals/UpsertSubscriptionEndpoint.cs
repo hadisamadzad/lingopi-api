@@ -1,3 +1,4 @@
+using Lingopi.Identity.Api.Models;
 using Lingopi.Identity.Application.Operations.Subscriptions;
 using Lingopi.Identity.Application.Types.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -16,19 +17,29 @@ public sealed class UpsertSubscriptionEndpoint : IEndpoint
             {
                 var result = await operations.ExecuteAsync(
                     new UpsertSubscriptionCommand(
-                        internalAuthSecret,
-                        userId,
-                        request.Plan,
-                        request.Status,
-                        request.StartedAt,
-                        request.ExpiresAt));
+                        InternalAuthSecret: internalAuthSecret,
+                        UserId: userId,
+                        Plan: request.Plan,
+                        Status: request.Status,
+                        StartedAt: request.StartedAt,
+                        ExpiresAt: request.ExpiresAt));
+                var subscription = result.Value!;
 
                 return result.Status switch
                 {
-                    OperationStatus.Completed => Results.Ok(result.Value),
+                    OperationStatus.Completed => Results.Ok(
+                        new SubscriptionResponse(
+                            UserId: subscription.UserId,
+                            Plan: subscription.Plan,
+                            Source: subscription.Source,
+                            Status: subscription.Status,
+                            StartedAt: subscription.StartedAt,
+                            ExpiresAt: subscription.ExpiresAt,
+                            CreatedAt: subscription.CreatedAt,
+                            UpdatedAt: subscription.UpdatedAt)),
                     OperationStatus.Invalid => Results.BadRequest(result.Error),
                     OperationStatus.Unauthorized => Results.Unauthorized(),
-                    OperationStatus.NotFound => Results.NotFound(result.Error),
+                    OperationStatus.NotFound => Results.UnprocessableEntity(result.Error),
                     _ => Results.InternalServerError(result.Error)
                 };
             })

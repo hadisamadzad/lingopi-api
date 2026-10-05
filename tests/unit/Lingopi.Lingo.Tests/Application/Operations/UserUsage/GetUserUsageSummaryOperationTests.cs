@@ -89,6 +89,7 @@ public sealed class GetUserUsageSummaryOperationTests
         Assert.Equal(3m, result.Value.LastMonth.AverageEncountersPerLingo);
         Assert.Equal(1, result.Value.LastMonth.Enrichments);
         Assert.Equal("fa-IR", result.Value.Account.TargetLocaleCode);
+        Assert.Equal(["en-US"], result.Value.Account.SourceLocaleCodes);
     }
 
     [Fact]

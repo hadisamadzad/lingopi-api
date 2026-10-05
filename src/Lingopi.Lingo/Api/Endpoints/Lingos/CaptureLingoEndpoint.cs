@@ -1,4 +1,4 @@
-using Lingopi.Lingo.Api.Models;
+using Lingopi.Lingo.Application.Models.Enums;
 using Lingopi.Lingo.Application.Operations.Lingos;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,7 +24,7 @@ public class CaptureLingoEndpoint : IEndpoint
                 {
                     OperationStatus.Completed => Results.Created(
                         $"/api/captures/{operationResult.Value}",
-                        new CaptureLingoResponse(operationResult.Value!)),
+                        new CaptureLingoResponse(CaptureId: operationResult.Value!)),
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error),
                     OperationStatus.Failed => Results.UnprocessableEntity(operationResult.Error),
                     _ => Results.Problem(
@@ -43,3 +43,11 @@ public class CaptureLingoEndpoint : IEndpoint
             .Produces(StatusCodes.Status500InternalServerError);
     }
 }
+
+public record CaptureLingoRequest(
+    string Expression,
+    string SourceLanguageCode,
+    string SourceLocaleCode,
+    LingoContext? Context = null);
+
+public record CaptureLingoResponse(string CaptureId);

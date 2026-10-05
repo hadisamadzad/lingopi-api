@@ -31,20 +31,20 @@ public class ResetPasswordOperation(IRepositoryManager repository,
             return OperationResult.AuthorizationFailure("Invalid token");
         }
 
-        var user = await repository.Users.GetByEmailAsync(email);
-        if (user is null)
+        var entity = await repository.Users.GetByEmailAsync(email);
+        if (entity is null)
         {
             return OperationResult.NotFoundFailure("User not found");
         }
 
-        if (user.IsLockedOutOrNotActive())
+        if (entity.IsLockedOutOrNotActive())
         {
             return OperationResult.AuthorizationFailure("User is locked out or not active");
         }
 
-        user.PasswordHash = PasswordHelper.Hash(command.NewPassword);
+        entity.PasswordHash = PasswordHelper.Hash(command.NewPassword);
 
-        _ = await repository.Users.UpdateAsync(user);
+        _ = await repository.Users.UpdateAsync(entity);
 
         return OperationResult.Success();
     }

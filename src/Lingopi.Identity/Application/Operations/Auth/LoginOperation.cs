@@ -21,42 +21,42 @@ public class LoginOperation(IRepositoryManager repository) :
         }
 
         // Get
-        var user = await repository.Users.GetByEmailAsync(command.Email);
-        if (user is null)
+        var entity = await repository.Users.GetByEmailAsync(command.Email);
+        if (entity is null)
         {
             return OperationResult<LoginResult>.NotFoundFailure("User not found");
         }
 
         // Lockout check
-        if (user.IsLockedOutOrNotActive())
+        if (entity.IsLockedOutOrNotActive())
         {
             return OperationResult<LoginResult>.AuthorizationFailure("User is locked out or not active");
         }
 
         // Login check via password
-        var isLoginSuccessful = PasswordHelper.CheckPasswordHash(user.PasswordHash, command.Password);
+        var isLoginSuccessful = PasswordHelper.CheckPasswordHash(entity.PasswordHash, command.Password);
 
         // Lockout history
         if (!isLoginSuccessful)
         {
-            user.TryToLockout();
-            _ = await repository.Users.UpdateAsync(user);
+            entity.TryToLockout();
+            _ = await repository.Users.UpdateAsync(entity);
             return OperationResult<LoginResult>.AuthorizationFailure("Invalid credentials");
         }
 
         /* Here user is authenticated */
-        user.LastLoginDate = DateTime.UtcNow;
-        user.ResetLockoutHistory();
-        _ = await repository.Users.UpdateAsync(user);
+        entity.LastLoginDate = DateTime.UtcNow;
+        entity.ResetLockoutHistory();
+        _ = await repository.Users.UpdateAsync(entity);
 
-        var (Token, Entity) = RefreshTokenHelper.Create(user.Id, TokenHelper.RefreshTokenLifetime);
+        var (Token, Entity) = RefreshTokenHelper.Create(entity.Id, TokenHelper.RefreshTokenLifetime);
         await repository.RefreshTokens.InsertAsync(Entity);
 
         var result = new LoginResult
         (
-            Email: user.Email,
-            FullName: user.GetFullName(),
-            AccessToken: user.CreateJwtAccessToken(),
+            Email: entity.Email,
+            FullName: entity.GetFullName(),
+            AccessToken: entity.CreateJwtAccessToken(),
             RefreshToken: Token,
             RefreshTokenLifetime: TokenHelper.RefreshTokenLifetime
         );

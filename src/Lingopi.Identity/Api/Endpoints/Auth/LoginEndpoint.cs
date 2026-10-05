@@ -19,19 +19,19 @@ public class LoginEndpoint : IEndpoint
                     Email: request.Email.Trim(),
                     Password: request.Password.Trim()
                 ));
+                var login = operationResult.Value!;
 
                 // Result
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.Ok(
                         new LoginResponse(
-                            Email: operationResult.Value!.Email,
-                            FullName: operationResult.Value.FullName,
-                            AccessToken: operationResult.Value.AccessToken
-                        ))
-                        .WithCookie("refreshToken", operationResult.Value!.RefreshToken,
+                            Email: login.Email,
+                            FullName: login.FullName,
+                            AccessToken: login.AccessToken))
+                        .WithCookie("refreshToken", login.RefreshToken,
                             CookieConfiguration.GetRefreshTokenOptions(
-                                operationResult.Value!.RefreshTokenLifetime,
+                                login.RefreshTokenLifetime,
                                 isProduction: app.Environment.IsProduction())),
 
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error),
@@ -53,8 +53,8 @@ public class LoginEndpoint : IEndpoint
 }
 
 public record LoginRequest(string Email, string Password);
-public record LoginResponse(
+
+public sealed record LoginResponse(
     string Email,
     string FullName,
-    string AccessToken
-);
+    string AccessToken);

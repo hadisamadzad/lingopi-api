@@ -1,4 +1,5 @@
 using FluentValidation;
+using Lingopi.Lingo.Application.Extensions.Mappers;
 using Lingopi.Lingo.Application.Helpers;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.Entities;
@@ -41,8 +42,8 @@ public sealed class SaveUserSettingsOperation(
                 "At least one source locale code is required.");
         }
 
-        var activeLanguages = await repository.Languages.GetActiveLanguagesAsync();
-        if (activeLanguages.Count > 0)
+        var entities = await repository.Languages.GetActiveLanguagesAsync();
+        if (entities.Count > 0)
         {
             var targetLocaleIsActive = await repository.Languages.IsActiveLocaleAsync(targetLocaleCode);
             if (!targetLocaleIsActive)
@@ -63,15 +64,15 @@ public sealed class SaveUserSettingsOperation(
         }
 
         // Persist the user settings
-        var existing = await repository.UserSettings.GetByUserIdAsync(command.UserId);
+        var existingEntity = await repository.UserSettings.GetByUserIdAsync(command.UserId);
         var now = DateTime.UtcNow;
         var settings = new UserSettingsEntity
         {
-            Id = existing?.Id ?? $"user-setting-{command.UserId}",
+            Id = existingEntity?.Id ?? $"user-setting-{command.UserId}",
             UserId = command.UserId,
             TargetLocaleCode = targetLocaleCode,
             SourceLocaleCodes = sourceLocaleCodes,
-            CreatedAt = existing?.CreatedAt ?? now,
+            CreatedAt = existingEntity?.CreatedAt ?? now,
             UpdatedAt = now
         };
 

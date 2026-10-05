@@ -1,4 +1,3 @@
-using Lingopi.Lingo.Api.Models;
 using Lingopi.Lingo.Application.Operations.Languages;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,7 +15,11 @@ public sealed class GetActiveLanguagesEndpoint : IEndpoint
 
                 return operationResult.Status == OperationStatus.Completed
                     ? Results.Ok(
-                        operationResult.Value!.Select(language => language.ToActiveLocaleResponse()))
+                        operationResult.Value!.ConvertAll(language =>
+                            new ActiveLocaleResponse(
+                                LocaleCode: language.LocaleCode,
+                                Name: language.Name,
+                                NativeName: language.NativeName)))
                     : Results.Problem(
                         statusCode: StatusCodes.Status500InternalServerError,
                         title: operationResult.Error?.Messages?.FirstOrDefault() ??
@@ -29,3 +32,8 @@ public sealed class GetActiveLanguagesEndpoint : IEndpoint
             .Produces<IEnumerable<ActiveLocaleResponse>>(StatusCodes.Status200OK);
     }
 }
+
+public record ActiveLocaleResponse(
+    string LocaleCode,
+    string Name,
+    string NativeName);

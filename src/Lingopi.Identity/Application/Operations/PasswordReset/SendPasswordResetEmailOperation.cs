@@ -27,13 +27,13 @@ public class SendPasswordResetEmailOperation(
         }
 
         // Get
-        var user = await repository.Users.GetByEmailAsync(command.Email);
-        if (user is null)
+        var entity = await repository.Users.GetByEmailAsync(command.Email);
+        if (entity is null)
         {
             return OperationResult.NotFoundFailure("User not found");
         }
 
-        if (user.IsLockedOutOrNotActive())
+        if (entity.IsLockedOutOrNotActive())
         {
             return OperationResult.AuthorizationFailure("User is locked out or not active");
         }
@@ -42,9 +42,9 @@ public class SendPasswordResetEmailOperation(
             .GetExpirationTime(_passwordResetConfig.LinkLifetimeInDays);
 
         var token = PasswordResetTokenHelper
-            .GeneratePasswordResetToken(user.Email, expirationTime);
+            .GeneratePasswordResetToken(entity.Email, expirationTime);
 
-        var email = user.Email;
+        var email = entity.Email;
         var passwordResetLink = string.Format(_passwordResetConfig.LinkFormat, token);
 
         var @params = new Dictionary<string, string>

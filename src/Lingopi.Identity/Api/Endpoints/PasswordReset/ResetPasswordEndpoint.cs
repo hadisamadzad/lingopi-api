@@ -11,7 +11,9 @@ public class ResetPasswordEndpoint : IEndpoint
                 [FromBody] ResetPasswordRequest request) =>
             {
                 var operationResult = await operations.ExecuteAsync(
-                    new ResetPasswordCommand(request.Token, request.NewPassword));
+                    new ResetPasswordCommand(
+                        Token: request.Token,
+                        NewPassword: request.NewPassword));
 
                 return operationResult.Status switch
                 {

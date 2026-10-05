@@ -1,5 +1,4 @@
 using Lingopi.Lingo.Api.Authorization;
-using Lingopi.Lingo.Api.Models;
 using Lingopi.Lingo.Application.Operations.Languages;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,17 +22,17 @@ public sealed class UpdateLanguageEndpoint : IEndpoint
 
                 var operationResult = await operations.ExecuteAsync(
                     new UpdateLanguageCommand(
-                        id,
-                        request.Name,
-                        request.NativeName,
-                        request.IsRightToLeft,
-                        request.IsActive));
+                        Id: id,
+                        Name: request.Name,
+                        NativeName: request.NativeName,
+                        IsRightToLeft: request.IsRightToLeft,
+                        IsActive: request.IsActive));
 
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.NoContent(),
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error?.Messages),
-                    OperationStatus.NotFound => Results.NotFound(operationResult.Error?.Messages),
+                    OperationStatus.NotFound => Results.UnprocessableEntity(operationResult.Error?.Messages),
                     _ => Results.UnprocessableEntity(operationResult.Error?.Messages)
                 };
             })
@@ -47,3 +46,9 @@ public sealed class UpdateLanguageEndpoint : IEndpoint
             .Produces(StatusCodes.Status422UnprocessableEntity);
     }
 }
+
+public record UpdateLanguageRequest(
+    string Name,
+    string NativeName,
+    bool IsRightToLeft,
+    bool IsActive);

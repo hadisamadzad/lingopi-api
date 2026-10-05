@@ -18,9 +18,9 @@ public class CheckUsernameOperation(IRepositoryManager repository) :
         }
 
         // Get
-        var user = await repository.Users.GetByEmailAsync(command.Email);
+        var entity = await repository.Users.GetByEmailAsync(command.Email);
 
-        var isAvailable = user is null;
+        var isAvailable = entity is null;
 
         return OperationResult<bool>.Success(isAvailable);
     }

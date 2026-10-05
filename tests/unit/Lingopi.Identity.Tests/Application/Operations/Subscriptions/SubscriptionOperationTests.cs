@@ -146,17 +146,36 @@ public sealed class SubscriptionOperationTests
 
         Assert.Equal(OperationStatus.Completed, result.Status);
         Assert.Equal(SubscriptionPlan.Explorer, result.Value!.Plan);
+        Assert.Equal(SubscriptionSource.Purchased, result.Value.Source);
         await repository.Subscriptions.Received(1).UpsertAsync(
             Arg.Is<SubscriptionEntity>(subscription =>
                 subscription.UserId == "user-1" &&
                 subscription.Plan == SubscriptionPlan.Explorer &&
+                subscription.Source == SubscriptionSource.Purchased &&
                 subscription.Status == SubscriptionStatus.Active));
         await repository.SubscriptionHistory.Received(1).InsertAsync(
             Arg.Is<SubscriptionHistoryEntity>(history =>
                 history.UserId == "user-1" &&
                 history.EventType == SubscriptionHistoryEventType.Created &&
                 history.Plan == SubscriptionPlan.Explorer &&
+                history.Source == SubscriptionSource.Purchased &&
                 history.Status == SubscriptionStatus.Active));
+    }
+
+    [Fact]
+    public async Task GetSubscription_WhenMissing_ShouldReturnNotFound()
+    {
+        var repository = CreateRepository();
+        repository.Users.GetByIdAsync("user-1").Returns(new UserEntity { Id = "user-1" });
+        repository.Subscriptions.GetByUserIdAsync("user-1").Returns((SubscriptionEntity?)null);
+        var operation = new GetSubscriptionOperation(repository, new FixedTimeProvider(Now));
+
+        var result = await operation.ExecuteAsync(
+            new GetSubscriptionCommand("user-1"),
+            CancellationToken.None);
+
+        Assert.Equal(OperationStatus.NotFound, result.Status);
+        Assert.Null(result.Value);
     }
 
     [Fact]
@@ -169,13 +188,27 @@ public sealed class SubscriptionOperationTests
             Id = "subscription-1",
             UserId = "user-1",
             Plan = SubscriptionPlan.Explorer,
+            Source = SubscriptionSource.AdminAssigned,
             Status = SubscriptionStatus.Active,
             StartedAt = Now.AddDays(-10),
             ExpiresAt = Now.AddMinutes(-1),
             CreatedAt = Now.AddDays(-10),
             UpdatedAt = Now.AddDays(-10)
         };
-        repository.Subscriptions.GetByUserIdAsync("user-1").Returns(subscription);
+        var expiredSubscription = new SubscriptionEntity
+        {
+            Id = subscription.Id,
+            UserId = subscription.UserId,
+            Plan = subscription.Plan,
+            Source = subscription.Source,
+            Status = SubscriptionStatus.Expired,
+            StartedAt = subscription.StartedAt,
+            ExpiresAt = subscription.ExpiresAt,
+            CreatedAt = subscription.CreatedAt,
+            UpdatedAt = Now
+        };
+        repository.Subscriptions.GetByUserIdAsync("user-1")
+            .Returns(subscription, expiredSubscription);
         repository.Subscriptions.MarkExpiredAsync("user-1", Now).Returns(subscription);
 
         var operation = new GetSubscriptionOperation(repository, new FixedTimeProvider(Now));
@@ -185,9 +218,12 @@ public sealed class SubscriptionOperationTests
             CancellationToken.None);
 
         Assert.Equal(OperationStatus.Completed, result.Status);
-        Assert.Equal(SubscriptionPlan.Free, result.Value!.Plan);
+        Assert.Equal("subscription-1", result.Value!.SubscriptionId);
+        Assert.Equal(SubscriptionPlan.Explorer, result.Value.Plan);
+        Assert.Equal(SubscriptionSource.AdminAssigned, result.Value.Source);
         Assert.Equal(SubscriptionStatus.Expired, result.Value.Status);
         await repository.Subscriptions.Received(1).MarkExpiredAsync("user-1", Now);
+        await repository.Subscriptions.Received(2).GetByUserIdAsync("user-1");
         await repository.SubscriptionHistory.Received(1).InsertAsync(
             Arg.Is<SubscriptionHistoryEntity>(history =>
                 history.SubscriptionId == "subscription-1" &&
@@ -211,6 +247,7 @@ public sealed class SubscriptionOperationTests
                 UserId = "user-1",
                 EventType = SubscriptionHistoryEventType.Updated,
                 Plan = SubscriptionPlan.Immersion,
+                Source = SubscriptionSource.AdminAssigned,
                 Status = SubscriptionStatus.Active,
                 StartedAt = Now,
                 SubscriptionCreatedAt = Now.AddDays(-10),
@@ -230,6 +267,7 @@ public sealed class SubscriptionOperationTests
         Assert.Equal("history-2", history.Id);
         Assert.Equal(SubscriptionHistoryEventType.Updated, history.EventType);
         Assert.Equal(SubscriptionPlan.Immersion, history.Plan);
+        Assert.Equal(SubscriptionSource.AdminAssigned, history.Source);
     }
 
     [Fact]

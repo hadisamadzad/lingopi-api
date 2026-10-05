@@ -17,30 +17,30 @@ public class RefreshAccessTokenOperation(IRepositoryManager repository) :
 
         // Consume first: this is an atomic compare-and-set, so a token cannot be replayed.
         var (Token, Entity) = RefreshTokenHelper.Create(string.Empty, TokenHelper.RefreshTokenLifetime);
-        var consumed = await repository.RefreshTokens.ConsumeAsync(
+        var refreshTokenEntity = await repository.RefreshTokens.ConsumeAsync(
             RefreshTokenHelper.Hash(command.RefreshToken), DateTime.UtcNow, Entity.Id);
 
-        if (consumed is null)
+        if (refreshTokenEntity is null)
         {
             return OperationResult<RefreshAccessTokenResult>.ValidationFailure("Invalid refresh token");
         }
 
-        var user = await repository.Users.GetByIdAsync(consumed.UserId);
-        if (user is null)
+        var entity = await repository.Users.GetByIdAsync(refreshTokenEntity.UserId);
+        if (entity is null)
         {
             return OperationResult<RefreshAccessTokenResult>.NotFoundFailure("User not found");
         }
 
-        if (user.IsLockedOutOrNotActive())
+        if (entity.IsLockedOutOrNotActive())
         {
             return OperationResult<RefreshAccessTokenResult>.AuthorizationFailure("User is locked out or not active");
         }
 
-        Entity.UserId = user.Id;
+        Entity.UserId = entity.Id;
         await repository.RefreshTokens.InsertAsync(Entity);
 
         return OperationResult<RefreshAccessTokenResult>.Success(new(
-            user.CreateJwtAccessToken(), Token, TokenHelper.RefreshTokenLifetime));
+            entity.CreateJwtAccessToken(), Token, TokenHelper.RefreshTokenLifetime));
     }
 }
 

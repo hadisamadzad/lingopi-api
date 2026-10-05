@@ -15,26 +15,26 @@ public class GetProfileEndpoint : IEndpoint
                 // Operation
                 var operationResult = await operations.ExecuteAsync(
                     new GetUserProfileCommand(UserId: userId));
+                var user = operationResult.Value!;
 
                 // Result
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.Ok(
                         new GetUserProfileResponse(
-                            UserId: operationResult.Value!.UserId,
-                            Email: operationResult.Value.Email,
-                            IsEmailConfirmed: operationResult.Value.IsEmailConfirmed,
-                            FirstName: operationResult.Value.FirstName,
-                            LastName: operationResult.Value.LastName,
-                            TimeZoneId: operationResult.Value.TimeZoneId,
-                            Theme: operationResult.Value.Theme,
-                            FullName: operationResult.Value.FullName,
-                            Role: operationResult.Value.Role,
-                            Status: operationResult.Value.Status,
-                            LastLoginDate: operationResult.Value.LastLoginDate,
-                            CreatedAt: operationResult.Value.CreatedAt,
-                            UpdatedAt: operationResult.Value.UpdatedAt
-                        )),
+                            UserId: user.UserId,
+                            Email: user.Email,
+                            IsEmailConfirmed: user.IsEmailConfirmed,
+                            FirstName: user.FirstName,
+                            LastName: user.LastName,
+                            TimeZoneId: user.TimeZoneId,
+                            Theme: user.Theme,
+                            FullName: user.FullName,
+                            Role: user.Role,
+                            Status: user.Status,
+                            LastLoginDate: user.LastLoginDate,
+                            CreatedAt: user.CreatedAt,
+                            UpdatedAt: user.UpdatedAt)),
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error),
                     OperationStatus.NotFound => Results.UnprocessableEntity(operationResult.Error),
                     _ => Results.InternalServerError(operationResult.Error),
@@ -50,7 +50,7 @@ public class GetProfileEndpoint : IEndpoint
     }
 }
 
-public record GetUserProfileResponse(
+public sealed record GetUserProfileResponse(
     string UserId,
     string Email,
     bool IsEmailConfirmed,
@@ -63,5 +63,4 @@ public record GetUserProfileResponse(
     UserState Status,
     DateTime? LastLoginDate,
     DateTime CreatedAt,
-    DateTime UpdatedAt
-);
+    DateTime UpdatedAt);

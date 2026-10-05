@@ -16,6 +16,20 @@ public sealed class SubscriptionRepository(IMongoDatabase database) :
             .FirstOrDefaultAsync();
     }
 
+    public async Task<List<SubscriptionEntity>> GetByUserIdsAsync(
+        IReadOnlyCollection<string> userIds)
+    {
+        if (userIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<SubscriptionEntity>.Filter.In(
+            subscription => subscription.UserId,
+            userIds);
+        return await _collection.Find(filter).ToListAsync();
+    }
+
     public async Task<SubscriptionEntity?> MarkExpiredAsync(string userId, DateTime now)
     {
         var update = Builders<SubscriptionEntity>.Update

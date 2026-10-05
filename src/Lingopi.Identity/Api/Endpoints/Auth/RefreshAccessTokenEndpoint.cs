@@ -25,15 +25,18 @@ public class RefreshAccessTokenEndpoint : IEndpoint
 
                 var operationResult = await operations.ExecuteAsync(
                     new RefreshAccessTokenCommand(RefreshToken: refreshToken));
+                var tokenResult = operationResult.Value!;
 
                 // Result
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.Ok(
                         new RefreshAccessTokenResponse(
-                            AccessToken: operationResult.Value!.AccessToken
-                        )).WithCookie("refreshToken", operationResult.Value.RefreshToken,
-                            CookieConfiguration.GetRefreshTokenOptions(operationResult.Value.RefreshTokenLifetime,
+                            AccessToken: tokenResult.AccessToken)).WithCookie(
+                            "refreshToken",
+                            tokenResult.RefreshToken,
+                            CookieConfiguration.GetRefreshTokenOptions(
+                                tokenResult.RefreshTokenLifetime,
                                 isProduction: app.Environment.IsProduction())),
 
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error),
@@ -53,4 +56,4 @@ public class RefreshAccessTokenEndpoint : IEndpoint
     }
 }
 
-public record RefreshAccessTokenResponse(string AccessToken);
+public sealed record RefreshAccessTokenResponse(string AccessToken);

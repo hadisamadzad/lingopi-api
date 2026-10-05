@@ -24,17 +24,17 @@ public sealed class UpdateUserTimezoneOperation(IRepositoryManager repository) :
             return OperationResult.ValidationFailure("TimeZoneId must be a valid IANA timezone identifier.");
         }
 
-        var user = await repository.Users.GetByIdAsync(command.UserId);
-        if (user is null)
+        var entity = await repository.Users.GetByIdAsync(command.UserId);
+        if (entity is null)
         {
             return OperationResult.NotFoundFailure("User not found.");
         }
 
-        user.Settings ??= new UserSettings();
-        user.Settings.TimeZoneId = hasTimeZoneId ? normalizedTimeZoneId : null;
-        user.UpdatedAt = DateTime.UtcNow;
+        entity.Settings ??= new UserSettings();
+        entity.Settings.TimeZoneId = hasTimeZoneId ? normalizedTimeZoneId : null;
+        entity.UpdatedAt = DateTime.UtcNow;
 
-        var updated = await repository.Users.UpdateAsync(user);
+        var updated = await repository.Users.UpdateAsync(entity);
         if (!updated)
         {
             return OperationResult.Failure($"Failed to update timezone for user '{command.UserId}'.");

@@ -11,7 +11,8 @@ public class LogoutEndpoint : IEndpoint
         app.MapPost("api/auth/logout", async (IOperationMediator operations, HttpContext context) =>
             {
                 var refreshToken = context.Request.Cookies["refreshToken"];
-                await operations.ExecuteAsync(new RevokeRefreshTokenCommand(refreshToken));
+                await operations.ExecuteAsync(
+                    new RevokeRefreshTokenCommand(RefreshToken: refreshToken));
 
                 context.Response.Cookies.Delete(
                     "refreshToken",

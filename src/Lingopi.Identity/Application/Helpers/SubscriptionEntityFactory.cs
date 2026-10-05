@@ -12,6 +12,7 @@ public static class SubscriptionEntityFactory
             Id = UidHelper.GenerateNewId("subscription"),
             UserId = userId,
             Plan = SubscriptionPlan.Free,
+            Source = SubscriptionSource.SystemAssigned,
             Status = SubscriptionStatus.Active,
             StartedAt = now,
             CreatedAt = now,

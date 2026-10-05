@@ -13,13 +13,15 @@ public sealed class UpdateUserTimezoneEndpoint : IEndpoint
                 [FromBody] UpdateUserTimezoneRequest request) =>
             {
                 var result = await operations.ExecuteAsync(
-                    new UpdateUserTimezoneCommand(userId, request.TimeZoneId));
+                    new UpdateUserTimezoneCommand(
+                        UserId: userId,
+                        TimeZoneId: request.TimeZoneId));
 
                 return result.Status switch
                 {
                     OperationStatus.Completed => Results.NoContent(),
                     OperationStatus.Invalid => Results.BadRequest(result.Error),
-                    OperationStatus.NotFound => Results.NotFound(result.Error),
+                    OperationStatus.NotFound => Results.UnprocessableEntity(result.Error),
                     _ => Results.InternalServerError(result.Error)
                 };
             })

@@ -1,5 +1,4 @@
 using Lingopi.Lingo.Api.Authorization;
-using Lingopi.Lingo.Api.Models;
 using Lingopi.Lingo.Application.Operations.Languages;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,7 +22,19 @@ public sealed class GetManagedLanguagesEndpoint : IEndpoint
                     new GetManagedLanguagesCommand());
 
                 return operationResult.Status == OperationStatus.Completed
-                    ? Results.Ok(operationResult.Value!.Select(language => language.ToResponse()))
+                    ? Results.Ok(operationResult.Value!.ConvertAll(language =>
+                        new LanguageResponse(
+                            Id: language.Id,
+                            LocaleCode: language.LocaleCode,
+                            LanguageCode: language.LanguageCode,
+                            RegionCode: language.RegionCode,
+                            Name: language.Name,
+                            NativeName: language.NativeName,
+                            IsRightToLeft: language.IsRightToLeft,
+                            IsActive: language.IsActive,
+                            CreatedAt: language.CreatedAt,
+                            UpdatedAt: language.UpdatedAt,
+                            LastActivatedAt: language.LastActivatedAt)))
                     : Results.Problem(
                         statusCode: StatusCodes.Status500InternalServerError,
                         title: operationResult.Error?.Messages?.FirstOrDefault() ??
@@ -36,3 +47,16 @@ public sealed class GetManagedLanguagesEndpoint : IEndpoint
             .Produces(StatusCodes.Status403Forbidden);
     }
 }
+
+public record LanguageResponse(
+    string Id,
+    string LocaleCode,
+    string LanguageCode,
+    string RegionCode,
+    string Name,
+    string NativeName,
+    bool IsRightToLeft,
+    bool IsActive,
+    DateTime CreatedAt,
+    DateTime UpdatedAt,
+    DateTime? LastActivatedAt);

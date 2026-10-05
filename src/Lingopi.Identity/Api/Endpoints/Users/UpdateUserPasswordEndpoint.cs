@@ -15,10 +15,10 @@ public class UpdateUserPasswordEndpoint : IEndpoint
                 // Operation
                 var operationResult = await operations.ExecuteAsync(
                     new UpdateUserPasswordCommand(
-                        authenticatedUserId,
-                        userId,
-                        request.CurrentPassword,
-                        request.NewPassword));
+                        AdminUserId: authenticatedUserId,
+                        UserId: userId,
+                        CurrentPassword: request.CurrentPassword,
+                        NewPassword: request.NewPassword));
 
                 // Result
                 return operationResult.Status switch

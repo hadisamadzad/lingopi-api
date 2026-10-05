@@ -1,5 +1,4 @@
 using Lingopi.Lingo.Api.Authorization;
-using Lingopi.Lingo.Api.Models;
 using Lingopi.Lingo.Application.Operations.Languages;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,18 +21,18 @@ public sealed class CreateLanguageEndpoint : IEndpoint
 
                 var operationResult = await operations.ExecuteAsync(
                     new CreateLanguageCommand(
-                        request.LanguageCode,
-                        request.RegionCode,
-                        request.Name,
-                        request.NativeName,
-                        request.IsRightToLeft,
-                        request.IsActive));
+                        LanguageCode: request.LanguageCode,
+                        RegionCode: request.RegionCode,
+                        Name: request.Name,
+                        NativeName: request.NativeName,
+                        IsRightToLeft: request.IsRightToLeft,
+                        IsActive: request.IsActive));
 
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.Created(
                         $"/api/admin/lingos/languages/{operationResult.Value!.Id}",
-                        new CreateLanguageResponse(operationResult.Value!.Id)),
+                        new CreateLanguageResponse(Id: operationResult.Value!.Id)),
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error?.Messages),
                     _ => Results.UnprocessableEntity(operationResult.Error?.Messages)
                 };
@@ -47,3 +46,13 @@ public sealed class CreateLanguageEndpoint : IEndpoint
             .Produces(StatusCodes.Status422UnprocessableEntity);
     }
 }
+
+public record CreateLanguageRequest(
+    string LanguageCode,
+    string RegionCode,
+    string Name,
+    string NativeName,
+    bool IsRightToLeft,
+    bool IsActive);
+
+public record CreateLanguageResponse(string Id);

@@ -12,15 +12,15 @@ public class CheckUsernameAvailabilityEndpoint : IEndpoint
                 [FromQuery] string email) =>
             {
                 // Operation
-                var operationResult = await operations.ExecuteAsync(new CheckUsernameCommand(email));
+                var operationResult = await operations.ExecuteAsync(
+                    new CheckUsernameCommand(Email: email));
 
                 // Result
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.Ok(
                         new CheckUsernameAvailabilityResponse(
-                            IsAvailable: operationResult.Value
-                        )),
+                            IsAvailable: operationResult.Value)),
                     OperationStatus.Invalid => Results.BadRequest(operationResult.Error),
                     _ => Results.InternalServerError(operationResult.Error),
                 };
@@ -34,4 +34,4 @@ public class CheckUsernameAvailabilityEndpoint : IEndpoint
     }
 }
 
-public record CheckUsernameAvailabilityResponse(bool IsAvailable);
+public sealed record CheckUsernameAvailabilityResponse(bool IsAvailable);
