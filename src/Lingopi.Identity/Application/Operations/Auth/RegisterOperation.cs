@@ -27,8 +27,8 @@ public class RegisterOperation(IRepositoryManager repository)
         var userRole = isFirstUser ? Role.Owner : Role.User;
 
         // Check for existing user
-        var isExistingUser = await repository.Users.GetByEmailAsync(command.Email);
-        if (isExistingUser is not null)
+        var existingEntity = await repository.Users.GetByEmailAsync(command.Email);
+        if (existingEntity is not null)
         {
             return OperationResult<RegisterResult>.Failure("A user with this email already exists");
         }

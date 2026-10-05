@@ -1,3 +1,4 @@
+using Lingopi.Lingo.Application.Extensions.Mappers;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.ReadModels;
 
@@ -16,7 +17,7 @@ public class GetLingosByUserIdOperation(IRepositoryManager repository) :
             return OperationResult<List<LingoModel>>.Success([]);
         }
 
-        var models = entities.Select(entity => entity.MapToLingoModel()).ToList();
+        var models = entities.ConvertAll(entity => entity.ToModel());
 
         return OperationResult<List<LingoModel>>.Success(models);
     }

@@ -11,13 +11,15 @@ public class GetOwnershipStatusEndpoint : IEndpoint
                 ) =>
             {
                 // Operation
-                var operationResult = await operations.ExecuteAsync(new GetOwnershipStatusCommand());
+                var operationResult = await operations.ExecuteAsync(
+                    new GetOwnershipStatusCommand());
 
                 // Result
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.Ok(
-                        new GetOwnershipStatusResponse(IsAlreadyOwned: operationResult.Value)),
+                        new GetOwnershipStatusResponse(
+                            IsAlreadyOwned: operationResult.Value)),
                     _ => Results.InternalServerError(operationResult.Error),
                 };
             })
@@ -30,4 +32,4 @@ public class GetOwnershipStatusEndpoint : IEndpoint
     }
 }
 
-public record GetOwnershipStatusResponse(bool IsAlreadyOwned);
+public sealed record GetOwnershipStatusResponse(bool IsAlreadyOwned);

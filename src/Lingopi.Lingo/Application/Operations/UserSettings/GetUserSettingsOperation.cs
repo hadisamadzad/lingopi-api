@@ -1,3 +1,4 @@
+using Lingopi.Lingo.Application.Extensions.Mappers;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.ReadModels;
 
@@ -23,16 +24,3 @@ public sealed class GetUserSettingsOperation(IRepositoryManager repository) :
 }
 
 public record GetUserSettingsCommand(string UserId) : IOperationCommand<UserSettingsModel>;
-
-internal static class UserSettingsModelMapper
-{
-    public static UserSettingsModel ToModel(this Models.Entities.UserSettingsEntity entity)
-    {
-        return new UserSettingsModel(
-            entity.UserId,
-            entity.TargetLocaleCode,
-            entity.SourceLocaleCodes,
-            entity.CreatedAt,
-            entity.UpdatedAt);
-    }
-}

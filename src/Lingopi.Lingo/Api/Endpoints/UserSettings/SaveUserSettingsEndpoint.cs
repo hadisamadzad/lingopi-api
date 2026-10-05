@@ -15,14 +15,20 @@ public sealed class SaveUserSettingsEndpoint : IEndpoint
             {
                 var operationResult = await operations.ExecuteAsync(
                     new SaveUserSettingsCommand(
-                        userId,
-                        request.TargetLocaleCode,
-                        request.SourceLocaleCodes));
+                        UserId: userId,
+                        TargetLocaleCode: request.TargetLocaleCode,
+                        SourceLocaleCodes: request.SourceLocaleCodes));
+                var settings = operationResult.Value!;
 
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.Ok(
-                        operationResult.Value!.ToResponse()),
+                        new UserSettingsResponse(
+                            UserId: settings.UserId,
+                            TargetLocaleCode: settings.TargetLocaleCode,
+                            SourceLocaleCodes: settings.SourceLocaleCodes,
+                            CreatedAt: settings.CreatedAt,
+                            UpdatedAt: settings.UpdatedAt)),
                     OperationStatus.Invalid => Results.BadRequest(
                         operationResult.Error?.Messages),
                     OperationStatus.Failed => Results.UnprocessableEntity(
@@ -43,3 +49,7 @@ public sealed class SaveUserSettingsEndpoint : IEndpoint
             .Produces(StatusCodes.Status500InternalServerError);
     }
 }
+
+public record SaveUserSettingsRequest(
+    string TargetLocaleCode,
+    List<string> SourceLocaleCodes);

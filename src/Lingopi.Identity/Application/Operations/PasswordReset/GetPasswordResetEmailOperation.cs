@@ -17,24 +17,24 @@ public class GetPasswordResetEmailOperation(
             return OperationResult<string>.ValidationFailure("Invalid token");
         }
 
-        var user = await repository.Users.GetByEmailAsync(email);
-        if (user == null)
+        var entity = await repository.Users.GetByEmailAsync(email);
+        if (entity == null)
         {
             //logger.LogWarning("No user found for password reset token: {Token}", command.Token);
             return OperationResult<string>.NotFoundFailure("No user found for the provided token");
         }
 
-        if (user.IsLockedOutOrNotActive())
+        if (entity.IsLockedOutOrNotActive())
         {
             return OperationResult<string>.AuthorizationFailure("User is locked out or not active");
         }
 
-        if (!string.Equals(user.Email, email, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(entity.Email, email, StringComparison.OrdinalIgnoreCase))
         {
             return OperationResult<string>.AuthorizationFailure("Invalid token");
         }
 
-        return OperationResult<string>.Success(user.Email);
+        return OperationResult<string>.Success(entity.Email);
     }
 }
 

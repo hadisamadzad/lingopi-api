@@ -14,13 +14,15 @@ public sealed class UpdateUserThemeEndpoint : IEndpoint
                 [FromBody] UpdateUserThemeRequest request) =>
             {
                 var result = await operations.ExecuteAsync(
-                    new UpdateUserThemeCommand(userId, request.Theme));
+                    new UpdateUserThemeCommand(
+                        UserId: userId,
+                        Theme: request.Theme));
 
                 return result.Status switch
                 {
                     OperationStatus.Completed => Results.NoContent(),
                     OperationStatus.Invalid => Results.BadRequest(result.Error),
-                    OperationStatus.NotFound => Results.NotFound(result.Error),
+                    OperationStatus.NotFound => Results.UnprocessableEntity(result.Error),
                     _ => Results.InternalServerError(result.Error)
                 };
             })

@@ -1,3 +1,4 @@
+using Lingopi.Lingo.Application.Extensions.Mappers;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Interfaces.Services;
 using Lingopi.Lingo.Application.Models.Configs;
@@ -36,21 +37,21 @@ public sealed class GetUserUsageSummaryOperation(
 
         var total = GetPeriodAsync(command.UserId, null, null);
         var lastMonth = GetPeriodAsync(command.UserId, lastMonthStart, now);
-        var settings = repository.UserSettings.GetByUserIdAsync(command.UserId);
+        var settingsTask = repository.UserSettings.GetByUserIdAsync(command.UserId);
 
         var subscription = await identityEntitlementClient.GetAsync(
             command.UserId,
             cancellation ?? CancellationToken.None);
 
-        await Task.WhenAll(total, lastMonth, settings);
+        await Task.WhenAll(total, lastMonth, settingsTask);
 
-        var settingsValue = settings.Result;
+        var entity = settingsTask.Result;
         var plan = LingoPlan.Free;
         SubscriptionStatus? subscriptionStatus = null;
         DateTime? subscriptionStartedAt = null;
         DateTime? subscriptionExpiresAt = null;
 
-        if (subscription.Status != Minimals.Operations.OperationStatus.Completed ||
+        if (subscription.Status != OperationStatus.Completed ||
             subscription.Value is null)
         {
             return OperationResult<UserUsageSummaryModel>.Failure(
@@ -67,22 +68,14 @@ public sealed class GetUserUsageSummaryOperation(
         subscriptionStartedAt = entitlement.SubscriptionStartedAt;
         subscriptionExpiresAt = entitlement.SubscriptionExpiresAt;
 
-        var account = new UserUsageAccountModel(
+        var model = entity.ToModel(
             plan,
             subscriptionStatus,
             subscriptionStartedAt,
-            subscriptionExpiresAt,
-            settingsValue?.TargetLocaleCode,
-            settingsValue?.SourceLocaleCodes ?? [],
-            settingsValue?.CreatedAt,
-            settingsValue?.UpdatedAt);
+            subscriptionExpiresAt);
 
         return OperationResult<UserUsageSummaryModel>.Success(
-            new UserUsageSummaryModel(
-                command.UserId,
-                account,
-                total.Result,
-                lastMonth.Result));
+            model.ToModel(command.UserId, total.Result, lastMonth.Result));
     }
 
     private async Task<UserUsagePeriodModel> GetPeriodAsync(
@@ -98,16 +91,7 @@ public sealed class GetUserUsageSummaryOperation(
         await Task.WhenAll(captures, lingos, encounters, usage);
 
         var lingoCount = lingos.Result;
-        return new UserUsagePeriodModel(
-            captures.Result,
-            lingoCount,
-            encounters.Result,
-            lingoCount == 0 ? 0m : (decimal)encounters.Result / lingoCount,
-            usage.Result.EnrichmentCount,
-            usage.Result.InputTokens,
-            usage.Result.OutputTokens,
-            usage.Result.EstimatedCost,
-            usage.Result.Models);
+        return usage.Result.MapToUserUsagePeriodModel(captures.Result, lingoCount, encounters.Result);
     }
 }
 

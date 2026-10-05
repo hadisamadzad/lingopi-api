@@ -18,25 +18,25 @@ public class UpdateUserOperation(IRepositoryManager repository) :
         }
 
         // Check if user is admin
-        var requesterUser = await repository.Users.GetByIdAsync(command.AdminUserId);
-        if (requesterUser is null)
+        var requesterEntity = await repository.Users.GetByIdAsync(command.AdminUserId);
+        if (requesterEntity is null)
         {
             return OperationResult.NotFoundFailure("Access denied");
         }
 
         // Get
-        var user = await repository.Users.GetByIdAsync(command.UserId);
-        if (user is null)
+        var entity = await repository.Users.GetByIdAsync(command.UserId);
+        if (entity is null)
         {
             return OperationResult.NotFoundFailure("User not found");
         }
 
         // Update
-        user.FirstName = command.FirstName;
-        user.LastName = command.LastName;
+        entity.FirstName = command.FirstName;
+        entity.LastName = command.LastName;
 
-        user.UpdatedAt = DateTime.UtcNow;
-        _ = await repository.Users.UpdateAsync(user);
+        entity.UpdatedAt = DateTime.UtcNow;
+        _ = await repository.Users.UpdateAsync(entity);
 
         return OperationResult.Success();
     }

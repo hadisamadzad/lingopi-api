@@ -72,6 +72,12 @@ Operations must:
 - Never return an `Entity` class, including as the generic type inside `OperationResult<T>`.
 - Define one corresponding `ReadModel` for each `Entity` that an operation exposes.
 - Map repository `Entity` instances to the appropriate `ReadModel` before returning them from an operation.
+- Keep all application-layer mapper extension classes under `Application/Extensions/Mappers`. Use source-entity-specific names such as `SubscriptionEntityMapperExtension` and implement mappings as static extension methods, following the `UserModelMapper` pattern.
+- Operations must call mapper extensions instead of defining or inlining entity-to-model mappings.
+- In operation files, name repository-returned persistence entities `entity` rather than using a domain noun such as `user`; the operation context already identifies the domain.
+- Name values returned by application mapper extensions `model` rather than `response`, since they are application models, not HTTP responses.
+- When a required entity is missing, return the appropriate operation failure instead of synthesizing a ReadModel with hard-coded, default, or null placeholder values.
+- Keep API `Response` models separate from operation `ReadModel` types. Endpoints must explicitly map only the fields intended for the HTTP contract; do not return a ReadModel directly when its fields should be omitted.
 - Use a focused `Result` class or record when an operation returns a composed output that is not a single entity read model.
 - Return primitive types or other immutable application-layer types when they are sufficient for the use case.
 - Keep exactly one operation class per file.
@@ -96,7 +102,15 @@ Operations must:
 ## Controllers & HTTP Mapping
 
 - Controllers must map `OperationStatus` to HTTP responses explicitly.
-- Do NOT assume a fixed mapping; choose the appropriate HTTP status per use case.
+- Apply the explicit mapping rules below; for statuses without a prescribed mapping, choose the appropriate HTTP status per use case.
+- Use HTTP 404 (`Results.NotFound(...)`) only when the requested route does not exist; do not use it when an operation cannot find a requested resource.
+- Map `OperationStatus.NotFound` (a missing resource) to HTTP 422 with `Results.UnprocessableEntity(result.Error)`, not `Results.NotFound(result.Error)`.
+- For successful PUT, PATCH, and DELETE updates, prefer HTTP 204 with `Results.NoContent()` instead of returning a response body. Return a response representation only when it is required by the endpoint contract or its consumers, and document 204 with `.Produces(StatusCodes.Status204NoContent)`.
+- In endpoint handlers, map request fields to operation Commands explicitly at the call site; do not use mappers for Request-to-Command conversion.
+- Map completed `OperationResult` values to API Response models by explicitly constructing the response in the endpoint; do not use mapper extensions or helper mappers for OperationResult-to-Response conversion.
+- Use named arguments for every mapped field when constructing destination models, including application mapper extensions and endpoint Request-to-Command and OperationResult-to-Response mappings.
+- Keep request and response models specific to one endpoint at the bottom of that endpoint's file, outside the endpoint class and in the same file-scoped namespace.
+- Keep models shared across endpoints in `Api/Models`.
 - Never return OperationResult directly from controllers.
 
 ## Model & DTO Naming (Strict Semantics)
@@ -124,7 +138,10 @@ Apart from Entities, all other types are preferably immutable flat records.
 
 - Use Repository Pattern with a Repository Manager.
 - Repositories must not contain business logic.
+- Repositories may return only persistence entities, primitive values, or collections of entities; do not return paginated wrappers or composed result models.
+- Operations must call repository count methods when needed and assemble pagination metadata and result models themselves.
 - Filters must be passed explicitly via Filter DTOs.
+- Prefer fluent MongoDB query async methods such as `query.LongCountAsync()` and `query.ToListAsync()` over static `MongoQueryable` calls such as `MongoQueryable.LongCountAsync(query)`.
 - MongoDB entities must remain persistence-focused.
 - MongoDB indexes are created in the codebase and ensured by the repository layer to the DB.
 - EnsureIndexesAsync method is required in repositories with one empty line distance with actual methods.

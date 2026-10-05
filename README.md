@@ -39,6 +39,10 @@ This project follows the Clean Architecture pattern and the application is divid
 
 - **🔗 API**: The API entry point
 
+## 📚 Documentation
+
+- [Technical Documentation (Confluence)](https://hadisamadzad.atlassian.net/wiki/spaces/Lingopi/pages/648445961)
+
 ## 🛠️ Tech Stack
 
 ### 🔙 Backend

@@ -1,19 +1,18 @@
 using System;
 using System.Linq;
 using System.Text.Json;
-using Lingopi.Lingo.Api.Models;
-using Lingopi.Lingo.Application.Models.ReadModels;
+using Lingopi.Lingo.Api.Endpoints.Languages;
 using Xunit;
 
 namespace Lingopi.Lingo.Tests.Api.Models;
 
-public class LanguageResponseMapperTests
+public class LanguageResponseContractTests
 {
     [Fact]
-    public void ToActiveLocaleResponse_ShouldOnlyExposeUserFacingLocaleFields()
+    public void ActiveLocaleResponse_ShouldOnlyExposeUserFacingLocaleFields()
     {
         var json = JsonSerializer.Serialize(
-            CreateLanguageReadModel().ToActiveLocaleResponse(),
+            new ActiveLocaleResponse("en-GB", "English (UK)", "English (UK)"),
             new JsonSerializerOptions(JsonSerializerDefaults.Web));
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
@@ -29,10 +28,22 @@ public class LanguageResponseMapperTests
     }
 
     [Fact]
-    public void ToResponse_ShouldKeepAdminLocaleMetadata()
+    public void LanguageResponse_ShouldKeepAdminLocaleMetadata()
     {
+        var createdAt = DateTime.SpecifyKind(new DateTime(2026, 10, 4), DateTimeKind.Utc);
         var json = JsonSerializer.Serialize(
-            CreateLanguageReadModel().ToResponse(),
+            new LanguageResponse(
+                "locale-en-gb",
+                "en-GB",
+                "en",
+                "GB",
+                "English (UK)",
+                "English (UK)",
+                false,
+                true,
+                createdAt,
+                createdAt.AddDays(1),
+                createdAt.AddHours(1)),
             new JsonSerializerOptions(JsonSerializerDefaults.Web));
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
@@ -43,22 +54,5 @@ public class LanguageResponseMapperTests
         Assert.True(root.TryGetProperty("createdAt", out _));
         Assert.True(root.TryGetProperty("updatedAt", out _));
         Assert.True(root.TryGetProperty("lastActivatedAt", out _));
-    }
-
-    private static LanguageReadModel CreateLanguageReadModel()
-    {
-        var createdAt = DateTime.SpecifyKind(new DateTime(2026, 10, 4), DateTimeKind.Utc);
-        return new LanguageReadModel(
-            "locale-en-gb",
-            "en-GB",
-            "en",
-            "GB",
-            "English (UK)",
-            "English (UK)",
-            false,
-            true,
-            createdAt,
-            createdAt.AddDays(1),
-            createdAt.AddHours(1));
     }
 }

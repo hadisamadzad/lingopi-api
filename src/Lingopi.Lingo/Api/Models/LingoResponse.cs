@@ -1,5 +1,4 @@
 using Lingopi.Lingo.Application.Models.Enums;
-using Lingopi.Lingo.Application.Models.ReadModels;
 
 namespace Lingopi.Lingo.Api.Models;
 
@@ -75,59 +74,3 @@ public record AuditResponse(
     int DocumentRevision,
     int SchemaVersion
 );
-
-public static class LingoResponseMapper
-{
-    public static LingoResponse ToResponse(this LingoModel model)
-    {
-        return new LingoResponse(
-            LingoId: model.Id,
-            UserId: model.UserId,
-            Encounters: model.Encounters
-                .ConvertAll(encounter => new EncounterResponse(
-                    encounter.OriginalText,
-                    encounter.SourceLanguageCode,
-                    encounter.SourceLocaleCode,
-                    encounter.Context)),
-            Lingo: new LingoDataResponse(
-                model.Lingo.Expression,
-                model.Lingo.SourceLanguageCode,
-                model.Lingo.SourceLocaleCodes,
-                model.Lingo.TargetLocaleCode,
-                model.Lingo.Pattern,
-                model.Lingo.SenseKey,
-                model.Lingo.Type,
-                model.Lingo.Registers,
-                model.Lingo.Domains,
-                model.Lingo.IsOffensive,
-                model.Lingo.Definition,
-                model.Lingo.Translation,
-                model.Lingo.Note,
-                model.Lingo.Examples.ConvertAll(x => new ExampleResponse(x.Text, x.Translation)),
-                model.Lingo.CommonMistakes,
-                model.Lingo.Tags),
-            Learning: new LearningResponse(
-                model.Learning.Goal,
-                model.Learning.Status,
-                model.Learning.CurrentReviewState,
-                new SrsReviewResponse(
-                    model.Learning.Review.LastReviewedAt,
-                    model.Learning.Review.NextReviewAt,
-                    model.Learning.Review.Repetitions,
-                    model.Learning.Review.Level)),
-            Enrichment: new EnrichmentResponse(
-                model.Enrichment.Status,
-                model.Enrichment.EnrichmentJobId,
-                model.Enrichment.LastEnrichedAt,
-                model.Enrichment.Provider,
-                model.Enrichment.Model,
-                model.Enrichment.PromptVersion,
-                model.Enrichment.ErrorCode,
-                model.Enrichment.ErrorMessage),
-            Audit: new AuditResponse(
-                model.Audit.CreatedAt,
-                model.Audit.UpdatedAt,
-                model.Audit.DocumentRevision,
-                model.Audit.SchemaVersion));
-    }
-}

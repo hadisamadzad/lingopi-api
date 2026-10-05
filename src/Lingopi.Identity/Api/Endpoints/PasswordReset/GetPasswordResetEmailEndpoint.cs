@@ -11,7 +11,7 @@ public class GetPasswordResetEmailEndpoint : IEndpoint
                 [FromQuery] string token) =>
             {
                 var operationResult = await operations.ExecuteAsync(
-                    new GetPasswordResetEmailCommand(token));
+                    new GetPasswordResetEmailCommand(Token: token));
 
                 return operationResult.Status switch
                 {
@@ -33,4 +33,4 @@ public class GetPasswordResetEmailEndpoint : IEndpoint
     }
 }
 
-public record GetPasswordResetEmailResponse(string Email);
+public sealed record GetPasswordResetEmailResponse(string Email);

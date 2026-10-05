@@ -1,3 +1,4 @@
+using Lingopi.Lingo.Application.Extensions.Mappers;
 using Lingopi.Lingo.Application.Interfaces;
 using Lingopi.Lingo.Application.Models.ReadModels;
 
@@ -22,9 +23,9 @@ public class GetLingoByIdOperation(IRepositoryManager repository) :
             return OperationResult<LingoModel>.NotFoundFailure("Lingo not found");
         }
 
-        var result = entity.MapToLingoModel();
+        var model = entity.ToModel();
 
-        return OperationResult<LingoModel>.Success(result);
+        return OperationResult<LingoModel>.Success(model);
     }
 }
 

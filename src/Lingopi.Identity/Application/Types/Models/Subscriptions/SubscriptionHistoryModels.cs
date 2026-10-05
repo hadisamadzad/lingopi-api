@@ -8,6 +8,7 @@ public sealed record SubscriptionHistoryModel(
     string UserId,
     SubscriptionHistoryEventType EventType,
     SubscriptionPlan Plan,
+    SubscriptionSource Source,
     SubscriptionStatus Status,
     DateTime StartedAt,
     DateTime? ExpiresAt,

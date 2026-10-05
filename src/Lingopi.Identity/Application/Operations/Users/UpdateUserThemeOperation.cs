@@ -16,17 +16,17 @@ public sealed class UpdateUserThemeOperation(IRepositoryManager repository) :
             return OperationResult.ValidationFailure("UserId is required.");
         }
 
-        var user = await repository.Users.GetByIdAsync(command.UserId);
-        if (user is null)
+        var entity = await repository.Users.GetByIdAsync(command.UserId);
+        if (entity is null)
         {
             return OperationResult.NotFoundFailure("User not found.");
         }
 
-        user.Settings ??= new UserSettings();
-        user.Settings.Theme = command.Theme;
-        user.UpdatedAt = DateTime.UtcNow;
+        entity.Settings ??= new UserSettings();
+        entity.Settings.Theme = command.Theme;
+        entity.UpdatedAt = DateTime.UtcNow;
 
-        var updated = await repository.Users.UpdateAsync(user);
+        var updated = await repository.Users.UpdateAsync(entity);
         if (!updated)
         {
             return OperationResult.Failure($"Failed to update theme for user '{command.UserId}'.");

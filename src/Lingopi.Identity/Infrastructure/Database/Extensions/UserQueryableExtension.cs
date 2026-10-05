@@ -41,7 +41,8 @@ public static class UserQueryableExtension
         return sortBy switch
         {
             UserSortBy.CreationDate => query.OrderBy(x => x.CreatedAt),
-            UserSortBy.CreationDateDescending => query.OrderByDescending(x => x.CreatedAt),
+            UserSortBy.CreationDateDescending => query.OrderByDescending(x => x.CreatedAt)
+                .ThenBy(x => x.Id),
             UserSortBy.LastLoginDate => query.OrderBy(x => x.LastLoginDate),
             UserSortBy.LastLoginDateDescending => query.OrderByDescending(x => x.LastLoginDate),
             _ => query.OrderByDescending(x => x.Id)

@@ -1,4 +1,5 @@
-﻿using Lingopi.Identity.Application.Interfaces;
+﻿using Lingopi.Identity.Application.Extensions.Mappers;
+using Lingopi.Identity.Application.Interfaces;
 using Lingopi.Identity.Application.Types.Models.Users;
 
 namespace Lingopi.Identity.Application.Operations.Users;
@@ -17,7 +18,7 @@ public class GetUserByIdOperation(IRepositoryManager repository) :
         }
 
         // Mapping
-        var model = entity.MapToUserModel();
+        var model = entity.ToModel();
 
         return OperationResult<UserModel>.Success(model);
     }

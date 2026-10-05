@@ -19,24 +19,24 @@ public class UpdateUserPasswordOperation(IRepositoryManager repository) :
         }
 
         // Get
-        var user = await repository.Users.GetByIdAsync(command.UserId);
-        if (user is null)
+        var entity = await repository.Users.GetByIdAsync(command.UserId);
+        if (entity is null)
         {
             return OperationResult.NotFoundFailure("User not found");
         }
 
         // Check if user password is correct and update
-        if (PasswordHelper.CheckPasswordHash(user.PasswordHash, command.CurrentPassword))
+        if (PasswordHelper.CheckPasswordHash(entity.PasswordHash, command.CurrentPassword))
         {
-            user.PasswordHash = PasswordHelper.Hash(command.NewPassword);
+            entity.PasswordHash = PasswordHelper.Hash(command.NewPassword);
         }
         else
         {
             return OperationResult.Failure("Incorrect current password");
         }
 
-        user.UpdatedAt = DateTime.UtcNow;
-        _ = await repository.Users.UpdateAsync(user);
+        entity.UpdatedAt = DateTime.UtcNow;
+        _ = await repository.Users.UpdateAsync(entity);
 
         return OperationResult.Success();
     }

@@ -15,10 +15,10 @@ public class UpdateUserEndpoint : IEndpoint
                 // Operation
                 var operationResult = await operations.ExecuteAsync(
                     new UpdateUserCommand(
-                        authenticatedUserId,
-                        userId,
-                        request.FirstName,
-                        request.LastName));
+                        AdminUserId: authenticatedUserId,
+                        UserId: userId,
+                        FirstName: request.FirstName,
+                        LastName: request.LastName));
 
                 // Result
                 return operationResult.Status switch

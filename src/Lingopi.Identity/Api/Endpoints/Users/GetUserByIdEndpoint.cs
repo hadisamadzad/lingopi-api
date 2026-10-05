@@ -14,7 +14,7 @@ public class GetUserByIdEndpoint : IEndpoint
             {
                 // Operation
                 var operationResult = await operations.ExecuteAsync(
-                    new GetUserByIdCommand(userId));
+                    new GetUserByIdCommand(UserId: userId));
 
                 if (operationResult.Status == OperationStatus.Completed)
                 {
@@ -36,8 +36,7 @@ public class GetUserByIdEndpoint : IEndpoint
                             Theme: user.Theme,
                             FullName: user.FullName,
                             CreatedAt: user.CreatedAt,
-                            UpdatedAt: user.UpdatedAt
-                        ));
+                            UpdatedAt: user.UpdatedAt));
                 }
 
                 // Result
@@ -56,7 +55,7 @@ public class GetUserByIdEndpoint : IEndpoint
     }
 }
 
-public record GetUserByIdResponse(
+public sealed record GetUserByIdResponse(
     string UserId,
     string Email,
     string? Mobile,
@@ -67,5 +66,4 @@ public record GetUserByIdResponse(
     ThemePreference? Theme,
     string FullName,
     DateTime CreatedAt,
-    DateTime UpdatedAt
-);
+    DateTime UpdatedAt);

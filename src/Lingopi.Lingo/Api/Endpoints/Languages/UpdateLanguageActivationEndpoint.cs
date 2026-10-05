@@ -1,5 +1,4 @@
 using Lingopi.Lingo.Api.Authorization;
-using Lingopi.Lingo.Api.Models;
 using Lingopi.Lingo.Application.Operations.Languages;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,12 +21,14 @@ public sealed class UpdateLanguageActivationEndpoint : IEndpoint
                 }
 
                 var operationResult = await operations.ExecuteAsync(
-                    new UpdateLanguageActivationCommand(id, request.IsActive));
+                    new UpdateLanguageActivationCommand(
+                        Id: id,
+                        IsActive: request.IsActive));
 
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.NoContent(),
-                    OperationStatus.NotFound => Results.NotFound(operationResult.Error?.Messages),
+                    OperationStatus.NotFound => Results.UnprocessableEntity(operationResult.Error?.Messages),
                     _ => Results.UnprocessableEntity(operationResult.Error?.Messages)
                 };
             })
@@ -40,3 +41,5 @@ public sealed class UpdateLanguageActivationEndpoint : IEndpoint
             .Produces(StatusCodes.Status422UnprocessableEntity);
     }
 }
+
+public record UpdateLanguageActivationRequest(bool IsActive);

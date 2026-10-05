@@ -18,6 +18,7 @@ public static class SubscriptionHistoryEntityFactory
             UserId = subscription.UserId,
             EventType = eventType,
             Plan = subscription.Plan,
+            Source = subscription.Source,
             Status = statusOverride ?? subscription.Status,
             StartedAt = subscription.StartedAt,
             ExpiresAt = subscription.ExpiresAt,

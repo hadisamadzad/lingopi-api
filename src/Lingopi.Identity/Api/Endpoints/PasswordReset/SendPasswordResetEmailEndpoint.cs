@@ -5,15 +5,13 @@ namespace Lingopi.Identity.Api.Endpoints.PasswordReset;
 
 public class SendPasswordResetEmailEndpoint : IEndpoint
 {
-    public record SendPasswordResetEmailRequest(string Email);
-
     public void MapEndpoints(WebApplication app)
     {
         app.MapPost("api/auth/password-reset", async (IOperationMediator operations,
             [FromBody] SendPasswordResetEmailRequest request) =>
             {
                 var operationResult = await operations.ExecuteAsync(
-                    new SendPasswordResetEmailCommand(request.Email));
+                    new SendPasswordResetEmailCommand(Email: request.Email));
 
                 return operationResult.Status switch
                 {
@@ -34,3 +32,5 @@ public class SendPasswordResetEmailEndpoint : IEndpoint
             .Produces(StatusCodes.Status500InternalServerError);
     }
 }
+
+public record SendPasswordResetEmailRequest(string Email);

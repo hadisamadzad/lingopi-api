@@ -13,15 +13,21 @@ public sealed class GetUserSettingsEndpoint : IEndpoint
                 [FromHeader(Name = "User-Id")] string userId) =>
             {
                 var operationResult = await operations.ExecuteAsync(
-                    new GetUserSettingsCommand(userId));
+                    new GetUserSettingsCommand(UserId: userId));
+                var settings = operationResult.Value!;
 
                 return operationResult.Status switch
                 {
                     OperationStatus.Completed => Results.Ok(
-                        operationResult.Value!.ToResponse()),
+                        new UserSettingsResponse(
+                            UserId: settings.UserId,
+                            TargetLocaleCode: settings.TargetLocaleCode,
+                            SourceLocaleCodes: settings.SourceLocaleCodes,
+                            CreatedAt: settings.CreatedAt,
+                            UpdatedAt: settings.UpdatedAt)),
                     OperationStatus.Invalid => Results.BadRequest(
                         operationResult.Error?.Messages),
-                    OperationStatus.NotFound => Results.NotFound(
+                    OperationStatus.NotFound => Results.UnprocessableEntity(
                         operationResult.Error?.Messages),
                     _ => Results.Problem(
                         statusCode: StatusCodes.Status500InternalServerError,
